@@ -41,6 +41,14 @@ jobs:
       - name: Add .nojekyll
         run: touch output/wwwroot/.nojekyll
 
+      - name: Rewrite fingerprinted assets for GitHub Pages
+        run: |
+          cd output/wwwroot/_framework
+          # Rename dotnet.native.*.js files that have no extension or unusual names
+          # Ensure all .js, .wasm, .dat files are accessible
+          for f in $(find . -name "*.gz"); do rm "$f"; done
+          for f in $(find . -name "*.br"); do rm "$f"; done
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
