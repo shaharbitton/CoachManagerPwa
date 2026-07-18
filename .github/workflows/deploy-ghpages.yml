@@ -32,22 +32,42 @@ jobs:
       - name: Publish
         run: dotnet publish -c Release -o output
 
-      - name: Update base href
-        run: sed -i 's|<base href="/" />|<base href="/${{ github.event.repository.name }}/" />|g' output/wwwroot/index.html
+      - name: Set repo base path
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          BASE_PATH="/${REPO_NAME}/"
 
-      - name: Copy index.html to 404.html
+          # Update base href in index.html
+          sed -i "s|<base href=\"/\" />|<base href=\"${BASE_PATH}\" />|g" output/wwwroot/index.html
+
+          # Update service worker base path
+          sed -i "s|const base = \"/\"|const base = \"${BASE_PATH}\"|g" output/wwwroot/service-worker-assets.js 2>/dev/null || true
+          sed -i "s|const base = \"/\"|const base = \"${BASE_PATH}\"|g" output/wwwroot/service-worker.js 2>/dev/null || true
+
+          # Find and patch the published service worker
+          find output/wwwroot -name "service-worker*.js" -exec sed -i "s|const base = \"/\"|const base = \"${BASE_PATH}\"|g" {} \;
+
+      - name: Copy index.html to 404.html (SPA routing)
         run: cp output/wwwroot/index.html output/wwwroot/404.html
 
-      - name: Add .nojekyll
-        run: touch output/wwwroot/.nojekyll
-
-      - name: Rewrite fingerprinted assets for GitHub Pages
+      - name: Disable Jekyll and remove pre-compressed files
         run: |
-          cd output/wwwroot/_framework
-          # Rename dotnet.native.*.js files that have no extension or unusual names
-          # Ensure all .js, .wasm, .dat files are accessible
-          for f in $(find . -name "*.gz"); do rm "$f"; done
-          for f in $(find . -name "*.br"); do rm "$f"; done
+          touch output/wwwroot/.nojekyll
+          find output/wwwroot/_framework -name "*.gz" -delete 2>/dev/null || true
+          find output/wwwroot/_framework -name "*.br" -delete 2>/dev/null || true
+
+          # .NET 10 may fingerprint dotnet.js — create a non-fingerprinted copy if missing
+          if [ ! -f output/wwwroot/_framework/dotnet.js ]; then
+            DOTNET_JS=$(find output/wwwroot/_framework -maxdepth 1 -name "dotnet.*.js" ! -name "dotnet.native.*" ! -name "dotnet.runtime.*" | head -1)
+            if [ -n "$DOTNET_JS" ]; then
+              cp "$DOTNET_JS" output/wwwroot/_framework/dotnet.js
+              echo "Created dotnet.js from $DOTNET_JS"
+            fi
+          fi
+
+          # List _framework contents for debugging
+          echo "=== _framework contents ==="
+          ls -la output/wwwroot/_framework/ | head -30
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
