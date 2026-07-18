@@ -4,6 +4,7 @@
 @inject NavigationManager Nav
 @implements IDisposable
 
+<MudRTLProvider RightToLeft="true">
 <MudThemeProvider Theme="_theme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -83,6 +84,7 @@ else
         }
     </MudLayout>
 }
+</MudRTLProvider>
 
 @code {
     private bool _drawerOpen = true;
