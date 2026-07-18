@@ -31,7 +31,7 @@ else
             <MudChip T="string" Color="Color.Secondary" Size="Size.Small">@AppState.CurrentRole</MudChip>
             <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" />
             <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit">
-                <MudMenuItem Href="/profile">פרופיל</MudMenuItem>
+                <MudMenuItem Href="profile">פרופיל</MudMenuItem>
                 <MudMenuItem OnClick="SwitchRole">החלף תצוגה</MudMenuItem>
                 <MudMenuItem OnClick="Logout">התנתק</MudMenuItem>
             </MudMenu>
@@ -43,23 +43,23 @@ else
             <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always">
                 <MudNavMenu Class="mt-2" Bordered="true" Color="Color.Primary">
                     <MudText Typo="Typo.subtitle2" Class="pa-3" Style="color: #666;">ניהול ותפעול</MudText>
-                    <MudNavLink Href="/admin/dashboard" Icon="@Icons.Material.Filled.Dashboard" Match="NavLinkMatch.Prefix">לוח בקרה</MudNavLink>
-                    <MudNavLink Href="/admin/coaches" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">מאמנים</MudNavLink>
-                    <MudNavLink Href="/admin/clients" Icon="@Icons.Material.Filled.Business" Match="NavLinkMatch.Prefix">לקוחות</MudNavLink>
-                    <MudNavLink Href="/admin/assignments" Icon="@Icons.Material.Filled.AssignmentInd" Match="NavLinkMatch.Prefix">שיבוצים</MudNavLink>
-                    <MudNavLink Href="/admin/time-reports" Icon="@Icons.Material.Filled.AccessTime" Match="NavLinkMatch.Prefix">דוחות שעות</MudNavLink>
+                    <MudNavLink Href="admin/dashboard" Icon="@Icons.Material.Filled.Dashboard" Match="NavLinkMatch.Prefix">לוח בקרה</MudNavLink>
+                    <MudNavLink Href="admin/coaches" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">מאמנים</MudNavLink>
+                    <MudNavLink Href="admin/clients" Icon="@Icons.Material.Filled.Business" Match="NavLinkMatch.Prefix">לקוחות</MudNavLink>
+                    <MudNavLink Href="admin/assignments" Icon="@Icons.Material.Filled.AssignmentInd" Match="NavLinkMatch.Prefix">שיבוצים</MudNavLink>
+                    <MudNavLink Href="admin/time-reports" Icon="@Icons.Material.Filled.AccessTime" Match="NavLinkMatch.Prefix">דוחות שעות</MudNavLink>
 
                     <MudDivider Class="my-2" />
                     <MudText Typo="Typo.subtitle2" Class="pa-3" Style="color: #666;">כספים ומשאבי אנוש</MudText>
-                    <MudNavLink Href="/admin/rates" Icon="@Icons.Material.Filled.AttachMoney" Match="NavLinkMatch.Prefix">תעריפים ושכר</MudNavLink>
-                    <MudNavLink Href="/admin/contracts" Icon="@Icons.Material.Filled.Description" Match="NavLinkMatch.Prefix">חוזי לקוחות</MudNavLink>
-                    <MudNavLink Href="/admin/evaluations" Icon="@Icons.Material.Filled.Star" Match="NavLinkMatch.Prefix">הערכות מאמנים</MudNavLink>
-                    <MudNavLink Href="/admin/documents" Icon="@Icons.Material.Filled.Folder" Match="NavLinkMatch.Prefix">מסמכים</MudNavLink>
+                    <MudNavLink Href="admin/rates" Icon="@Icons.Material.Filled.AttachMoney" Match="NavLinkMatch.Prefix">תעריפים ושכר</MudNavLink>
+                    <MudNavLink Href="admin/contracts" Icon="@Icons.Material.Filled.Description" Match="NavLinkMatch.Prefix">חוזי לקוחות</MudNavLink>
+                    <MudNavLink Href="admin/evaluations" Icon="@Icons.Material.Filled.Star" Match="NavLinkMatch.Prefix">הערכות מאמנים</MudNavLink>
+                    <MudNavLink Href="admin/documents" Icon="@Icons.Material.Filled.Folder" Match="NavLinkMatch.Prefix">מסמכים</MudNavLink>
 
                     <MudDivider Class="my-2" />
                     <MudText Typo="Typo.subtitle2" Class="pa-3" Style="color: #666;">תוכן ולמידה</MudText>
-                    <MudNavLink Href="/admin/training-hub" Icon="@Icons.Material.Filled.School" Match="NavLinkMatch.Prefix">מאגר ידע</MudNavLink>
-                    <MudNavLink Href="/admin/groups" Icon="@Icons.Material.Filled.Groups" Match="NavLinkMatch.Prefix">קבוצות</MudNavLink>
+                    <MudNavLink Href="admin/training-hub" Icon="@Icons.Material.Filled.School" Match="NavLinkMatch.Prefix">מאגר ידע</MudNavLink>
+                    <MudNavLink Href="admin/groups" Icon="@Icons.Material.Filled.Groups" Match="NavLinkMatch.Prefix">קבוצות</MudNavLink>
                 </MudNavMenu>
             </MudDrawer>
         }
@@ -75,10 +75,10 @@ else
         @if (AppState.IsCoach)
         {
             <MudPaper Elevation="8" Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1100; background-color: white;" Class="py-1 d-flex justify-space-around border-t">
-                <MudButton Href="/coach/assignments" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Dashboard" Color="Color.Primary">שיבוצים</MudButton>
-                <MudButton Href="/coach/time-entry" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Timer" Color="Color.Default">דיווח שעות</MudButton>
-                <MudButton Href="/coach/groups" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Groups" Color="Color.Default">קבוצות</MudButton>
-                <MudButton Href="/coach/hub" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.School" Color="Color.Default">מאגר ידע</MudButton>
+                <MudButton Href="coach/assignments" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Dashboard" Color="Color.Primary">שיבוצים</MudButton>
+                <MudButton Href="coach/time-entry" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Timer" Color="Color.Default">דיווח שעות</MudButton>
+                <MudButton Href="coach/groups" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Groups" Color="Color.Default">קבוצות</MudButton>
+                <MudButton Href="coach/hub" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.School" Color="Color.Default">מאגר ידע</MudButton>
             </MudPaper>
         }
     </MudLayout>
@@ -113,13 +113,13 @@ else
     private void SwitchRole()
     {
         AppState.SetRole(AppState.IsAdmin ? "Coach" : "Admin");
-        Nav.NavigateTo(AppState.IsAdmin ? "/admin/dashboard" : "/coach/assignments");
+        Nav.NavigateTo(AppState.IsAdmin ? "admin/dashboard" : "coach/assignments");
     }
 
     private void Logout()
     {
         AppState.Logout();
-        Nav.NavigateTo("/");
+        Nav.NavigateTo("");
     }
 
     public void Dispose()

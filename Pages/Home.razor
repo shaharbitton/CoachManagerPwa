@@ -85,7 +85,7 @@
 
                 AppState.SetUser(session.User!.Id, session.User.Email ?? "משתמש", role);
                 Snackbar.Add("ברוך הבא! התחברת בהצלחה.", Severity.Success);
-                Nav.NavigateTo(AppState.IsAdmin ? "/admin/dashboard" : "/coach/assignments");
+                Nav.NavigateTo(AppState.IsAdmin ? "admin/dashboard" : "coach/assignments");
             }
         }
         catch (Exception ex)
@@ -102,6 +102,6 @@
     {
         AppState.SetUser(Guid.NewGuid().ToString(), role == "Admin" ? "מנהל המערכת" : "מאמן דמו", role);
         Snackbar.Add($"כניסת דמו כ{(role == "Admin" ? "מנהל" : "מאמן")}", Severity.Info);
-        Nav.NavigateTo(role == "Admin" ? "/admin/dashboard" : "/coach/assignments");
+        Nav.NavigateTo(role == "Admin" ? "admin/dashboard" : "coach/assignments");
     }
 }
