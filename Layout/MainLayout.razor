@@ -1,0 +1,129 @@
+﻿@using MudBlazor
+@inherits LayoutComponentBase
+@inject AppState AppState
+@inject NavigationManager Nav
+@implements IDisposable
+
+<MudThemeProvider Theme="_theme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+@if (!AppState.IsAuthenticated)
+{
+    <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+        @Body
+    </MudContainer>
+}
+else
+{
+    <MudLayout>
+        <!-- כותרת עליונה -->
+        <MudAppBar Elevation="2" Color="Color.Primary" Fixed="true">
+            @if (AppState.IsAdmin)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" OnClick="ToggleDrawer" />
+            }
+            <MudText Typo="Typo.h6" Style="font-weight: bold;">
+                @(AppState.IsAdmin ? "לוח בקרה - ניהול" : "אפליקציית מאמן")
+            </MudText>
+            <MudSpacer />
+            <MudChip T="string" Color="Color.Secondary" Size="Size.Small">@AppState.CurrentRole</MudChip>
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" />
+            <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit">
+                <MudMenuItem Href="/profile">פרופיל</MudMenuItem>
+                <MudMenuItem OnClick="SwitchRole">החלף תצוגה</MudMenuItem>
+                <MudMenuItem OnClick="Logout">התנתק</MudMenuItem>
+            </MudMenu>
+        </MudAppBar>
+
+        <!-- תפריט צד לאדמין -->
+        @if (AppState.IsAdmin)
+        {
+            <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always">
+                <MudNavMenu Class="mt-2" Bordered="true" Color="Color.Primary">
+                    <MudText Typo="Typo.subtitle2" Class="pa-3" Style="color: #666;">ניהול ותפעול</MudText>
+                    <MudNavLink Href="/admin/dashboard" Icon="@Icons.Material.Filled.Dashboard" Match="NavLinkMatch.Prefix">לוח בקרה</MudNavLink>
+                    <MudNavLink Href="/admin/coaches" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">מאמנים</MudNavLink>
+                    <MudNavLink Href="/admin/clients" Icon="@Icons.Material.Filled.Business" Match="NavLinkMatch.Prefix">לקוחות</MudNavLink>
+                    <MudNavLink Href="/admin/assignments" Icon="@Icons.Material.Filled.AssignmentInd" Match="NavLinkMatch.Prefix">שיבוצים</MudNavLink>
+                    <MudNavLink Href="/admin/time-reports" Icon="@Icons.Material.Filled.AccessTime" Match="NavLinkMatch.Prefix">דוחות שעות</MudNavLink>
+
+                    <MudDivider Class="my-2" />
+                    <MudText Typo="Typo.subtitle2" Class="pa-3" Style="color: #666;">כספים ומשאבי אנוש</MudText>
+                    <MudNavLink Href="/admin/rates" Icon="@Icons.Material.Filled.AttachMoney" Match="NavLinkMatch.Prefix">תעריפים ושכר</MudNavLink>
+                    <MudNavLink Href="/admin/contracts" Icon="@Icons.Material.Filled.Description" Match="NavLinkMatch.Prefix">חוזי לקוחות</MudNavLink>
+                    <MudNavLink Href="/admin/evaluations" Icon="@Icons.Material.Filled.Star" Match="NavLinkMatch.Prefix">הערכות מאמנים</MudNavLink>
+                    <MudNavLink Href="/admin/documents" Icon="@Icons.Material.Filled.Folder" Match="NavLinkMatch.Prefix">מסמכים</MudNavLink>
+
+                    <MudDivider Class="my-2" />
+                    <MudText Typo="Typo.subtitle2" Class="pa-3" Style="color: #666;">תוכן ולמידה</MudText>
+                    <MudNavLink Href="/admin/training-hub" Icon="@Icons.Material.Filled.School" Match="NavLinkMatch.Prefix">מאגר ידע</MudNavLink>
+                    <MudNavLink Href="/admin/groups" Icon="@Icons.Material.Filled.Groups" Match="NavLinkMatch.Prefix">קבוצות</MudNavLink>
+                </MudNavMenu>
+            </MudDrawer>
+        }
+
+        <!-- תוכן עיקרי -->
+        <MudMainContent Class="@(AppState.IsCoach ? "pb-16 pt-16" : "pt-16")" Style="@(AppState.IsAdmin ? "margin-right: 0;" : "")">
+            <MudContainer MaxWidth="@(AppState.IsAdmin ? MaxWidth.Large : MaxWidth.Small)" Class="mt-4 pa-4">
+                @Body
+            </MudContainer>
+        </MudMainContent>
+
+        <!-- סרגל ניווט תחתון למאמן -->
+        @if (AppState.IsCoach)
+        {
+            <MudPaper Elevation="8" Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1100; background-color: white;" Class="py-1 d-flex justify-space-around border-t">
+                <MudButton Href="/coach/assignments" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Dashboard" Color="Color.Primary">שיבוצים</MudButton>
+                <MudButton Href="/coach/time-entry" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Timer" Color="Color.Default">דיווח שעות</MudButton>
+                <MudButton Href="/coach/groups" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Groups" Color="Color.Default">קבוצות</MudButton>
+                <MudButton Href="/coach/hub" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.School" Color="Color.Default">מאגר ידע</MudButton>
+            </MudPaper>
+        }
+    </MudLayout>
+}
+
+@code {
+    private bool _drawerOpen = true;
+
+    private MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#1a365d",
+            Secondary = "#e53e3e",
+            AppbarBackground = "#1a365d",
+            DrawerBackground = "#f7fafc",
+            Background = "#f0f4f8"
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography { FontFamily = ["Roboto", "Arial", "sans-serif"] }
+        }
+    };
+
+    protected override void OnInitialized()
+    {
+        AppState.OnChange += StateHasChanged;
+    }
+
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private void SwitchRole()
+    {
+        AppState.SetRole(AppState.IsAdmin ? "Coach" : "Admin");
+        Nav.NavigateTo(AppState.IsAdmin ? "/admin/dashboard" : "/coach/assignments");
+    }
+
+    private void Logout()
+    {
+        AppState.Logout();
+        Nav.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+}

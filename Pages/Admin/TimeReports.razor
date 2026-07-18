@@ -1,0 +1,251 @@
+@page "/admin/time-reports"
+@inject IDataService Data
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">דוחות שעות - אישור ובקרה</MudText>
+
+<!-- סינון -->
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="3">
+        <MudSelect T="string" @bind-Value="coachFilter" Label="מאמן" Variant="Variant.Outlined" Clearable="true" Dense="true">
+            @foreach (var c in coaches)
+            {
+                <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudSelect T="string" @bind-Value="clientFilter" Label="לקוח" Variant="Variant.Outlined" Clearable="true" Dense="true">
+            @foreach (var cl in clients)
+            {
+                <MudSelectItem Value="@cl.ClientId">@cl.ClientName</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudDatePicker @bind-Date="dateFrom" Label="מתאריך" Variant="Variant.Outlined" />
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudDatePicker @bind-Date="dateTo" Label="עד תאריך" Variant="Variant.Outlined" />
+    </MudItem>
+</MudGrid>
+
+<MudChipSet T="string" @bind-SelectedValue="statusFilter" SelectionMode="SelectionMode.SingleSelection" Class="mb-4">
+    <MudChip Value="@("all")" Default="true">הכל</MudChip>
+    <MudChip Value="@("Pending_Signature")" Color="Color.Warning">ממתין לחתימה</MudChip>
+    <MudChip Value="@("Client_Approved")" Color="Color.Info">נחתם ע"י לקוח</MudChip>
+    <MudChip Value="@("Admin_Approved")" Color="Color.Success">מאושר לתשלום</MudChip>
+    <MudChip Value="@("Billed_Paid")" Color="Color.Default">שולם</MudChip>
+</MudChipSet>
+
+<MudTable Items="FilteredEntries" Hover="true" Elevation="2" Dense="true" Loading="loading" OnRowClick="OnRowClicked" T="TimeEntry" RowStyle="cursor:pointer;">
+    <HeaderContent>
+        <MudTh>מאמן</MudTh>
+        <MudTh>לקוח</MudTh>
+        <MudTh>תאריך</MudTh>
+        <MudTh>שעות</MudTh>
+        <MudTh>סטטוס</MudTh>
+        <MudTh>חתימה</MudTh>
+        <MudTh>GPS</MudTh>
+        <MudTh>פעולות</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@GetCoachName(context)</MudTd>
+        <MudTd>@GetClientName(context)</MudTd>
+        <MudTd>@context.WorkDate.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd>@context.HoursReported</MudTd>
+        <MudTd><MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@GetStatusText(context.Status)</MudChip></MudTd>
+        <MudTd>
+            <MudIcon Icon="@(string.IsNullOrEmpty(context.SignatureUrl) ? Icons.Material.Filled.Close : Icons.Material.Filled.Check)"
+                     Color="@(string.IsNullOrEmpty(context.SignatureUrl) ? Color.Error : Color.Success)" Size="Size.Small" />
+        </MudTd>
+        <MudTd>
+            <MudIcon Icon="@(context.GpsVerified ? Icons.Material.Filled.GpsFixed : Icons.Material.Filled.GpsOff)"
+                     Color="@(context.GpsVerified ? Color.Success : Color.Default)" Size="Size.Small" />
+        </MudTd>
+        <MudTd>
+            @if (context.Status == "Client_Approved")
+            {
+                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Approve(context))" OnClickStopPropagation>אשר לתשלום</MudButton>
+            }
+            @if (context.Status == "Admin_Approved")
+            {
+                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => MarkPaid(context))" OnClickStopPropagation>סמן כשולם</MudButton>
+            }
+        </MudTd>
+    </RowTemplate>
+    <ChildRowContent>
+        @if (context.EntryId == expandedEntryId)
+        {
+            <MudTr>
+                <td colspan="8">
+                    <MudCard Elevation="0" Class="ma-2 pa-3" Style="background: var(--mud-palette-background-gray);">
+                        <MudGrid>
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Primary">מזהה דיווח</MudText>
+                                <MudText Typo="Typo.body2">@context.EntryId[..8]…</MudText>
+                            </MudItem>
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Primary">מזהה שיבוץ</MudText>
+                                <MudText Typo="Typo.body2">@context.AssignId[..8]…</MudText>
+                            </MudItem>
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Primary">חותם</MudText>
+                                <MudText Typo="Typo.body2">@(context.SignerName ?? "—") @(string.IsNullOrEmpty(context.SignerRole) ? "" : $"({context.SignerRole})")</MudText>
+                            </MudItem>
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Primary">נוצר</MudText>
+                                <MudText Typo="Typo.body2">@context.CreatedAt.ToString("dd/MM/yyyy HH:mm")</MudText>
+                            </MudItem>
+                            @if (context.GpsVerified && context.Latitude.HasValue && context.Longitude.HasValue)
+                            {
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudText Typo="Typo.caption" Color="Color.Primary">קואורדינטות GPS</MudText>
+                                    <MudText Typo="Typo.body2">@context.Latitude, @context.Longitude</MudText>
+                                </MudItem>
+                            }
+                            @if (!string.IsNullOrEmpty(context.Description))
+                            {
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.caption" Color="Color.Primary">תיאור</MudText>
+                                    <MudText Typo="Typo.body2">@context.Description</MudText>
+                                </MudItem>
+                            }
+                            @if (!string.IsNullOrEmpty(context.SignatureUrl))
+                            {
+                                <MudItem xs="12" sm="6">
+                                    <MudText Typo="Typo.caption" Color="Color.Primary">חתימה</MudText>
+                                    <MudImage Src="@context.SignatureUrl" Alt="חתימה" Width="200" Height="80" ObjectFit="ObjectFit.Contain" Class="border-solid border mud-border-primary rounded" />
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    </MudCard>
+                </td>
+            </MudTr>
+        }
+    </ChildRowContent>
+</MudTable>
+
+@code {
+    private List<TimeEntry> entries = new();
+    private List<Assignment> assignments = new();
+    private List<Coach> coaches = new();
+    private List<ClientOrg> clients = new();
+    private string statusFilter = "all";
+    private string? coachFilter;
+    private string? clientFilter;
+    private DateTime? dateFrom;
+    private DateTime? dateTo;
+    private bool loading = true;
+    private string? expandedEntryId;
+
+    private IEnumerable<TimeEntry> FilteredEntries
+    {
+        get
+        {
+            IEnumerable<TimeEntry> result = entries;
+
+            if (statusFilter != "all")
+                result = result.Where(e => e.Status == statusFilter);
+
+            if (!string.IsNullOrEmpty(coachFilter))
+            {
+                var assignIds = assignments.Where(a => a.CoachId == coachFilter).Select(a => a.AssignId).ToHashSet();
+                result = result.Where(e => assignIds.Contains(e.AssignId));
+            }
+
+            if (!string.IsNullOrEmpty(clientFilter))
+            {
+                var assignIds = assignments.Where(a => a.ClientId == clientFilter).Select(a => a.AssignId).ToHashSet();
+                result = result.Where(e => assignIds.Contains(e.AssignId));
+            }
+
+            if (dateFrom.HasValue)
+                result = result.Where(e => e.WorkDate >= dateFrom.Value);
+
+            if (dateTo.HasValue)
+                result = result.Where(e => e.WorkDate <= dateTo.Value);
+
+            return result;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var t1 = Data.GetTimeEntriesAsync();
+            var t2 = Data.GetAssignmentsAsync();
+            var t3 = Data.GetCoachesAsync();
+            var t4 = Data.GetClientsAsync();
+            await Task.WhenAll(t1, t2, t3, t4);
+            entries = t1.Result;
+            assignments = t2.Result;
+            coaches = t3.Result;
+            clients = t4.Result;
+        }
+        catch { }
+        finally { loading = false; }
+    }
+
+    private void OnRowClicked(TableRowClickEventArgs<TimeEntry> args)
+    {
+        expandedEntryId = expandedEntryId == args.Item.EntryId ? null : args.Item.EntryId;
+    }
+
+    private string GetCoachName(TimeEntry entry)
+    {
+        var assignment = assignments.FirstOrDefault(a => a.AssignId == entry.AssignId);
+        if (assignment is null) return "—";
+        var coach = coaches.FirstOrDefault(c => c.CoachId == assignment.CoachId);
+        return coach is not null ? $"{coach.FirstName} {coach.LastName}" : assignment.CoachId[..8];
+    }
+
+    private string GetClientName(TimeEntry entry)
+    {
+        var assignment = assignments.FirstOrDefault(a => a.AssignId == entry.AssignId);
+        if (assignment is null) return "—";
+        var client = clients.FirstOrDefault(c => c.ClientId == assignment.ClientId);
+        return client?.ClientName ?? assignment.ClientId[..8];
+    }
+
+    private async Task Approve(TimeEntry entry)
+    {
+        entry.Status = "Admin_Approved";
+        try
+        {
+            await Data.UpdateTimeEntryAsync(entry);
+            Snackbar.Add("דיווח אושר לתשלום", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task MarkPaid(TimeEntry entry)
+    {
+        entry.Status = "Billed_Paid";
+        try
+        {
+            await Data.UpdateTimeEntryAsync(entry);
+            Snackbar.Add("דיווח סומן כשולם", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+    }
+
+    private Color GetStatusColor(string s) => s switch
+    {
+        "Pending_Signature" => Color.Warning,
+        "Client_Approved" => Color.Info,
+        "Admin_Approved" => Color.Success,
+        "Billed_Paid" => Color.Default,
+        _ => Color.Default
+    };
+
+    private string GetStatusText(string s) => s switch
+    {
+        "Pending_Signature" => "ממתין לחתימה",
+        "Client_Approved" => "נחתם",
+        "Admin_Approved" => "מאושר",
+        "Billed_Paid" => "שולם",
+        _ => s
+    };
+}

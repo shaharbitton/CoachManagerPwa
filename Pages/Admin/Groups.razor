@@ -1,0 +1,57 @@
+@page "/admin/groups"
+@inject IDataService Data
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">צפייה בקבוצות - כלל המאמנים</MudText>
+
+<MudSelect T="string" Value="selectedCoachId" ValueChanged="LoadGroups" Label="סנן לפי מאמן" Variant="Variant.Outlined" Class="mb-4">
+    <MudSelectItem Value="@("")">כל המאמנים</MudSelectItem>
+    @foreach (var c in coaches)
+    {
+        <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
+    }
+</MudSelect>
+
+<MudTable Items="groups" Hover="true" Elevation="2" Dense="true">
+    <HeaderContent>
+        <MudTh>שם קבוצה</MudTh>
+        <MudTh>מאמן</MudTh>
+        <MudTh>פעולות</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.GroupName</MudTd>
+        <MudTd>@GetCoachName(context.CoachId)</MudTd>
+        <MudTd>
+            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">צפה במשתתפים</MudButton>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<Coach> coaches = new();
+    private List<TrainingGroup> groups = new();
+    private string selectedCoachId = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { coaches = await Data.GetCoachesAsync(); } catch { }
+    }
+
+    private async Task LoadGroups(string coachId)
+    {
+        selectedCoachId = coachId;
+        try
+        {
+            groups = string.IsNullOrEmpty(coachId)
+                ? new List<TrainingGroup>()
+                : await Data.GetGroupsByCoachAsync(coachId);
+        }
+        catch { }
+    }
+
+    private string GetCoachName(string id)
+    {
+        var c = coaches.FirstOrDefault(x => x.CoachId == id);
+        return c != null ? $"{c.FirstName} {c.LastName}" : id;
+    }
+}

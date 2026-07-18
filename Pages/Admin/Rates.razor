@@ -1,0 +1,80 @@
+@page "/admin/rates"
+@inject IDataService Data
+@inject IDialogService Dialog
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">תעריפים ושכר מאמנים</MudText>
+
+<MudSelect T="string" @bind-Value="selectedCoachId" Label="בחר מאמן" Variant="Variant.Outlined" Class="mb-4">
+    @foreach (var c in coaches)
+    {
+        <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
+    }
+</MudSelect>
+
+@if (!string.IsNullOrEmpty(selectedCoachId))
+{
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+        <MudText Typo="Typo.h6">היסטוריית תעריפים</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="AddRate">הוסף תעריף</MudButton>
+    </MudStack>
+
+    <MudTable Items="rates" Hover="true" Elevation="2" Dense="true" Loading="loadingRates">
+        <HeaderContent>
+            <MudTh>סוג</MudTh>
+            <MudTh>תעריף לשעה (₪)</MudTh>
+            <MudTh>מתאריך</MudTh>
+            <MudTh>עד תאריך</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@(context.AssignId == null ? Color.Primary : Color.Info)">
+                    @(context.AssignId == null ? "בסיס כללי" : "שיבוץ ספציפי")
+                </MudChip>
+            </MudTd>
+            <MudTd Style="font-weight: bold;">₪@context.HourlyRate</MudTd>
+            <MudTd>@context.EffectiveFrom.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd>@(context.EffectiveTo?.ToString("dd/MM/yyyy") ?? "פעיל")</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<Coach> coaches = new();
+    private List<CoachRate> rates = new();
+    private string selectedCoachId = "";
+    private bool loadingRates;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { coaches = await Data.GetCoachesAsync(); } catch { }
+    }
+
+    private async Task OnCoachSelected()
+    {
+        if (string.IsNullOrEmpty(selectedCoachId)) return;
+        loadingRates = true;
+        try { rates = await Data.GetRatesByCoachAsync(selectedCoachId); } catch { }
+        finally { loadingRates = false; }
+    }
+
+    protected override async Task OnParametersSetAsync() => await OnCoachSelected();
+
+    private async Task AddRate()
+    {
+        var rate = new CoachRate { CoachId = selectedCoachId };
+        var parameters = new DialogParameters<RateDialog> { { x => x.Rate, rate } };
+        var dialog = await Dialog.ShowAsync<RateDialog>("הוספת תעריף", parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: CoachRate newRate })
+        {
+            try
+            {
+                await Data.CreateRateAsync(newRate);
+                rates = await Data.GetRatesByCoachAsync(selectedCoachId);
+                Snackbar.Add("תעריף נוסף", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+}

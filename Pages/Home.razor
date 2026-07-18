@@ -1,0 +1,107 @@
+﻿@page "/"
+@inject Supabase.Client SupabaseClient
+@inject ISnackbar Snackbar
+@inject AppState AppState
+@inject NavigationManager Nav
+@inject IDataService DataService
+
+<MudStack AlignItems="AlignItems.Center" Class="mt-8">
+    <MudIcon Icon="@Icons.Material.Filled.Shield" Style="font-size: 4rem; color: #1a365d;" />
+    <MudText Typo="Typo.h4" Style="font-weight: bold; color: #1a365d;">ניהול מאמנים ושטח</MudText>
+    <MudText Typo="Typo.subtitle1" Color="Color.Default">מסך כניסה מאובטח</MudText>
+</MudStack>
+
+<MudCard Elevation="4" Class="rounded-lg pa-6 mt-6">
+    <MudTextField @bind-Value="email" Label="אימייל" Variant="Variant.Outlined" Class="mb-3"
+                  InputType="InputType.Email" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
+    <MudTextField @bind-Value="password" Label="סיסמה" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-4"
+                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large"
+               OnClick="Login" Disabled="loading" Class="mb-3">
+        @if (loading)
+        {
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="me-2" />
+        }
+        התחבר למערכת
+    </MudButton>
+
+    <MudDivider Class="my-4" />
+    <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Default" Class="mb-2">כניסה מהירה לדמו</MudText>
+    <MudStack Row="true" Justify="Justify.Center" Spacing="2">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => DemoLogin("Admin"))">
+            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="me-1" /> מנהל
+        </MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@(() => DemoLogin("Coach"))">
+            <MudIcon Icon="@Icons.Material.Filled.SportsHandball" Class="me-1" /> מאמן
+        </MudButton>
+    </MudStack>
+</MudCard>
+
+@code {
+    private string email = "";
+    private string password = "";
+    private bool loading;
+
+    private async Task Login()
+    {
+        loading = true;
+        try
+        {
+            var session = await SupabaseClient.Auth.SignIn(email, password);
+            if (session != null)
+            {
+                // Refresh data service so it uses the authenticated JWT for RLS
+                await DataService.RefreshAuthAsync();
+
+                // Fetch ALL user roles and pick highest priority (Admin > Operations_Lead > Coach)
+                var role = "Coach";
+                try
+                {
+                    var urResponse = await SupabaseClient.From<UserRole>()
+                        .Where(ur => ur.UserId == session.User!.Id)
+                        .Get();
+                    var userRoles = urResponse.Models;
+                    if (userRoles.Count > 0)
+                    {
+                        var roleIds = userRoles.Select(ur => ur.RoleId).ToList();
+                        var rolesResponse = await SupabaseClient.From<Role>().Get();
+                        var allRoles = rolesResponse.Models;
+                        var userRoleNames = allRoles
+                            .Where(r => roleIds.Contains(r.RoleId))
+                            .Select(r => r.RoleName)
+                            .ToList();
+
+                        // Priority: Admin first, then Operations_Lead, then Coach
+                        if (userRoleNames.Contains("Admin"))
+                            role = "Admin";
+                        else if (userRoleNames.Contains("Operations_Lead"))
+                            role = "Operations_Lead";
+                        else if (userRoleNames.Count > 0)
+                            role = userRoleNames.First();
+                    }
+                }
+                catch { /* fallback to Coach */ }
+
+                AppState.SetUser(session.User!.Id, session.User.Email ?? "משתמש", role);
+                Snackbar.Add("ברוך הבא! התחברת בהצלחה.", Severity.Success);
+                Nav.NavigateTo(AppState.IsAdmin ? "/admin/dashboard" : "/coach/assignments");
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאת התחברות: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void DemoLogin(string role)
+    {
+        AppState.SetUser(Guid.NewGuid().ToString(), role == "Admin" ? "מנהל המערכת" : "מאמן דמו", role);
+        Snackbar.Add($"כניסת דמו כ{(role == "Admin" ? "מנהל" : "מאמן")}", Severity.Info);
+        Nav.NavigateTo(role == "Admin" ? "/admin/dashboard" : "/coach/assignments");
+    }
+}

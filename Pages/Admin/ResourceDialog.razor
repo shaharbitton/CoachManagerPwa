@@ -1,0 +1,31 @@
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Resource.Title" Label="כותרת" Variant="Variant.Outlined" Required="true" />
+        <MudTextField @bind-Value="Resource.Description" Label="תיאור והכוונה פדגוגית" Variant="Variant.Outlined" Lines="3" Class="mt-3" />
+        <MudTextField @bind-Value="Resource.SkillCategory" Label="קטגוריה (ספורט, רובוטיקה...)" Variant="Variant.Outlined" Class="mt-3" />
+        <MudSelect T="string" @bind-Value="Resource.TargetAgeGroup" Label="שכבת גיל" Variant="Variant.Outlined" Class="mt-3">
+            <MudSelectItem Value="@("יסודי")">יסודי</MudSelectItem>
+            <MudSelectItem Value="@("חטיבה")">חטיבה</MudSelectItem>
+            <MudSelectItem Value="@("תיכון")">תיכון</MudSelectItem>
+            <MudSelectItem Value="@("חינוך מיוחד")">חינוך מיוחד</MudSelectItem>
+        </MudSelect>
+        <MudTextField @bind-Value="Resource.AttachmentUrl" Label="קישור לקובץ מצורף" Variant="Variant.Outlined" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">ביטול</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">הוסף</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public TrainingResource Resource { get; set; } = new();
+
+    private void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(Resource.Title)) return;
+        MudDialog.Close(DialogResult.Ok(Resource));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

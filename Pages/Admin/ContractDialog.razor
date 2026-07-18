@@ -1,0 +1,30 @@
+<MudDialog>
+    <DialogContent>
+        <MudNumericField T="decimal" @bind-Value="Contract.BillingRatePerHour" Label="תעריף חיוב לשעה (₪)" Variant="Variant.Outlined" Required="true" />
+        <MudNumericField T="decimal?" @bind-Value="Contract.WorkScopeHours" Label="היקף שעות מאושר" Variant="Variant.Outlined" Class="mt-3" />
+        <MudTextField @bind-Value="Contract.PaymentTerms" Label="תנאי תשלום" Variant="Variant.Outlined" Class="mt-3" Placeholder="שוטף + 30" />
+        <MudDatePicker @bind-Date="startDate" Label="תחילת הסכם" Variant="Variant.Outlined" Class="mt-3" />
+        <MudDatePicker @bind-Date="endDate" Label="סיום הסכם" Variant="Variant.Outlined" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">ביטול</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">הוסף</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public ClientContract Contract { get; set; } = new();
+
+    private DateTime? startDate = DateTime.Today;
+    private DateTime? endDate;
+
+    private void Submit()
+    {
+        if (startDate.HasValue) Contract.StartDate = startDate.Value;
+        Contract.EndDate = endDate;
+        MudDialog.Close(DialogResult.Ok(Contract));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

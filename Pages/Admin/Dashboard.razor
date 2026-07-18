@@ -1,0 +1,133 @@
+@page "/admin/dashboard"
+@inject IDataService Data
+@inject AppState AppState
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">לוח בקרה - סקירה כללית</MudText>
+
+@if (errorMessage != null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">שגיאה: @errorMessage</MudAlert>
+}
+
+<MudGrid>
+    <MudItem xs="6" sm="3">
+        <MudCard Elevation="2" Class="pa-4 rounded-lg">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Style="font-size: 2.5rem;" />
+                <MudText Typo="Typo.h4" Style="font-weight: bold;">@coachCount</MudText>
+                <MudText Typo="Typo.caption">מאמנים פעילים</MudText>
+            </MudStack>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudCard Elevation="2" Class="pa-4 rounded-lg">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Secondary" Style="font-size: 2.5rem;" />
+                <MudText Typo="Typo.h4" Style="font-weight: bold;">@clientCount</MudText>
+                <MudText Typo="Typo.caption">לקוחות פעילים</MudText>
+            </MudStack>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudCard Elevation="2" Class="pa-4 rounded-lg">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Info" Style="font-size: 2.5rem;" />
+                <MudText Typo="Typo.h4" Style="font-weight: bold;">@assignmentCount</MudText>
+                <MudText Typo="Typo.caption">שיבוצים פעילים</MudText>
+            </MudStack>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudCard Elevation="2" Class="pa-4 rounded-lg">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.PendingActions" Color="Color.Warning" Style="font-size: 2.5rem;" />
+                <MudText Typo="Typo.h4" Style="font-weight: bold;">@pendingEntries</MudText>
+                <MudText Typo="Typo.caption">דיווחים ממתינים</MudText>
+            </MudStack>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<MudGrid Class="mt-4">
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="2" Class="pa-4 rounded-lg">
+            <MudText Typo="Typo.h6" Class="mb-3">דיווחי שעות אחרונים</MudText>
+            @if (recentEntries.Any())
+            {
+                <MudList T="TimeEntry" Dense="true">
+                    @foreach (var entry in recentEntries.Take(5))
+                    {
+                        <MudListItem Icon="@Icons.Material.Filled.Schedule">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText>@entry.WorkDate.ToString("dd/MM") - @entry.HoursReported שעות</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(entry.Status)">@GetStatusText(entry.Status)</MudChip>
+                            </MudStack>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+            else
+            {
+                <MudText Color="Color.Default">אין דיווחים להצגה</MudText>
+            }
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="2" Class="pa-4 rounded-lg">
+            <MudText Typo="Typo.h6" Class="mb-3">פעולות מהירות</MudText>
+            <MudStack Spacing="2">
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.PersonAdd" Href="/admin/coaches">הוסף מאמן חדש</MudButton>
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.BusinessCenter" Href="/admin/clients">הוסף לקוח חדש</MudButton>
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.Add" Href="/admin/assignments">צור שיבוץ חדש</MudButton>
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.Checklist" Href="/admin/time-reports">אשר דיווחי שעות</MudButton>
+            </MudStack>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private int coachCount, clientCount, assignmentCount, pendingEntries;
+    private List<TimeEntry> recentEntries = new();
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var coaches = await Data.GetCoachesAsync();
+            coachCount = coaches.Count;
+
+            var clients = await Data.GetClientsAsync();
+            clientCount = clients.Count;
+
+            var assignments = await Data.GetAssignmentsAsync();
+            assignmentCount = assignments.Count(a => a.Status == "Active");
+
+            recentEntries = await Data.GetTimeEntriesAsync();
+            pendingEntries = recentEntries.Count(e => e.Status is "Pending_Signature" or "Client_Approved");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            Console.WriteLine($"Dashboard error: {ex}");
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Pending_Signature" => Color.Warning,
+        "Client_Approved" => Color.Info,
+        "Admin_Approved" => Color.Success,
+        "Billed_Paid" => Color.Default,
+        _ => Color.Default
+    };
+
+    private string GetStatusText(string status) => status switch
+    {
+        "Pending_Signature" => "ממתין לחתימה",
+        "Client_Approved" => "נחתם",
+        "Admin_Approved" => "אושר",
+        "Billed_Paid" => "שולם",
+        _ => status
+    };
+}

@@ -1,0 +1,134 @@
+@page "/coach/groups"
+@inject IDataService Data
+@inject AppState AppState
+@inject IDialogService Dialog
+@inject ISnackbar Snackbar
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5" Style="font-weight: bold;">הקבוצות שלי</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd"
+               Size="Size.Small" OnClick="AddGroup">קבוצה חדשה</MudButton>
+</MudStack>
+
+@if (!groups.Any())
+{
+    <MudCard Elevation="2" Class="pa-6 rounded-lg">
+        <MudStack AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Groups" Style="font-size: 3rem;" Color="Color.Default" />
+            <MudText Color="Color.Default">עדיין לא הקמת קבוצות</MudText>
+        </MudStack>
+    </MudCard>
+}
+else
+{
+    @foreach (var group in groups)
+    {
+        <MudExpansionPanels Elevation="2" Class="mb-3 rounded-lg">
+            <MudExpansionPanel>
+                <TitleContent>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" />
+                        <MudText Style="font-weight: bold;">@group.GroupName</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info">@GetStudentCount(group.GroupId) משתתפים</MudChip>
+                    </MudStack>
+                </TitleContent>
+                <ChildContent>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-2">
+                        <MudText Typo="Typo.subtitle2">רשימת משתתפים</MudText>
+                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="@(() => AddStudent(group))">הוסף</MudButton>
+                    </MudStack>
+
+                    @if (studentsByGroup.TryGetValue(group.GroupId, out var students))
+                    {
+                        @foreach (var student in students)
+                        {
+                            <MudCard Elevation="0" Class="pa-2 mb-1 rounded" Style="background: #f7fafc;">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudStack>
+                                        <MudText Style="font-weight: bold;">@student.FirstName @student.LastName</MudText>
+                                        @if (!string.IsNullOrEmpty(student.GeneralNotes))
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Default">@student.GeneralNotes</MudText>
+                                        }
+                                    </MudStack>
+                                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary"
+                                               OnClick="@(() => ViewNotes(student))">הערות</MudButton>
+                                </MudStack>
+                            </MudCard>
+                        }
+                    }
+                </ChildContent>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    }
+}
+
+@code {
+    private List<TrainingGroup> groups = new();
+    private Dictionary<string, List<Student>> studentsByGroup = new();
+    private List<Assignment> assignments = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            assignments = await Data.GetAssignmentsByCoachAsync(AppState.CurrentUserId);
+            groups = await Data.GetGroupsByCoachAsync(AppState.CurrentUserId);
+            foreach (var g in groups)
+            {
+                var students = await Data.GetStudentsByGroupAsync(g.GroupId);
+                studentsByGroup[g.GroupId] = students;
+            }
+        }
+        catch { }
+    }
+
+    private int GetStudentCount(string groupId) =>
+        studentsByGroup.TryGetValue(groupId, out var s) ? s.Count : 0;
+
+    private async Task AddGroup()
+    {
+        var parameters = new DialogParameters<GroupDialog>
+        {
+            { x => x.Group, new TrainingGroup { CoachId = AppState.CurrentUserId } },
+            { x => x.Assignments, assignments }
+        };
+        var dialog = await Dialog.ShowAsync<GroupDialog>("הקמת קבוצה חדשה", parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: TrainingGroup newGroup })
+        {
+            try
+            {
+                await Data.CreateGroupAsync(newGroup);
+                groups.Add(newGroup);
+                studentsByGroup[newGroup.GroupId] = new();
+                Snackbar.Add("קבוצה נוצרה", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private async Task AddStudent(TrainingGroup group)
+    {
+        var parameters = new DialogParameters<StudentDialog> { { x => x.Student, new Student { GroupId = group.GroupId } } };
+        var dialog = await Dialog.ShowAsync<StudentDialog>("הוסף משתתף", parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Student newStudent })
+        {
+            try
+            {
+                await Data.CreateStudentAsync(newStudent);
+                if (!studentsByGroup.ContainsKey(group.GroupId)) studentsByGroup[group.GroupId] = new();
+                studentsByGroup[group.GroupId].Add(newStudent);
+                Snackbar.Add("משתתף נוסף", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private void ViewNotes(Student student)
+    {
+        // Navigate to student notes page
+    }
+}

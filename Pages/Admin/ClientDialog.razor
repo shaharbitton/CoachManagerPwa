@@ -1,0 +1,54 @@
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="Client.ClientName" Label="שם הלקוח / מוסד" Variant="Variant.Outlined" Required="true" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField @bind-Value="Client.TaxId" Label="ח.פ / ע.מ" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudSelect T="string" @bind-Value="Client.ClientType" Label="סוג לקוח" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("School")">בית ספר</MudSelectItem>
+                    <MudSelectItem Value="@("Community_Center")">מתנ"ס</MudSelectItem>
+                    <MudSelectItem Value="@("NGO")">עמותה</MudSelectItem>
+                    <MudSelectItem Value="@("Private_Client")">לקוח פרטי</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField @bind-Value="Client.Address" Label="כתובת" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField @bind-Value="Client.City" Label="עיר" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12"><MudDivider Class="my-2" /><MudText Typo="Typo.subtitle2">אנשי קשר</MudText></MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="Client.ManagementEmail" Label="מייל הנהלה" Variant="Variant.Outlined" InputType="InputType.Email" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="Client.AccountingEmail" Label="מייל הנהלת חשבונות" Variant="Variant.Outlined" InputType="InputType.Email" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="Client.SecretariatEmail" Label="מייל מזכירות" Variant="Variant.Outlined" InputType="InputType.Email" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">ביטול</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">@(IsNew ? "הוסף" : "עדכן")</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public ClientOrg Client { get; set; } = new();
+    [Parameter] public bool IsNew { get; set; }
+
+    private void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(Client.ClientName)) return;
+        MudDialog.Close(DialogResult.Ok(Client));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

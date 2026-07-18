@@ -1,0 +1,84 @@
+@page "/admin/training-hub"
+@inject IDataService Data
+@inject IDialogService Dialog
+@inject ISnackbar Snackbar
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5" Style="font-weight: bold;">מאגר ידע ומערכי שיעור</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddResource">הוסף תוכן</MudButton>
+</MudStack>
+
+<MudTextField @bind-Value="searchText" Placeholder="חיפוש לפי כותרת או קטגוריה..."
+              Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+              Immediate="true" Class="mb-4" />
+
+<MudGrid>
+    @foreach (var resource in FilteredResources)
+    {
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="rounded-lg">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Primary"><MudIcon Icon="@Icons.Material.Filled.MenuBook" /></MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">@resource.Title</MudText>
+                        <MudText Typo="Typo.caption">@resource.SkillCategory</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body2" Class="mb-2">@resource.Description</MudText>
+                    @if (!string.IsNullOrEmpty(resource.TargetAgeGroup))
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info">@resource.TargetAgeGroup</MudChip>
+                    }
+                </MudCardContent>
+                <MudCardActions>
+                    @if (!string.IsNullOrEmpty(resource.AttachmentUrl))
+                    {
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@resource.AttachmentUrl" Target="_blank"
+                                   StartIcon="@Icons.Material.Filled.Download">הורד</MudButton>
+                    }
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+@if (!FilteredResources.Any())
+{
+    <MudText Align="Align.Center" Class="pa-8" Color="Color.Default">לא נמצאו תכנים</MudText>
+}
+
+@code {
+    private List<TrainingResource> resources = new();
+    private string searchText = "";
+
+    private IEnumerable<TrainingResource> FilteredResources => string.IsNullOrWhiteSpace(searchText)
+        ? resources
+        : resources.Where(r =>
+            r.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+            r.SkillCategory.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { resources = await Data.GetTrainingResourcesAsync(); } catch { }
+    }
+
+    private async Task AddResource()
+    {
+        var parameters = new DialogParameters<ResourceDialog> { { x => x.Resource, new TrainingResource() } };
+        var dialog = await Dialog.ShowAsync<ResourceDialog>("הוספת תוכן למאגר", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: TrainingResource newRes })
+        {
+            try
+            {
+                await Data.CreateResourceAsync(newRes);
+                resources.Add(newRes);
+                Snackbar.Add("תוכן נוסף למאגר", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+}

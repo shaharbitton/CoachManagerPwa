@@ -1,0 +1,111 @@
+@page "/profile"
+@inject AppState AppState
+@inject IDataService Data
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">הפרופיל שלי</MudText>
+
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+    <MudTabPanel Text="פרטים אישיים" Icon="@Icons.Material.Filled.Person">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudTextField @bind-Value="coach.FirstName" Label="שם פרטי" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudTextField @bind-Value="coach.LastName" Label="שם משפחה" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Value="@coach.NationalId" Label="תעודת זהות" Variant="Variant.Outlined" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudTextField @bind-Value="coach.Occupation" Label="מקצוע" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudSelect T="string" @bind-Value="coach.TaxStatus" Label="מעמד מיסויי" Variant="Variant.Outlined">
+                            <MudSelectItem Value="@("Employee")">שכיר</MudSelectItem>
+                            <MudSelectItem Value="@("Exempt_Dealer")">עוסק פטור</MudSelectItem>
+                            <MudSelectItem Value="@("Licensed_Dealer")">עוסק מורשה</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveProfile">שמור שינויים</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="פרטי בנק" Icon="@Icons.Material.Filled.AccountBalance">
+        <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">פרטי הבנק שלך מאובטחים ונגישים רק לך ולהנהלת החשבונות</MudAlert>
+        <MudGrid>
+            <MudItem xs="6">
+                <MudTextField @bind-Value="bankDetails.BankName" Label="שם הבנק" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField @bind-Value="bankDetails.BranchNumber" Label="מספר סניף" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField @bind-Value="bankDetails.AccountNumber" Label="מספר חשבון" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField @bind-Value="bankDetails.BeneficiaryName" Label="שם המוטב" Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-3" OnClick="SaveBank">עדכן פרטי בנק</MudButton>
+    </MudTabPanel>
+
+    <MudTabPanel Text="מסמכים" Icon="@Icons.Material.Filled.Folder">
+        <MudText Typo="Typo.subtitle2" Class="mb-3">העלאת מסמכי חובה</MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem Icon="@Icons.Material.Filled.Badge">תעודת זהות</MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Security">אישור העדר עבירות מין</MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.School">תעודות הסמכה</MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Receipt">אישור ניכוי מס במקור</MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.AccountBalance">אישור ניהול חשבון בנק</MudListItem>
+        </MudList>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Upload" Class="mt-3">
+            העלה מסמך
+        </MudButton>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private Coach coach = new();
+    private CoachBankDetails bankDetails = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var c = await Data.GetCoachByIdAsync(AppState.CurrentUserId);
+            if (c != null) coach = c;
+
+            var b = await Data.GetBankDetailsByCoachAsync(AppState.CurrentUserId);
+            if (b != null) bankDetails = b;
+        }
+        catch { }
+    }
+
+    private async Task SaveProfile()
+    {
+        try
+        {
+            await Data.UpdateCoachAsync(coach);
+            Snackbar.Add("פרופיל עודכן", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task SaveBank()
+    {
+        try
+        {
+            bankDetails.CoachId = AppState.CurrentUserId;
+            await Data.UpsertBankDetailsAsync(bankDetails);
+            Snackbar.Add("פרטי בנק עודכנו", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+    }
+}

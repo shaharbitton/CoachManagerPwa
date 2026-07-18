@@ -1,0 +1,140 @@
+@page "/admin/coaches"
+@inject IDataService Data
+@inject IDialogService Dialog
+@inject ISnackbar Snackbar
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול מאמנים</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddDialog">הוסף מאמן</MudButton>
+</MudStack>
+
+<MudTextField @bind-Value="searchText" Placeholder="חיפוש לפי שם, מקצוע או תעודת זהות..."
+              Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+              Immediate="true" Class="mb-4" />
+
+<MudTable Items="FilteredCoaches" Hover="true" Elevation="2" Dense="true" Loading="loading"
+          RowStyle="cursor: pointer;">
+    <HeaderContent>
+        <MudTh>שם מלא</MudTh>
+        <MudTh>תעודת זהות</MudTh>
+        <MudTh>מקצוע</MudTh>
+        <MudTh>מעמד מיסויי</MudTh>
+        <MudTh>פעולות</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.FirstName @context.LastName</MudTd>
+        <MudTd>@context.NationalId</MudTd>
+        <MudTd>@context.Occupation</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@GetTaxColor(context.TaxStatus)">@GetTaxText(context.TaxStatus)</MudChip>
+        </MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditCoach(context))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteCoach(context))" />
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Align="Align.Center" Class="pa-4">לא נמצאו מאמנים</MudText>
+    </NoRecordsContent>
+</MudTable>
+
+@code {
+    private List<Coach> coaches = new();
+    private List<AppUser> allUsers = new();
+    private string searchText = "";
+    private bool loading = true;
+
+    private IEnumerable<Coach> FilteredCoaches => string.IsNullOrWhiteSpace(searchText)
+        ? coaches
+        : coaches.Where(c =>
+            $"{c.FirstName} {c.LastName}".Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+            (c.Occupation ?? "").Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+            c.NationalId.Contains(searchText));
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            coaches = await Data.GetCoachesAsync();
+            allUsers = await Data.GetUsersAsync();
+        }
+        catch { }
+        finally { loading = false; }
+    }
+
+    /// <summary>Users that don't already have a coach profile</summary>
+    private List<AppUser> AvailableUsers =>
+        allUsers.Where(u => !coaches.Any(c => c.CoachId == u.UserId)).ToList();
+
+    private async Task OpenAddDialog()
+    {
+        var parameters = new DialogParameters<CoachDialog>
+        {
+            { x => x.Coach, new Coach() },
+            { x => x.IsNew, true },
+            { x => x.AvailableUsers, AvailableUsers }
+        };
+        var dialog = await Dialog.ShowAsync<CoachDialog>("הוספת מאמן חדש", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Coach newCoach })
+        {
+            try
+            {
+                await Data.CreateCoachAsync(newCoach);
+                coaches.Add(newCoach);
+                Snackbar.Add("מאמן נוסף בהצלחה", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private async Task EditCoach(Coach coach)
+    {
+        var parameters = new DialogParameters<CoachDialog> { { x => x.Coach, coach }, { x => x.IsNew, false } };
+        var dialog = await Dialog.ShowAsync<CoachDialog>("עריכת מאמן", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Coach updated })
+        {
+            try
+            {
+                await Data.UpdateCoachAsync(updated);
+                Snackbar.Add("מאמן עודכן בהצלחה", Severity.Success);
+                coaches = await Data.GetCoachesAsync();
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private async Task DeleteCoach(Coach coach)
+    {
+        var confirmed = true; // In production: show confirmation dialog
+        if (confirmed)
+        {
+            try
+            {
+                await Data.DeleteCoachAsync(coach.CoachId);
+                coaches.Remove(coach);
+                Snackbar.Add("מאמן נמחק", Severity.Warning);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private void ViewCoach(Coach coach) { /* Navigate to detail page */ }
+
+    private Color GetTaxColor(string status) => status switch
+    {
+        "Employee" => Color.Info,
+        "Exempt_Dealer" => Color.Warning,
+        "Licensed_Dealer" => Color.Success,
+        _ => Color.Default
+    };
+
+    private string GetTaxText(string status) => status switch
+    {
+        "Employee" => "שכיר",
+        "Exempt_Dealer" => "עוסק פטור",
+        "Licensed_Dealer" => "עוסק מורשה",
+        _ => status
+    };
+}

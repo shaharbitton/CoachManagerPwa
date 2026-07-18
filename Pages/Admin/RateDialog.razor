@@ -1,0 +1,28 @@
+<MudDialog>
+    <DialogContent>
+        <MudNumericField T="decimal" @bind-Value="Rate.HourlyRate" Label="תעריף לשעה (₪)" Variant="Variant.Outlined" Required="true" />
+        <MudDatePicker @bind-Date="effectiveFrom" Label="מתאריך" Variant="Variant.Outlined" Class="mt-3" />
+        <MudDatePicker @bind-Date="effectiveTo" Label="עד תאריך (ריק = פעיל)" Variant="Variant.Outlined" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">ביטול</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">הוסף</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public CoachRate Rate { get; set; } = new();
+
+    private DateTime? effectiveFrom = DateTime.Today;
+    private DateTime? effectiveTo;
+
+    private void Submit()
+    {
+        if (effectiveFrom.HasValue) Rate.EffectiveFrom = effectiveFrom.Value;
+        Rate.EffectiveTo = effectiveTo;
+        MudDialog.Close(DialogResult.Ok(Rate));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

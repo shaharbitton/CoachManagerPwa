@@ -1,0 +1,95 @@
+@page "/admin/documents"
+@inject IDataService Data
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">ניהול מסמכים ואישורים</MudText>
+
+<MudSelect T="string" Value="selectedCoachId" ValueChanged="LoadDocs" Label="בחר מאמן" Variant="Variant.Outlined" Class="mb-4">
+    @foreach (var c in coaches)
+    {
+        <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
+    }
+</MudSelect>
+
+@if (!string.IsNullOrEmpty(selectedCoachId))
+{
+    <MudTable Items="documents" Hover="true" Elevation="2" Dense="true">
+        <HeaderContent>
+            <MudTh>סוג מסמך</MudTh>
+            <MudTh>סטטוס</MudTh>
+            <MudTh>תפוגה</MudTh>
+            <MudTh>פעולות</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@GetDocTypeText(context.DocType)</MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@GetDocStatusColor(context.Status)">@GetDocStatusText(context.Status)</MudChip>
+            </MudTd>
+            <MudTd>
+                @if (context.ExpirationDate.HasValue)
+                {
+                    <MudText Color="@(context.ExpirationDate < DateTime.Today ? Color.Error : Color.Default)">
+                        @context.ExpirationDate.Value.ToString("dd/MM/yyyy")
+                    </MudText>
+                }
+                else
+                {
+                    <MudText>ללא תפוגה</MudText>
+                }
+            </MudTd>
+            <MudTd>
+                @if (context.Status == "Pending_Review")
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => ApproveDoc(context))">אשר</MudButton>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => RejectDoc(context))">דחה</MudButton>
+                }
+                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Href="@context.FileUrl" Target="_blank" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<Coach> coaches = new();
+    private List<CoachDocument> documents = new();
+    private string selectedCoachId = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { coaches = await Data.GetCoachesAsync(); } catch { }
+    }
+
+    private async Task LoadDocs(string coachId)
+    {
+        selectedCoachId = coachId;
+        if (string.IsNullOrEmpty(coachId)) return;
+        try { documents = await Data.GetDocumentsByCoachAsync(coachId); } catch { }
+    }
+
+    private async Task ApproveDoc(CoachDocument doc)
+    {
+        doc.Status = "Approved";
+        try { await Data.UpdateDocumentAsync(doc); Snackbar.Add("מסמך אושר", Severity.Success); }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task RejectDoc(CoachDocument doc)
+    {
+        doc.Status = "Rejected";
+        try { await Data.UpdateDocumentAsync(doc); Snackbar.Add("מסמך נדחה", Severity.Warning); }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+    }
+
+    private string GetDocTypeText(string t) => t switch
+    {
+        "National_ID_Card" => "תעודת זהות",
+        "Police_Clearance" => "אישור משטרה",
+        "Certification" => "תעודת הסמכה",
+        "Tax_Withholding" => "ניכוי מס במקור",
+        "Bank_Confirmation" => "אישור ניהול חשבון",
+        _ => t
+    };
+
+    private Color GetDocStatusColor(string s) => s switch { "Pending_Review" => Color.Warning, "Approved" => Color.Success, _ => Color.Error };
+    private string GetDocStatusText(string s) => s switch { "Pending_Review" => "ממתין", "Approved" => "אושר", "Rejected" => "נדחה", _ => s };
+}

@@ -1,0 +1,30 @@
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Group.GroupName" Label="שם הקבוצה" Variant="Variant.Outlined" Required="true"
+                      Placeholder="אורט - כיתה ז'1 - רובוטיקה" />
+        <MudSelect T="string" @bind-Value="Group.AssignId" Label="שיבוץ" Variant="Variant.Outlined" Class="mt-3" Required="true">
+            @foreach (var a in Assignments)
+            {
+                <MudSelectItem Value="@a.AssignId">שיבוץ - @a.AssignId[..8]</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">ביטול</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">צור קבוצה</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public TrainingGroup Group { get; set; } = new();
+    [Parameter] public List<Assignment> Assignments { get; set; } = new();
+
+    private void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(Group.GroupName)) return;
+        MudDialog.Close(DialogResult.Ok(Group));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -1,0 +1,86 @@
+@page "/coach/hub"
+@inject IDataService Data
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">מאגר ידע ומערכי שיעור</MudText>
+
+<MudTextField @bind-Value="searchText" Placeholder="חיפוש מערכים ותרגילים..."
+              Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+              Immediate="true" Class="mb-4" />
+
+<MudChipSet T="string" @bind-SelectedValue="categoryFilter" SelectionMode="SelectionMode.SingleSelection" Class="mb-4">
+    <MudChip Value="@("")" Default="true">הכל</MudChip>
+    <MudChip Value="@("ספורט")">ספורט</MudChip>
+    <MudChip Value="@("רובוטיקה")">רובוטיקה</MudChip>
+    <MudChip Value="@("מנהיגות")">מנהיגות</MudChip>
+    <MudChip Value="@("אומנות")">אומנות</MudChip>
+</MudChipSet>
+
+@foreach (var resource in FilteredResources)
+{
+    <MudCard Elevation="2" Class="rounded-lg mb-3">
+        <MudCardHeader>
+            <CardHeaderAvatar>
+                <MudAvatar Color="Color.Primary" Size="Size.Small"><MudIcon Icon="@Icons.Material.Filled.MenuBook" /></MudAvatar>
+            </CardHeaderAvatar>
+            <CardHeaderContent>
+                <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">@resource.Title</MudText>
+                <MudStack Row="true" Spacing="1">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info">@resource.SkillCategory</MudChip>
+                    @if (!string.IsNullOrEmpty(resource.TargetAgeGroup))
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default">@resource.TargetAgeGroup</MudChip>
+                    }
+                </MudStack>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.body2">@resource.Description</MudText>
+        </MudCardContent>
+        @if (!string.IsNullOrEmpty(resource.AttachmentUrl))
+        {
+            <MudCardActions>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@resource.AttachmentUrl" Target="_blank"
+                           StartIcon="@Icons.Material.Filled.Download">הורד מערך</MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Favorite">
+                    שמור למועדפים
+                </MudButton>
+            </MudCardActions>
+        }
+    </MudCard>
+}
+
+@if (!FilteredResources.Any())
+{
+    <MudCard Elevation="1" Class="pa-6 rounded-lg">
+        <MudStack AlignItems="AlignItems.Center">
+            <MudIcon Icon="@Icons.Material.Filled.SearchOff" Style="font-size: 3rem;" Color="Color.Default" />
+            <MudText Color="Color.Default">לא נמצאו תכנים מתאימים</MudText>
+        </MudStack>
+    </MudCard>
+}
+
+@code {
+    private List<TrainingResource> resources = new();
+    private string searchText = "";
+    private string categoryFilter = "";
+
+    private IEnumerable<TrainingResource> FilteredResources
+    {
+        get
+        {
+            var result = resources.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(categoryFilter))
+                result = result.Where(r => r.SkillCategory == categoryFilter);
+            if (!string.IsNullOrWhiteSpace(searchText))
+                result = result.Where(r =>
+                    r.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    (r.Description ?? "").Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            return result;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { resources = await Data.GetTrainingResourcesAsync(); } catch { }
+    }
+}

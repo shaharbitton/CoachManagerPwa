@@ -1,0 +1,52 @@
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudSelect T="string" @bind-Value="Assignment.CoachId" Label="מאמן" Variant="Variant.Outlined" Required="true">
+                    @foreach (var c in Coaches)
+                    {
+                        <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudSelect T="string" @bind-Value="Assignment.ClientId" Label="לקוח / מוסד" Variant="Variant.Outlined" Required="true">
+                    @foreach (var c in Clients)
+                    {
+                        <MudSelectItem Value="@c.ClientId">@c.ClientName</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="6">
+                <MudNumericField T="decimal?" @bind-Value="Assignment.AllocatedHours" Label="שעות מוקצות" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudSelect T="string" @bind-Value="Assignment.Status" Label="סטטוס" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Active")">פעיל</MudSelectItem>
+                    <MudSelectItem Value="@("Completed")">הושלם</MudSelectItem>
+                    <MudSelectItem Value="@("Cancelled")">בוטל</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">ביטול</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">@(IsNew ? "צור שיבוץ" : "עדכן")</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Assignment Assignment { get; set; } = new();
+    [Parameter] public List<Coach> Coaches { get; set; } = new();
+    [Parameter] public List<ClientOrg> Clients { get; set; } = new();
+    [Parameter] public bool IsNew { get; set; }
+
+    private void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(Assignment.CoachId) || string.IsNullOrWhiteSpace(Assignment.ClientId)) return;
+        MudDialog.Close(DialogResult.Ok(Assignment));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

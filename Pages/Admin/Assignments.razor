@@ -1,0 +1,121 @@
+@page "/admin/assignments"
+@inject IDataService Data
+@inject IDialogService Dialog
+@inject ISnackbar Snackbar
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול שיבוצים</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog">שיבוץ חדש</MudButton>
+</MudStack>
+
+<MudChipSet T="string" @bind-SelectedValue="statusFilter" SelectionMode="SelectionMode.SingleSelection" Class="mb-4">
+    <MudChip Value="@("all")" Default="true">הכל</MudChip>
+    <MudChip Value="@("Active")" Color="Color.Success">פעילים</MudChip>
+    <MudChip Value="@("Completed")" Color="Color.Info">הושלמו</MudChip>
+    <MudChip Value="@("Cancelled")" Color="Color.Error">בוטלו</MudChip>
+</MudChipSet>
+
+<MudTable Items="FilteredAssignments" Hover="true" Elevation="2" Dense="true" Loading="loading">
+    <HeaderContent>
+        <MudTh>מאמן</MudTh>
+        <MudTh>לקוח</MudTh>
+        <MudTh>שעות מוקצות</MudTh>
+        <MudTh>סטטוס</MudTh>
+        <MudTh>פעולות</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@GetCoachName(context.CoachId)</MudTd>
+        <MudTd>@GetClientName(context.ClientId)</MudTd>
+        <MudTd>@context.AllocatedHours</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@GetStatusText(context.Status)</MudChip>
+        </MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditAssignment(context))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<Assignment> assignments = new();
+    private List<Coach> coaches = new();
+    private List<ClientOrg> clients = new();
+    private string statusFilter = "all";
+    private bool loading = true;
+
+    private IEnumerable<Assignment> FilteredAssignments =>
+        statusFilter == "all" ? assignments : assignments.Where(a => a.Status == statusFilter);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            assignments = await Data.GetAssignmentsAsync();
+            coaches = await Data.GetCoachesAsync();
+            clients = await Data.GetClientsAsync();
+        }
+        catch { }
+        finally { loading = false; }
+    }
+
+    private string GetCoachName(string id)
+    {
+        var c = coaches.FirstOrDefault(x => x.CoachId == id);
+        return c != null ? $"{c.FirstName} {c.LastName}" : id;
+    }
+
+    private string GetClientName(string id)
+    {
+        var c = clients.FirstOrDefault(x => x.ClientId == id);
+        return c?.ClientName ?? id;
+    }
+
+    private async Task OpenAddDialog()
+    {
+        var parameters = new DialogParameters<AssignmentDialog>
+        {
+            { x => x.Assignment, new Assignment() },
+            { x => x.Coaches, coaches },
+            { x => x.Clients, clients },
+            { x => x.IsNew, true }
+        };
+        var dialog = await Dialog.ShowAsync<AssignmentDialog>("שיבוץ חדש", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Assignment newAssign })
+        {
+            try
+            {
+                await Data.CreateAssignmentAsync(newAssign);
+                assignments.Add(newAssign);
+                Snackbar.Add("שיבוץ נוצר בהצלחה", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private async Task EditAssignment(Assignment assignment)
+    {
+        var parameters = new DialogParameters<AssignmentDialog>
+        {
+            { x => x.Assignment, assignment },
+            { x => x.Coaches, coaches },
+            { x => x.Clients, clients },
+            { x => x.IsNew, false }
+        };
+        var dialog = await Dialog.ShowAsync<AssignmentDialog>("עריכת שיבוץ", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Assignment updated })
+        {
+            try
+            {
+                await Data.UpdateAssignmentAsync(updated);
+                Snackbar.Add("שיבוץ עודכן", Severity.Success);
+                assignments = await Data.GetAssignmentsAsync();
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private Color GetStatusColor(string s) => s switch { "Active" => Color.Success, "Completed" => Color.Info, _ => Color.Error };
+    private string GetStatusText(string s) => s switch { "Active" => "פעיל", "Completed" => "הושלם", "Cancelled" => "בוטל", _ => s };
+}

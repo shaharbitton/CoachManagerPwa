@@ -1,0 +1,85 @@
+@page "/coach/assignments"
+@using TE = CoachManagerPwa.Models.TimeEntry
+@inject IDataService Data
+@inject AppState AppState
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">השיבוצים שלי</MudText>
+
+@if (loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (!assignments.Any())
+{
+    <MudCard Elevation="2" Class="pa-6 rounded-lg">
+        <MudStack AlignItems="AlignItems.Center" Spacing="3">
+            <MudIcon Icon="@Icons.Material.Filled.EventBusy" Style="font-size: 4rem;" Color="Color.Default" />
+            <MudText Typo="Typo.h6" Color="Color.Default">אין שיבוצים פעילים כרגע</MudText>
+            <MudText Color="Color.Default">פנה לרכז התפעול לשיבוץ חדש</MudText>
+        </MudStack>
+    </MudCard>
+}
+else
+{
+    @foreach (var assignment in assignments)
+    {
+        var client = clients.FirstOrDefault(c => c.ClientId == assignment.ClientId);
+        <MudCard Elevation="2" Class="rounded-lg mb-3">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Color="Color.Primary"><MudIcon Icon="@Icons.Material.Filled.Business" /></MudAvatar>
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">@(client?.ClientName ?? "לקוח")</MudText>
+                    <MudText Typo="Typo.caption">@(client?.City ?? "")</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudChip T="string" Size="Size.Small" Color="@(assignment.Status == "Active" ? Color.Success : Color.Default)">
+                        @(assignment.Status == "Active" ? "פעיל" : assignment.Status)
+                    </MudChip>
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack Row="true" Justify="Justify.SpaceAround">
+                    <MudStack AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.caption">שעות מוקצות</MudText>
+                        <MudText Typo="Typo.h6" Style="font-weight: bold;">@(assignment.AllocatedHours?.ToString("0") ?? "-")</MudText>
+                    </MudStack>
+                    <MudStack AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.caption">דיווחים</MudText>
+                        <MudText Typo="Typo.h6" Style="font-weight: bold;">@GetEntryCount(assignment.AssignId)</MudText>
+                    </MudStack>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@($"/coach/time-entry?assignId={assignment.AssignId}")">
+                    דווח שעות
+                </MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Default" Href="@($"/coach/groups?assignId={assignment.AssignId}")">
+                    קבוצות
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+}
+
+@code {
+    private List<Assignment> assignments = new();
+    private List<ClientOrg> clients = new();
+    private List<TE> allEntries = new();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            assignments = await Data.GetAssignmentsByCoachAsync(AppState.CurrentUserId);
+            clients = await Data.GetClientsAsync();
+            allEntries = await Data.GetTimeEntriesAsync();
+        }
+        catch { }
+        finally { loading = false; }
+    }
+
+    private int GetEntryCount(string assignId) => allEntries.Count(e => e.AssignId == assignId);
+}

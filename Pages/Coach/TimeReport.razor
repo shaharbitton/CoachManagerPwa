@@ -1,0 +1,225 @@
+@page "/coach/time-entry"
+@using TE = CoachManagerPwa.Models.TimeEntry
+@using Microsoft.AspNetCore.Components
+@inject IDataService Data
+@inject AppState AppState
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">דיווח שעות והחתמה</MudText>
+
+<MudCard Elevation="3" Class="rounded-lg pa-4 mb-4">
+    <MudText Typo="Typo.h6" Class="mb-3">דיווח חדש</MudText>
+
+    @if (string.IsNullOrEmpty(AssignId))
+    {
+        <MudSelect T="string" @bind-Value="newEntry.AssignId" Label="שיבוץ" Variant="Variant.Outlined" Class="mb-3">
+            @foreach (var a in assignments)
+            {
+                <MudSelectItem Value="@a.AssignId">שיבוץ - @a.AssignId[..8]</MudSelectItem>
+            }
+        </MudSelect>
+    }
+
+    <MudDatePicker @bind-Date="workDate" Label="תאריך עבודה" Variant="Variant.Outlined" Class="mb-3" />
+
+    <MudNumericField T="decimal" @bind-Value="newEntry.HoursReported" Label="שעות" Variant="Variant.Outlined"
+                     Min="0.5m" Max="12m" Step="0.5m" Class="mb-3" />
+
+    <MudTextField @bind-Value="newEntry.Description" Label="תיאור תכולת השיעור" Variant="Variant.Outlined" Lines="2" Class="mb-3" />
+
+    <MudTextField @bind-Value="newEntry.SignerName" Label="שם החותם (נציג הלקוח)" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="newEntry.SignerRole" Label="תפקיד החותם" Variant="Variant.Outlined" Class="mb-3" />
+
+    <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+        <MudIcon Icon="@Icons.Material.Filled.Draw" Size="Size.Small" Class="me-1" /> החתם את נציג הלקוח על מסך המגע
+    </MudAlert>
+
+    <MudPaper Elevation="1" Class="pa-2 mb-3 rounded-lg" Style="border: 2px solid #1a365d; position: relative;">
+        <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1" Style="font-weight: bold;">חתימת נציג הלקוח:</MudText>
+        <canvas id="signatureCanvas" style="width: 100%; height: 150px; touch-action: none; cursor: crosshair; border-radius: 8px; background: #fff;"></canvas>
+        <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-1">
+            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error"
+                       StartIcon="@Icons.Material.Filled.Clear" OnClick="ClearSignature">נקה חתימה</MudButton>
+        </MudStack>
+        @if (signatureError)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-1">יש להחתים את נציג הלקוח לפני שליחה</MudAlert>
+        }
+    </MudPaper>
+
+    <MudStack Row="true" Spacing="2">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large"
+                   OnClick="SubmitEntry" Disabled="submitting">
+            @if (submitting) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="me-2" /> }
+            שלח דיווח והחתם
+        </MudButton>
+    </MudStack>
+
+    @if (gpsStatus != null)
+    {
+        <MudAlert Severity="@(newEntry.GpsVerified ? Severity.Success : Severity.Warning)" Dense="true" Class="mt-2">
+            @gpsStatus
+        </MudAlert>
+    }
+</MudCard>
+
+<MudText Typo="Typo.h6" Class="mb-3">דיווחים אחרונים</MudText>
+@foreach (var entry in recentEntries.Take(10))
+{
+    <MudCard Elevation="1" Class="rounded-lg mb-2 pa-3">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudStack>
+                <MudText Style="font-weight: bold;">@entry.WorkDate.ToString("dd/MM/yyyy")</MudText>
+                <MudText Typo="Typo.caption">@entry.HoursReported שעות</MudText>
+            </MudStack>
+            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(entry.Status)">@GetStatusText(entry.Status)</MudChip>
+        </MudStack>
+    </MudCard>
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "assignId")]
+    public string? AssignId { get; set; }
+
+    private TE newEntry = new();
+    private DateTime? workDate = DateTime.Today;
+    private List<Assignment> assignments = new();
+    private List<TE> recentEntries = new();
+    private bool submitting;
+    private bool signatureError;
+    private string? gpsStatus;
+    private bool signatureInitialized;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            assignments = await Data.GetAssignmentsByCoachAsync(AppState.CurrentUserId);
+            recentEntries = await Data.GetTimeEntriesAsync();
+
+            if (!string.IsNullOrEmpty(AssignId))
+                newEntry.AssignId = AssignId;
+        }
+        catch { }
+
+        await TryGetGps();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender || !signatureInitialized)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("signaturePad.init", "signatureCanvas");
+                signatureInitialized = true;
+            }
+            catch { }
+        }
+    }
+
+    private async Task ClearSignature()
+    {
+        signatureError = false;
+        try { await JS.InvokeVoidAsync("signaturePad.clear"); } catch { }
+    }
+
+    private async Task TryGetGps()
+    {
+        try
+        {
+            var result = await JS.InvokeAsync<GeoResult>("getGeoLocation");
+            newEntry.Latitude = (decimal)result.Lat;
+            newEntry.Longitude = (decimal)result.Lng;
+            newEntry.GpsVerified = true;
+            gpsStatus = $"GPS: מיקום נקלט ({result.Lat:F4}, {result.Lng:F4})";
+        }
+        catch
+        {
+            newEntry.GpsVerified = false;
+            gpsStatus = "GPS: לא זמין או לא אושר - הדיווח יירשם ללא מיקום";
+        }
+    }
+
+    private async Task SubmitEntry()
+    {
+        if (string.IsNullOrEmpty(newEntry.AssignId))
+        {
+            Snackbar.Add("יש לבחור שיבוץ", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newEntry.SignerName))
+        {
+            Snackbar.Add("יש להזין שם החותם", Severity.Warning);
+            return;
+        }
+
+        // Check signature is not empty
+        var isEmpty = await JS.InvokeAsync<bool>("signaturePad.isEmpty");
+        if (isEmpty)
+        {
+            signatureError = true;
+            Snackbar.Add("יש להחתים את נציג הלקוח על המסך", Severity.Warning);
+            return;
+        }
+        signatureError = false;
+
+        submitting = true;
+        try
+        {
+            if (workDate.HasValue) newEntry.WorkDate = workDate.Value;
+
+            // Get signature as PNG bytes and upload to Supabase Storage
+            var signatureBytes = await JS.InvokeAsync<byte[]>("signaturePad.toBytes");
+            if (signatureBytes != null && signatureBytes.Length > 0)
+            {
+                var fileName = $"signatures/{AppState.CurrentUserId}/{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.png";
+                // Upload via Supabase Storage (using the injected client)
+                try
+                {
+                    var supabaseClient = ((SupabaseDataService)Data).GetClient();
+                    await supabaseClient.Storage.From("signatures").Upload(signatureBytes, fileName, new Supabase.Storage.FileOptions
+                    {
+                        ContentType = "image/png"
+                    });
+                    var publicUrl = supabaseClient.Storage.From("signatures").GetPublicUrl(fileName);
+                    newEntry.SignatureUrl = publicUrl;
+                }
+                catch (Exception storageEx)
+                {
+                    // Fallback: save as data URL if storage fails
+                    var dataUrl = await JS.InvokeAsync<string>("signaturePad.toDataUrl");
+                    newEntry.SignatureUrl = dataUrl ?? "signature_capture_failed";
+                    Snackbar.Add($"חתימה נשמרה מקומית (Storage: {storageEx.Message})", Severity.Info);
+                }
+            }
+
+            newEntry.Status = string.IsNullOrEmpty(newEntry.SignatureUrl) ? "Pending_Signature" : "Client_Approved";
+
+            await Data.CreateTimeEntryAsync(newEntry);
+            recentEntries.Insert(0, newEntry);
+            Snackbar.Add("דיווח נשלח בהצלחה עם חתימה!", Severity.Success);
+            newEntry = new TE();
+            workDate = DateTime.Today;
+            signatureInitialized = false; // re-init canvas on next render
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        finally { submitting = false; }
+    }
+
+    private Color GetStatusColor(string s) => s switch
+    {
+        "Pending_Signature" => Color.Warning, "Client_Approved" => Color.Info,
+        "Admin_Approved" => Color.Success, "Billed_Paid" => Color.Default, _ => Color.Default
+    };
+
+    private string GetStatusText(string s) => s switch
+    {
+        "Pending_Signature" => "ממתין לחתימה", "Client_Approved" => "נחתם",
+        "Admin_Approved" => "מאושר", "Billed_Paid" => "שולם", _ => s
+    };
+
+    private record GeoResult(double Lat, double Lng);
+}
