@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [master, main]
   workflow_dispatch:
 
 permissions:
@@ -55,19 +55,6 @@ jobs:
           touch output/wwwroot/.nojekyll
           find output/wwwroot/_framework -name "*.gz" -delete 2>/dev/null || true
           find output/wwwroot/_framework -name "*.br" -delete 2>/dev/null || true
-
-          # .NET 10 may fingerprint dotnet.js — create a non-fingerprinted copy if missing
-          if [ ! -f output/wwwroot/_framework/dotnet.js ]; then
-            DOTNET_JS=$(find output/wwwroot/_framework -maxdepth 1 -name "dotnet.*.js" ! -name "dotnet.native.*" ! -name "dotnet.runtime.*" | head -1)
-            if [ -n "$DOTNET_JS" ]; then
-              cp "$DOTNET_JS" output/wwwroot/_framework/dotnet.js
-              echo "Created dotnet.js from $DOTNET_JS"
-            fi
-          fi
-
-          # List _framework contents for debugging
-          echo "=== _framework contents ==="
-          ls -la output/wwwroot/_framework/ | head -30
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
