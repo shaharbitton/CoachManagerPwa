@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [master, main]
   workflow_dispatch:
 
 permissions:
@@ -32,14 +32,29 @@ jobs:
       - name: Publish
         run: dotnet publish -c Release -o output
 
-      - name: Update base href
-        run: sed -i 's|<base href="/" />|<base href="/${{ github.event.repository.name }}/" />|g' output/wwwroot/index.html
+      - name: Set repo base path
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          BASE_PATH="/${REPO_NAME}/"
 
-      - name: Copy index.html to 404.html
+          # Update base href in index.html
+          sed -i "s|<base href=\"/\" />|<base href=\"${BASE_PATH}\" />|g" output/wwwroot/index.html
+
+          # Update service worker base path
+          sed -i "s|const base = \"/\"|const base = \"${BASE_PATH}\"|g" output/wwwroot/service-worker-assets.js 2>/dev/null || true
+          sed -i "s|const base = \"/\"|const base = \"${BASE_PATH}\"|g" output/wwwroot/service-worker.js 2>/dev/null || true
+
+          # Find and patch the published service worker
+          find output/wwwroot -name "service-worker*.js" -exec sed -i "s|const base = \"/\"|const base = \"${BASE_PATH}\"|g" {} \;
+
+      - name: Copy index.html to 404.html (SPA routing)
         run: cp output/wwwroot/index.html output/wwwroot/404.html
 
-      - name: Add .nojekyll
-        run: touch output/wwwroot/.nojekyll
+      - name: Disable Jekyll and remove pre-compressed files
+        run: |
+          touch output/wwwroot/.nojekyll
+          find output/wwwroot/_framework -name "*.gz" -delete 2>/dev/null || true
+          find output/wwwroot/_framework -name "*.br" -delete 2>/dev/null || true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
