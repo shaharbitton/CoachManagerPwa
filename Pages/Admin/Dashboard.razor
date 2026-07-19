@@ -2,6 +2,7 @@
 @inject IDataService Data
 @inject AppState AppState
 @inject NavigationManager Nav
+@inject Supabase.Client SupabaseClient
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">לוח בקרה - סקירה כללית</MudText>
 
@@ -52,6 +53,36 @@
 <MudGrid Class="mt-4">
     <MudItem xs="12" md="6">
         <MudCard Elevation="2" Class="pa-4 rounded-lg">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                <MudText Typo="Typo.h6">מסמכים לאישור</MudText>
+                <MudChip T="string" Size="Size.Small" Color="Color.Warning">@pendingDocs.Count</MudChip>
+            </MudStack>
+            @if (pendingDocs.Any())
+            {
+                <MudList T="CoachDocument" Dense="true">
+                    @foreach (var doc in pendingDocs.Take(5))
+                    {
+                        <MudListItem Icon="@Icons.Material.Filled.Description">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText>@GetCoachName(doc.CoachId) - @GetDocTypeText(doc.DocType)</MudText>
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Href="admin/documents">צפה</MudButton>
+                            </MudStack>
+                        </MudListItem>
+                    }
+                </MudList>
+                @if (pendingDocs.Count > 5)
+                {
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="admin/documents">צפה בכל @pendingDocs.Count המסמכים</MudButton>
+                }
+            }
+            else
+            {
+                <MudText Color="Color.Default">אין מסמכים ממתינים לאישור</MudText>
+            }
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="2" Class="pa-4 rounded-lg">
             <MudText Typo="Typo.h6" Class="mb-3">דיווחי שעות אחרונים</MudText>
             @if (recentEntries.Any())
             {
@@ -89,13 +120,15 @@
 @code {
     private int coachCount, clientCount, assignmentCount, pendingEntries;
     private List<TimeEntry> recentEntries = new();
+    private List<CoachDocument> pendingDocs = new();
+    private List<Coach> coaches = new();
     private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var coaches = await Data.GetCoachesAsync();
+            coaches = await Data.GetCoachesAsync();
             coachCount = coaches.Count;
 
             var clients = await Data.GetClientsAsync();
@@ -106,6 +139,33 @@
 
             recentEntries = await Data.GetTimeEntriesAsync();
             pendingEntries = recentEntries.Count(e => e.Status is "Pending_Signature" or "Client_Approved");
+
+            // Load pending documents across all coaches
+            foreach (var coach in coaches)
+            {
+                try
+                {
+                    var docs = await Data.GetDocumentsByCoachAsync(coach.CoachId);
+                    pendingDocs.AddRange(docs.Where(d => d.Status == "Pending_Review"));
+                }
+                catch { }
+            }
+
+            // Update notification count
+            var expiringCount = 0;
+            foreach (var coach in coaches)
+            {
+                try
+                {
+                    var docs = await Data.GetDocumentsByCoachAsync(coach.CoachId);
+                    expiringCount += docs.Count(d => d.ExpirationDate.HasValue && d.ExpirationDate.Value <= DateTime.Today.AddDays(30) && d.Status == "Approved");
+                }
+                catch { }
+            }
+            var nearLimitAssignments = assignments.Count(a => a.Status == "Active" && a.AllocatedHours.HasValue &&
+                recentEntries.Where(e => e.AssignId == a.AssignId).Sum(e => e.HoursReported) >= a.AllocatedHours.Value * 0.8m);
+
+            AppState.NotificationCount = pendingDocs.Count + expiringCount + nearLimitAssignments;
         }
         catch (Exception ex)
         {
@@ -113,6 +173,23 @@
             Console.WriteLine($"Dashboard error: {ex}");
         }
     }
+
+    private string GetCoachName(string coachId)
+    {
+        var c = coaches.FirstOrDefault(x => x.CoachId == coachId);
+        return c is not null ? $"{c.FirstName} {c.LastName}" : "מאמן";
+    }
+
+    private string GetDocTypeText(string t) => t switch
+    {
+        "National_ID_Card" => "תעודת זהות",
+        "Police_Clearance" => "אישור משטרה",
+        "Certification" => "תעודת הסמכה",
+        "Tax_Withholding" => "ניכוי מס במקור",
+        "Bank_Confirmation" => "אישור ניהול חשבון",
+        "Contract" => "חוזה",
+        _ => t
+    };
 
     private Color GetStatusColor(string status) => status switch
     {

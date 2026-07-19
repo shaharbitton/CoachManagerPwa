@@ -8,6 +8,7 @@ public class AppState
     public bool IsAuthenticated { get; private set; }
     public bool RequiresOnboarding { get; set; }
     public bool UsedDefaultPassword { get; set; }
+    public int NotificationCount { get; set; }
 
     public event Action? OnChange;
 

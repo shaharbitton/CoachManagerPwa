@@ -64,6 +64,14 @@ else
                     <MudText Typo="Typo.subtitle2" Class="pa-3" Style="color: #666;">תוכן ולמידה</MudText>
                     <MudNavLink Href="admin/training-hub" Icon="@Icons.Material.Filled.School" Match="NavLinkMatch.Prefix">מאגר ידע</MudNavLink>
                     <MudNavLink Href="admin/groups" Icon="@Icons.Material.Filled.Groups" Match="NavLinkMatch.Prefix">קבוצות</MudNavLink>
+                    <MudDivider Class="my-2" />
+                    <MudNavLink Href="admin/notifications" Icon="@Icons.Material.Filled.Notifications" Match="NavLinkMatch.Prefix">
+                        התראות
+                        @if (AppState.NotificationCount > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Error" Class="ms-2">@AppState.NotificationCount</MudChip>
+                        }
+                    </MudNavLink>
                 </MudNavMenu>
             </MudDrawer>
         }
