@@ -74,6 +74,7 @@
                     {
                         <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" OnClick="@(() => OpenDocInNewTab(context))" OnClickStopPropagation />
                     }
+                    <MudIconButton Icon="@Icons.Material.Filled.EditCalendar" Size="Size.Small" Color="Color.Primary" OnClick="@(() => OpenEditExpiration(context))" OnClickStopPropagation />
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDoc(context))" OnClickStopPropagation />
                 </MudTd>
             </RowTemplate>
@@ -189,6 +190,20 @@
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UploadDocument" Disabled="@(uploading || selectedFile is null || string.IsNullOrEmpty(newDoc.DocType))">
             העלה
         </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<!-- Edit Expiration Dialog -->
+<MudDialog @bind-Visible="editExpirationVisible" Options="new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true }">
+    <TitleContent>
+        <MudText Typo="Typo.h6">עריכת תאריך תפוגה</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudDatePicker @bind-Date="editExpDate" Label="תאריך תפוגה" Variant="Variant.Outlined" Clearable="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => editExpirationVisible = false)">ביטול</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveExpiration">שמור</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -312,6 +327,31 @@
             Snackbar.Add($"שגיאה בהעלאה: {ex.Message}", Severity.Error);
         }
         finally { uploading = false; }
+    }
+
+    // Edit expiration
+    private bool editExpirationVisible;
+    private DateTime? editExpDate;
+    private CoachDocument? editingDoc;
+
+    private void OpenEditExpiration(CoachDocument doc)
+    {
+        editingDoc = doc;
+        editExpDate = doc.ExpirationDate;
+        editExpirationVisible = true;
+    }
+
+    private async Task SaveExpiration()
+    {
+        if (editingDoc is null) return;
+        editingDoc.ExpirationDate = editExpDate;
+        try
+        {
+            await Data.UpdateDocumentAsync(editingDoc);
+            Snackbar.Add("תאריך תפוגה עודכן", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        finally { editExpirationVisible = false; }
     }
 
     private async Task ApproveDoc(CoachDocument doc)

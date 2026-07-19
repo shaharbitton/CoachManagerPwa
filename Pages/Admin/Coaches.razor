@@ -2,6 +2,7 @@
 @inject IDataService Data
 @inject IDialogService Dialog
 @inject ISnackbar Snackbar
+@inject Supabase.Client SupabaseClient
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול מאמנים</MudText>
@@ -40,7 +41,6 @@
 
 @code {
     private List<Coach> coaches = new();
-    private List<AppUser> allUsers = new();
     private string searchText = "";
     private bool loading = true;
 
@@ -53,38 +53,51 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            coaches = await Data.GetCoachesAsync();
-            allUsers = await Data.GetUsersAsync();
-        }
+        try { coaches = await Data.GetCoachesAsync(); }
         catch { }
         finally { loading = false; }
     }
-
-    /// <summary>Users that don't already have a coach profile</summary>
-    private List<AppUser> AvailableUsers =>
-        allUsers.Where(u => !coaches.Any(c => c.CoachId == u.UserId)).ToList();
 
     private async Task OpenAddDialog()
     {
         var parameters = new DialogParameters<CoachDialog>
         {
             { x => x.Coach, new Coach() },
-            { x => x.IsNew, true },
-            { x => x.AvailableUsers, AvailableUsers }
+            { x => x.IsNew, true }
         };
         var dialog = await Dialog.ShowAsync<CoachDialog>("הוספת מאמן חדש", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
         var result = await dialog.Result;
-        if (result is { Canceled: false, Data: Coach newCoach })
+        if (result is { Canceled: false, Data: CoachDialogResult dialogResult })
         {
             try
             {
-                await Data.CreateCoachAsync(newCoach);
-                coaches.Add(newCoach);
-                Snackbar.Add("מאמן נוסף בהצלחה", Severity.Success);
+                // 1. Create auth user with default password
+                var session = await SupabaseClient.Auth.SignUp(dialogResult.Email, "Coach123!");
+
+                if (session?.User is null)
+                {
+                    Snackbar.Add("שגיאה ביצירת משתמש באימות", Severity.Error);
+                    return;
+                }
+
+                var userId = session.User.Id;
+
+                // Re-authenticate as admin (SignUp switches the session to the new user)
+                await Data.RefreshAuthAsync();
+
+                // 2. Set coach_id to the new auth user id
+                dialogResult.Coach.CoachId = userId;
+
+                // 3. Create coach record
+                await Data.CreateCoachAsync(dialogResult.Coach);
+                coaches.Add(dialogResult.Coach);
+
+                Snackbar.Add($"מאמן נוצר בהצלחה! אימייל: {dialogResult.Email}, סיסמה: Coach123!", Severity.Success);
             }
-            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error);
+            }
         }
     }
 
@@ -93,11 +106,11 @@
         var parameters = new DialogParameters<CoachDialog> { { x => x.Coach, coach }, { x => x.IsNew, false } };
         var dialog = await Dialog.ShowAsync<CoachDialog>("עריכת מאמן", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
         var result = await dialog.Result;
-        if (result is { Canceled: false, Data: Coach updated })
+        if (result is { Canceled: false, Data: CoachDialogResult dialogResult })
         {
             try
             {
-                await Data.UpdateCoachAsync(updated);
+                await Data.UpdateCoachAsync(dialogResult.Coach);
                 Snackbar.Add("מאמן עודכן בהצלחה", Severity.Success);
                 coaches = await Data.GetCoachesAsync();
             }
@@ -107,20 +120,14 @@
 
     private async Task DeleteCoach(Coach coach)
     {
-        var confirmed = true; // In production: show confirmation dialog
-        if (confirmed)
+        try
         {
-            try
-            {
-                await Data.DeleteCoachAsync(coach.CoachId);
-                coaches.Remove(coach);
-                Snackbar.Add("מאמן נמחק", Severity.Warning);
-            }
-            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+            await Data.DeleteCoachAsync(coach.CoachId);
+            coaches.Remove(coach);
+            Snackbar.Add("מאמן נמחק", Severity.Warning);
         }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
-
-    private void ViewCoach(Coach coach) { /* Navigate to detail page */ }
 
     private Color GetTaxColor(string status) => status switch
     {

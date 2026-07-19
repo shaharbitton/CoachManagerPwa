@@ -13,9 +13,11 @@
 
 <MudCard Elevation="4" Class="rounded-lg pa-6 mt-6">
     <MudTextField @bind-Value="email" Label="אימייל" Variant="Variant.Outlined" Class="mb-3"
-                  InputType="InputType.Email" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
+                  InputType="InputType.Email" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
+                  Style="direction: ltr; text-align: left;" />
     <MudTextField @bind-Value="password" Label="סיסמה" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-4"
-                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
+                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock"
+                  Style="direction: ltr; text-align: left;" />
 
     <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large"
                OnClick="Login" Disabled="loading" Class="mb-3">
@@ -25,17 +27,6 @@
         }
         התחבר למערכת
     </MudButton>
-
-    <MudDivider Class="my-4" />
-    <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Default" Class="mb-2">כניסה מהירה לדמו</MudText>
-    <MudStack Row="true" Justify="Justify.Center" Spacing="2">
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => DemoLogin("Admin"))">
-            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="me-1" /> מנהל
-        </MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@(() => DemoLogin("Coach"))">
-            <MudIcon Icon="@Icons.Material.Filled.SportsHandball" Class="me-1" /> מאמן
-        </MudButton>
-    </MudStack>
 </MudCard>
 
 @code {
@@ -51,10 +42,8 @@
             var session = await SupabaseClient.Auth.SignIn(email, password);
             if (session != null)
             {
-                // Refresh data service so it uses the authenticated JWT for RLS
                 await DataService.RefreshAuthAsync();
 
-                // Fetch ALL user roles and pick highest priority (Admin > Operations_Lead > Coach)
                 var role = "Coach";
                 try
                 {
@@ -72,7 +61,6 @@
                             .Select(r => r.RoleName)
                             .ToList();
 
-                        // Priority: Admin first, then Operations_Lead, then Coach
                         if (userRoleNames.Contains("Admin"))
                             role = "Admin";
                         else if (userRoleNames.Contains("Operations_Lead"))
@@ -84,6 +72,45 @@
                 catch { /* fallback to Coach */ }
 
                 AppState.SetUser(session.User!.Id, session.User.Email ?? "משתמש", role);
+
+                // Check if coach needs onboarding (first login)
+                if (AppState.IsCoach)
+                {
+                    try
+                    {
+                        var coach = await DataService.GetCoachByIdAsync(session.User!.Id);
+                        var docs = await DataService.GetDocumentsByCoachAsync(session.User!.Id);
+
+                        var hasIdDoc = docs.Any(d => d.DocType == "National_ID_Card");
+                        var hasPoliceClearance = docs.Any(d => d.DocType == "Police_Clearance");
+                        var hasCertification = docs.Any(d => d.DocType == "Certification");
+
+                        bool profileIncomplete = coach is null
+                            || string.IsNullOrWhiteSpace(coach.FirstName)
+                            || string.IsNullOrWhiteSpace(coach.LastName)
+                            || string.IsNullOrWhiteSpace(coach.NationalId);
+
+                        bool missingDocs = !hasIdDoc || !hasPoliceClearance || !hasCertification;
+
+                        // If logged in with default password or profile/docs incomplete → onboarding
+                        if (password == "Coach123!" || profileIncomplete || missingDocs)
+                        {
+                            AppState.RequiresOnboarding = true;
+                            AppState.UsedDefaultPassword = password == "Coach123!";
+                            Snackbar.Add("ברוך הבא! יש להשלים תהליך הרשמה ראשוני.", Severity.Info);
+                            Nav.NavigateTo("coach/onboarding");
+                            return;
+                        }
+                    }
+                    catch
+                    {
+                        // If we can't check, assume onboarding needed
+                        AppState.RequiresOnboarding = true;
+                        Nav.NavigateTo("coach/onboarding");
+                        return;
+                    }
+                }
+
                 Snackbar.Add("ברוך הבא! התחברת בהצלחה.", Severity.Success);
                 Nav.NavigateTo(AppState.IsAdmin ? "admin/dashboard" : "coach/assignments");
             }
@@ -96,12 +123,5 @@
         {
             loading = false;
         }
-    }
-
-    private void DemoLogin(string role)
-    {
-        AppState.SetUser(Guid.NewGuid().ToString(), role == "Admin" ? "מנהל המערכת" : "מאמן דמו", role);
-        Snackbar.Add($"כניסת דמו כ{(role == "Admin" ? "מנהל" : "מאמן")}", Severity.Info);
-        Nav.NavigateTo(role == "Admin" ? "admin/dashboard" : "coach/assignments");
     }
 }

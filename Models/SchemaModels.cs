@@ -65,7 +65,7 @@ public class Coach : BaseModel
     public string LastName { get; set; } = string.Empty;
 
     [Column("national_id")]
-    public string NationalId { get; set; } = string.Empty;
+    public string? NationalId { get; set; }
 
     [Column("birth_date")]
     public DateTime? BirthDate { get; set; }

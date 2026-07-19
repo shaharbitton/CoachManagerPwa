@@ -6,6 +6,8 @@ public class AppState
     public string CurrentUserId { get; private set; } = string.Empty;
     public string CurrentUserName { get; private set; } = string.Empty;
     public bool IsAuthenticated { get; private set; }
+    public bool RequiresOnboarding { get; set; }
+    public bool UsedDefaultPassword { get; set; }
 
     public event Action? OnChange;
 

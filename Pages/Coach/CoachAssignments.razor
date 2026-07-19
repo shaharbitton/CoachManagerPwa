@@ -40,16 +40,27 @@ else
                 </CardHeaderActions>
             </MudCardHeader>
             <MudCardContent>
+                @{ var used = GetUsedHours(assignment.AssignId); var allocated = assignment.AllocatedHours ?? 0; }
                 <MudStack Row="true" Justify="Justify.SpaceAround">
                     <MudStack AlignItems="AlignItems.Center">
                         <MudText Typo="Typo.caption">שעות מוקצות</MudText>
                         <MudText Typo="Typo.h6" Style="font-weight: bold;">@(assignment.AllocatedHours?.ToString("0") ?? "-")</MudText>
                     </MudStack>
                     <MudStack AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.caption">שעות מנוצלות</MudText>
+                        <MudText Typo="Typo.h6" Style="font-weight: bold;" Color="@(allocated > 0 && used >= allocated ? Color.Error : Color.Default)">@used.ToString("0.#")</MudText>
+                    </MudStack>
+                    <MudStack AlignItems="AlignItems.Center">
                         <MudText Typo="Typo.caption">דיווחים</MudText>
                         <MudText Typo="Typo.h6" Style="font-weight: bold;">@GetEntryCount(assignment.AssignId)</MudText>
                     </MudStack>
                 </MudStack>
+                @if (allocated > 0)
+                {
+                    <MudProgressLinear Value="@(Math.Min((double)(used / allocated * 100), 100))" Color="@(used >= allocated ? Color.Error : used >= allocated * 0.8m ? Color.Warning : Color.Success)" Class="mt-3" Rounded="true" Size="Size.Medium">
+                        <MudText Typo="Typo.caption"><b>@((used / allocated * 100).ToString("0"))%</b></MudText>
+                    </MudProgressLinear>
+                }
             </MudCardContent>
             <MudCardActions>
                 <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@($"coach/time-entry?assignId={assignment.AssignId}")">
@@ -82,4 +93,6 @@ else
     }
 
     private int GetEntryCount(string assignId) => allEntries.Count(e => e.AssignId == assignId);
+
+    private decimal GetUsedHours(string assignId) => allEntries.Where(e => e.AssignId == assignId).Sum(e => e.HoursReported);
 }

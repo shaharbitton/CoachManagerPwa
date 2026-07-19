@@ -1,0 +1,395 @@
+@page "/coach/onboarding"
+@inject Supabase.Client SupabaseClient
+@inject IDataService Data
+@inject AppState AppState
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<MudStack AlignItems="AlignItems.Center" Class="mb-4">
+    <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" Style="font-size: 3rem; color: #1a365d;" />
+    <MudText Typo="Typo.h5" Style="font-weight: bold; color: #1a365d;">השלמת הרשמה ראשונית</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Default">יש להשלים את כל השלבים כדי להתחיל לעבוד במערכת</MudText>
+</MudStack>
+
+<MudStepper @bind-ActiveIndex="activeStep" Linear="true" Color="Color.Primary" Variant="Variant.Filled">
+    <!-- Step 1: Change Password -->
+    <MudStep Title="החלפת סיסמה" Icon="@Icons.Material.Filled.Lock">
+        <MudCard Elevation="2" Class="pa-4">
+            <MudText Typo="Typo.body1" Class="mb-4">יש להחליף את הסיסמה הדיפולטית לסיסמה אישית מאובטחת</MudText>
+            <MudTextField @bind-Value="newPassword" Label="סיסמה חדשה" InputType="InputType.Password"
+                          Variant="Variant.Outlined" Class="mb-3" Required="true"
+                          Style="direction: ltr; text-align: left;"
+                          HelperText="לפחות 8 תווים" />
+            <MudTextField @bind-Value="confirmPassword" Label="אימות סיסמה" InputType="InputType.Password"
+                          Variant="Variant.Outlined" Class="mb-3" Required="true"
+                          Style="direction: ltr; text-align: left;" />
+            @if (!string.IsNullOrEmpty(passwordError))
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3">@passwordError</MudAlert>
+            }
+            @if (passwordChanged)
+            {
+                <MudAlert Severity="Severity.Success" Class="mb-3">סיסמה שונתה בהצלחה!</MudAlert>
+            }
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ChangePassword"
+                       Disabled="passwordChanged || changingPassword" FullWidth="true">
+                @if (changingPassword)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="me-2" />
+                }
+                החלף סיסמה
+            </MudButton>
+        </MudCard>
+    </MudStep>
+
+    <!-- Step 2: Profile -->
+    <MudStep Title="פרטים אישיים" Icon="@Icons.Material.Filled.Person">
+        <MudCard Elevation="2" Class="pa-4">
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="coach.FirstName" Label="שם פרטי" Variant="Variant.Outlined" Required="true" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="coach.LastName" Label="שם משפחה" Variant="Variant.Outlined" Required="true" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="coach.NationalId" Label="תעודת זהות" Variant="Variant.Outlined" Required="true"
+                                  Style="direction: ltr; text-align: left;" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudDatePicker @bind-Date="birthDate" Label="תאריך לידה" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="coach.Occupation" Label="מקצוע / עיסוק" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect T="string" @bind-Value="coach.TaxStatus" Label="מעמד מיסויי" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("Employee")">שכיר</MudSelectItem>
+                        <MudSelectItem Value="@("Exempt_Dealer")">עוסק פטור</MudSelectItem>
+                        <MudSelectItem Value="@("Licensed_Dealer")">עוסק מורשה</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+            @if (!string.IsNullOrEmpty(profileError))
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-3">@profileError</MudAlert>
+            }
+            @if (profileSaved)
+            {
+                <MudAlert Severity="Severity.Success" Class="mt-3">פרופיל נשמר בהצלחה!</MudAlert>
+            }
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveProfile"
+                       Disabled="savingProfile" FullWidth="true" Class="mt-4">
+                @if (savingProfile)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="me-2" />
+                }
+                שמור פרטים
+            </MudButton>
+        </MudCard>
+    </MudStep>
+
+    <!-- Step 3: Required Documents -->
+    <MudStep Title="מסמכים נדרשים" Icon="@Icons.Material.Filled.UploadFile">
+        <MudCard Elevation="2" Class="pa-4">
+            <MudText Typo="Typo.body1" Class="mb-4">יש להעלות את המסמכים הבאים (חובה):</MudText>
+
+            @foreach (var req in requiredDocs)
+            {
+                <MudCard Elevation="1" Class="pa-3 mb-3" Style="@(req.Uploaded ? "border-right: 4px solid #4caf50;" : "border-right: 4px solid #ff9800;")">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.subtitle2">
+                                @req.Label
+                                <MudChip T="string" Size="Size.Small" Color="@(req.Required ? Color.Error : Color.Default)" Class="ms-2">
+                                    @(req.Required ? "חובה" : "רשות")
+                                </MudChip>
+                            </MudText>
+                            @if (req.Uploaded)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Success">✓ הועלה בהצלחה</MudText>
+                            }
+                        </MudStack>
+                        @if (!req.Uploaded)
+                        {
+                            <MudFileUpload T="IBrowserFile" Accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                                           FilesChanged="@(file => UploadDocFile(file, req))" MaximumFileCount="1">
+                                <ActivatorContent>
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.CloudUpload" Disabled="req.Uploading">
+                                        @if (req.Uploading)
+                                        {
+                                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="me-1" />
+                                        }
+                                        העלה קובץ
+                                    </MudButton>
+                                </ActivatorContent>
+                            </MudFileUpload>
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                        }
+                    </MudStack>
+                </MudCard>
+            }
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-3">מסמכים נוספים (רשות):</MudText>
+            @foreach (var opt in optionalDocs)
+            {
+                <MudCard Elevation="0" Class="pa-3 mb-2" Style="border-right: 4px solid #e0e0e0;">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.subtitle2">@opt.Label</MudText>
+                            @if (opt.Uploaded)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Success">✓ הועלה</MudText>
+                            }
+                        </MudStack>
+                        @if (!opt.Uploaded)
+                        {
+                            <MudFileUpload T="IBrowserFile" Accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                                           FilesChanged="@(file => UploadDocFile(file, opt))" MaximumFileCount="1">
+                                <ActivatorContent>
+                                    <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.CloudUpload" Disabled="opt.Uploading">
+                                        @if (opt.Uploading)
+                                        {
+                                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="me-1" />
+                                        }
+                                        העלה קובץ
+                                    </MudButton>
+                                </ActivatorContent>
+                            </MudFileUpload>
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                        }
+                    </MudStack>
+                </MudCard>
+            }
+
+            @if (!AllRequiredUploaded)
+            {
+                <MudAlert Severity="Severity.Warning" Class="mt-4">יש להעלות את כל מסמכי החובה כדי להשלים את ההרשמה</MudAlert>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4"
+                           OnClick="CompleteOnboarding" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="me-2" />
+                    סיום הרשמה וכניסה למערכת
+                </MudButton>
+            }
+        </MudCard>
+    </MudStep>
+</MudStepper>
+
+@code {
+    private int activeStep;
+
+    // Step 1
+    private string newPassword = "";
+    private string confirmPassword = "";
+    private string? passwordError;
+    private bool passwordChanged;
+    private bool changingPassword;
+
+    // Step 2
+    private Coach coach = new();
+    private DateTime? birthDate;
+    private string? profileError;
+    private bool profileSaved;
+    private bool savingProfile;
+
+    // Step 3
+    private List<DocUploadItem> requiredDocs = new();
+    private List<DocUploadItem> optionalDocs = new();
+
+    private bool AllRequiredUploaded => requiredDocs.All(d => d.Uploaded);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AppState.IsAuthenticated)
+        {
+            Nav.NavigateTo("");
+            return;
+        }
+
+        // Load existing coach profile if any
+        try
+        {
+            var existing = await Data.GetCoachByIdAsync(AppState.CurrentUserId);
+            if (existing is not null)
+                coach = existing;
+            else
+                coach = new Coach { CoachId = AppState.CurrentUserId };
+        }
+        catch
+        {
+            coach = new Coach { CoachId = AppState.CurrentUserId };
+        }
+
+        birthDate = coach.BirthDate;
+
+        // Determine starting step: skip password if not default
+        if (!AppState.UsedDefaultPassword)
+        {
+            passwordChanged = true;
+            activeStep = 1;
+        }
+
+        // Load existing documents to mark already uploaded
+        List<CoachDocument> existingDocs = new();
+        try { existingDocs = await Data.GetDocumentsByCoachAsync(AppState.CurrentUserId); }
+        catch { }
+
+        requiredDocs = new List<DocUploadItem>
+        {
+            new() { DocType = "National_ID_Card", Label = "תעודת זהות", Required = true, Uploaded = existingDocs.Any(d => d.DocType == "National_ID_Card") },
+            new() { DocType = "Police_Clearance", Label = "אישור משטרה", Required = true, Uploaded = existingDocs.Any(d => d.DocType == "Police_Clearance") },
+            new() { DocType = "Certification", Label = "תעודת הסמכה", Required = true, Uploaded = existingDocs.Any(d => d.DocType == "Certification") }
+        };
+
+        optionalDocs = new List<DocUploadItem>
+        {
+            new() { DocType = "Tax_Withholding", Label = "ניכוי מס במקור", Required = false, Uploaded = existingDocs.Any(d => d.DocType == "Tax_Withholding") },
+            new() { DocType = "Bank_Confirmation", Label = "אישור ניהול חשבון", Required = false, Uploaded = existingDocs.Any(d => d.DocType == "Bank_Confirmation") },
+            new() { DocType = "Contract", Label = "חוזה", Required = false, Uploaded = existingDocs.Any(d => d.DocType == "Contract") },
+            new() { DocType = "Other", Label = "מסמך אחר", Required = false, Uploaded = existingDocs.Any(d => d.DocType == "Other") }
+        };
+    }
+
+    private async Task ChangePassword()
+    {
+        passwordError = null;
+
+        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
+        {
+            passwordError = "הסיסמה חייבת להכיל לפחות 8 תווים";
+            return;
+        }
+        if (newPassword != confirmPassword)
+        {
+            passwordError = "הסיסמאות אינן תואמות";
+            return;
+        }
+        if (newPassword == "Coach123!")
+        {
+            passwordError = "יש לבחור סיסמה שונה מהסיסמה הדיפולטית";
+            return;
+        }
+
+        changingPassword = true;
+        try
+        {
+            await SupabaseClient.Auth.Update(new Supabase.Gotrue.UserAttributes { Password = newPassword });
+            passwordChanged = true;
+            Snackbar.Add("סיסמה שונתה בהצלחה!", Severity.Success);
+            activeStep = 1;
+        }
+        catch (Exception ex)
+        {
+            passwordError = $"שגיאה בשינוי סיסמה: {ex.Message}";
+        }
+        finally { changingPassword = false; }
+    }
+
+    private async Task SaveProfile()
+    {
+        profileError = null;
+
+        if (string.IsNullOrWhiteSpace(coach.FirstName) || string.IsNullOrWhiteSpace(coach.LastName))
+        {
+            profileError = "שם פרטי ושם משפחה הם שדות חובה";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(coach.NationalId))
+        {
+            profileError = "תעודת זהות היא שדה חובה";
+            return;
+        }
+
+        savingProfile = true;
+        try
+        {
+            coach.CoachId = AppState.CurrentUserId;
+            coach.BirthDate = birthDate;
+
+            var existing = await Data.GetCoachByIdAsync(AppState.CurrentUserId);
+            if (existing is not null)
+                await Data.UpdateCoachAsync(coach);
+            else
+                await Data.CreateCoachAsync(coach);
+
+            profileSaved = true;
+            Snackbar.Add("פרטים אישיים נשמרו!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            profileError = $"שגיאה בשמירת פרופיל: {ex.Message}";
+        }
+        finally { savingProfile = false; }
+    }
+
+    private async Task UploadDocFile(IBrowserFile file, DocUploadItem item)
+    {
+        item.Uploading = true;
+        StateHasChanged();
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            var fileBytes = ms.ToArray();
+
+            var ext = Path.GetExtension(file.Name);
+            var fileName = $"{AppState.CurrentUserId}/{item.DocType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}{ext}";
+
+            await SupabaseClient.Storage.From("documents").Upload(fileBytes, fileName, new Supabase.Storage.FileOptions
+            {
+                ContentType = file.ContentType
+            });
+
+            var doc = new CoachDocument
+            {
+                CoachId = AppState.CurrentUserId,
+                DocType = item.DocType,
+                FileUrl = fileName,
+                Status = "Pending_Review"
+            };
+            await Data.CreateDocumentAsync(doc);
+
+            item.Uploaded = true;
+            Snackbar.Add($"{item.Label} הועלה בהצלחה", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאה בהעלאת {item.Label}: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            item.Uploading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CompleteOnboarding()
+    {
+        AppState.RequiresOnboarding = false;
+        Snackbar.Add("הרשמה הושלמה בהצלחה! ברוך הבא למערכת.", Severity.Success);
+        Nav.NavigateTo("coach/assignments");
+    }
+
+    private class DocUploadItem
+    {
+        public string DocType { get; set; } = "";
+        public string Label { get; set; } = "";
+        public bool Required { get; set; }
+        public bool Uploaded { get; set; }
+        public bool Uploading { get; set; }
+    }
+}

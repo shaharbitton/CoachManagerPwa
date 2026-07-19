@@ -31,7 +31,9 @@ else
             </MudText>
             <MudSpacer />
             <MudChip T="string" Color="Color.Secondary" Size="Size.Small">@AppState.CurrentRole</MudChip>
-            <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" />
+            <MudBadge Content="@AppState.NotificationCount" Color="Color.Error" Visible="@(AppState.NotificationCount > 0)" Overlap="true">
+                <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Href="admin/notifications" />
+            </MudBadge>
             <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit">
                 <MudMenuItem Href="profile">פרופיל</MudMenuItem>
                 <MudMenuItem OnClick="SwitchRole">החלף תצוגה</MudMenuItem>
@@ -133,6 +135,13 @@ else
         if (!AppState.IsAuthenticated && !IsOnLoginPage())
         {
             Nav.NavigateTo("");
+            return;
+        }
+
+        // Force onboarding for coaches who haven't completed it
+        if (AppState.IsAuthenticated && AppState.RequiresOnboarding && !IsOnOnboardingPage())
+        {
+            Nav.NavigateTo("coach/onboarding");
         }
     }
 
@@ -140,6 +149,12 @@ else
     {
         var uri = Nav.ToBaseRelativePath(Nav.Uri);
         return string.IsNullOrEmpty(uri) || uri == "/";
+    }
+
+    private bool IsOnOnboardingPage()
+    {
+        var uri = Nav.ToBaseRelativePath(Nav.Uri);
+        return uri.StartsWith("coach/onboarding", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task CheckTokenValidity()
