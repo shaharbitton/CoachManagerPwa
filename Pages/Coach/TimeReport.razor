@@ -191,12 +191,13 @@
                 {
                     // Fallback: save as data URL if storage fails
                     var dataUrl = await JS.InvokeAsync<string>("signaturePad.toDataUrl");
-                    newEntry.SignatureUrl = dataUrl ?? "signature_capture_failed";
+                    newEntry.SignatureUrl = dataUrl;
                     Snackbar.Add($"חתימה נשמרה מקומית (Storage: {storageEx.Message})", Severity.Info);
                 }
             }
 
-            newEntry.Status = string.IsNullOrEmpty(newEntry.SignatureUrl) ? "Pending_Signature" : "Client_Approved";
+            var hasSig = !string.IsNullOrWhiteSpace(newEntry.SignatureUrl) && newEntry.SignatureUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase);
+            newEntry.Status = hasSig ? "Client_Approved" : "Pending_Signature";
 
             await Data.CreateTimeEntryAsync(newEntry);
             recentEntries.Insert(0, newEntry);

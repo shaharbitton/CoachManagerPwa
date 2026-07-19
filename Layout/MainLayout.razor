@@ -2,6 +2,7 @@
 @inherits LayoutComponentBase
 @inject AppState AppState
 @inject NavigationManager Nav
+@inject Supabase.Client SupabaseClient
 @implements IDisposable
 
 <MudRTLProvider RightToLeft="true">
@@ -79,6 +80,7 @@ else
                 <MudButton Href="coach/assignments" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Dashboard" Color="Color.Primary">שיבוצים</MudButton>
                 <MudButton Href="coach/time-entry" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Timer" Color="Color.Default">דיווח שעות</MudButton>
                 <MudButton Href="coach/groups" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Groups" Color="Color.Default">קבוצות</MudButton>
+                <MudButton Href="coach/documents" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Folder" Color="Color.Default">מסמכים</MudButton>
                 <MudButton Href="coach/hub" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.School" Color="Color.Default">מאגר ידע</MudButton>
             </MudPaper>
         }
@@ -88,6 +90,7 @@ else
 
 @code {
     private bool _drawerOpen = true;
+    private Timer? _tokenTimer;
 
     private MudTheme _theme = new()
     {
@@ -108,6 +111,63 @@ else
     protected override void OnInitialized()
     {
         AppState.OnChange += StateHasChanged;
+        Nav.LocationChanged += OnLocationChanged;
+
+        // Check token validity every 60 seconds
+        _tokenTimer = new Timer(async _ => await CheckTokenValidity(), null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender) return;
+        RedirectIfNotAuthenticated();
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        RedirectIfNotAuthenticated();
+    }
+
+    private void RedirectIfNotAuthenticated()
+    {
+        if (!AppState.IsAuthenticated && !IsOnLoginPage())
+        {
+            Nav.NavigateTo("");
+        }
+    }
+
+    private bool IsOnLoginPage()
+    {
+        var uri = Nav.ToBaseRelativePath(Nav.Uri);
+        return string.IsNullOrEmpty(uri) || uri == "/";
+    }
+
+    private async Task CheckTokenValidity()
+    {
+        if (!AppState.IsAuthenticated) return;
+
+        try
+        {
+            var session = SupabaseClient.Auth.CurrentSession;
+            if (session is null || session.ExpiresAt() < DateTime.UtcNow)
+            {
+                await InvokeAsync(() =>
+                {
+                    AppState.Logout();
+                    Nav.NavigateTo("");
+                    StateHasChanged();
+                });
+            }
+        }
+        catch
+        {
+            await InvokeAsync(() =>
+            {
+                AppState.Logout();
+                Nav.NavigateTo("");
+                StateHasChanged();
+            });
+        }
     }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
@@ -127,5 +187,7 @@ else
     public void Dispose()
     {
         AppState.OnChange -= StateHasChanged;
+        Nav.LocationChanged -= OnLocationChanged;
+        _tokenTimer?.Dispose();
     }
 }

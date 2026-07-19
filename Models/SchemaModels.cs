@@ -349,7 +349,7 @@ public class TimeEntry : BaseModel
     public string Status { get; set; } = "Pending_Signature";
 
     [Column("signature_url")]
-    public string SignatureUrl { get; set; } = string.Empty;
+    public string? SignatureUrl { get; set; }
 
     [Column("signer_name")]
     public string? SignerName { get; set; }

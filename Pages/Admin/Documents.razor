@@ -1,58 +1,211 @@
 @page "/admin/documents"
 @inject IDataService Data
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject Supabase.Client SupabaseClient
+@inject IJSRuntime JS
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">ניהול מסמכים ואישורים</MudText>
 
-<MudSelect T="string" Value="selectedCoachId" ValueChanged="LoadDocs" Label="בחר מאמן" Variant="Variant.Outlined" Class="mb-4">
-    @foreach (var c in coaches)
-    {
-        <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
-    }
-</MudSelect>
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="6">
+        <MudSelect T="string" Value="selectedCoachId" ValueChanged="LoadDocs" Label="בחר מאמן" Variant="Variant.Outlined" Clearable="true">
+            @foreach (var c in coaches)
+            {
+                <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="12" sm="6" Class="d-flex align-end">
+        @if (!string.IsNullOrEmpty(selectedCoachId))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Upload" OnClick="OpenUploadDialog">
+                העלאת מסמך חדש
+            </MudButton>
+        }
+    </MudItem>
+</MudGrid>
 
 @if (!string.IsNullOrEmpty(selectedCoachId))
 {
-    <MudTable Items="documents" Hover="true" Elevation="2" Dense="true">
-        <HeaderContent>
-            <MudTh>סוג מסמך</MudTh>
-            <MudTh>סטטוס</MudTh>
-            <MudTh>תפוגה</MudTh>
-            <MudTh>פעולות</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@GetDocTypeText(context.DocType)</MudTd>
-            <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@GetDocStatusColor(context.Status)">@GetDocStatusText(context.Status)</MudChip>
-            </MudTd>
-            <MudTd>
-                @if (context.ExpirationDate.HasValue)
+    @if (loading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (!documents.Any())
+    {
+        <MudAlert Severity="Severity.Info">אין מסמכים למאמן זה</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="documents" Hover="true" Elevation="2" Dense="true" OnRowClick="OnRowClicked" T="CoachDocument" RowStyle="cursor:pointer;">
+            <HeaderContent>
+                <MudTh>סוג מסמך</MudTh>
+                <MudTh>סטטוס</MudTh>
+                <MudTh>תפוגה</MudTh>
+                <MudTh>נוצר</MudTh>
+                <MudTh>פעולות</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@GetDocTypeText(context.DocType)</MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Color="@GetDocStatusColor(context.Status)">@GetDocStatusText(context.Status)</MudChip>
+                </MudTd>
+                <MudTd>
+                    @if (context.ExpirationDate.HasValue)
+                    {
+                        <MudText Color="@(context.ExpirationDate < DateTime.Today ? Color.Error : Color.Default)">
+                            @context.ExpirationDate.Value.ToString("dd/MM/yyyy")
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText>ללא תפוגה</MudText>
+                    }
+                </MudTd>
+                <MudTd>@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd>
+                    @if (context.Status == "Pending_Review")
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => ApproveDoc(context))" OnClickStopPropagation>אשר</MudButton>
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => RejectDoc(context))" OnClickStopPropagation>דחה</MudButton>
+                    }
+                    @if (HasValidPath(context.FileUrl))
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" OnClick="@(() => OpenDocInNewTab(context))" OnClickStopPropagation />
+                    }
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDoc(context))" OnClickStopPropagation />
+                </MudTd>
+            </RowTemplate>
+            <ChildRowContent>
+                @if (context.DocId == expandedDocId)
                 {
-                    <MudText Color="@(context.ExpirationDate < DateTime.Today ? Color.Error : Color.Default)">
-                        @context.ExpirationDate.Value.ToString("dd/MM/yyyy")
-                    </MudText>
+                    <MudTr>
+                        <td colspan="5">
+                            <MudCard Elevation="0" Class="ma-2 pa-4" Style="background: var(--mud-palette-background-gray);">
+                                <MudGrid>
+                                    <MudItem xs="12" sm="6" md="3">
+                                        <MudText Typo="Typo.caption" Color="Color.Primary">מזהה מסמך</MudText>
+                                        <MudText Typo="Typo.body2">@context.DocId[..8]…</MudText>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6" md="3">
+                                        <MudText Typo="Typo.caption" Color="Color.Primary">סוג</MudText>
+                                        <MudText Typo="Typo.body2">@GetDocTypeText(context.DocType)</MudText>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6" md="3">
+                                        <MudText Typo="Typo.caption" Color="Color.Primary">סטטוס</MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="@GetDocStatusColor(context.Status)">@GetDocStatusText(context.Status)</MudChip>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6" md="3">
+                                        <MudText Typo="Typo.caption" Color="Color.Primary">תאריך יצירה</MudText>
+                                        <MudText Typo="Typo.body2">@context.CreatedAt.ToString("dd/MM/yyyy HH:mm")</MudText>
+                                    </MudItem>
+                                    @if (context.ExpirationDate.HasValue)
+                                    {
+                                        <MudItem xs="12" sm="6" md="3">
+                                            <MudText Typo="Typo.caption" Color="Color.Primary">תאריך תפוגה</MudText>
+                                            <MudText Typo="Typo.body2" Color="@(context.ExpirationDate < DateTime.Today ? Color.Error : Color.Default)">
+                                                @context.ExpirationDate.Value.ToString("dd/MM/yyyy")
+                                            </MudText>
+                                        </MudItem>
+                                    }
+                                    @if (HasValidPath(context.FileUrl))
+                                    {
+                                        <MudItem xs="12">
+                                            <MudText Typo="Typo.caption" Color="Color.Primary">קישור למסמך</MudText>
+                                            @if (signedUrls.TryGetValue(context.DocId, out var signedUrl))
+                                            {
+                                                <MudLink Href="@signedUrl" Target="_blank" Typo="Typo.body2">
+                                                    <MudIcon Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" /> פתח מסמך
+                                                </MudLink>
+                                            }
+                                            else
+                                            {
+                                                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                            }
+                                        </MudItem>
+                                        @if (signedUrls.TryGetValue(context.DocId, out var previewUrl) && IsPreviewable(context.FileUrl))
+                                        {
+                                            <MudItem xs="12">
+                                                <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1">תצוגה מקדימה</MudText>
+                                                @if (IsImage(context.FileUrl))
+                                                {
+                                                    <MudImage Src="@previewUrl" Alt="מסמך" ObjectFit="ObjectFit.Contain" Width="400" Class="border-solid border mud-border-primary rounded" />
+                                                }
+                                                else
+                                                {
+                                                    <iframe src="@previewUrl" style="width:100%; height:500px; border:1px solid #ccc; border-radius:4px;" />
+                                                }
+                                            </MudItem>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudItem xs="12">
+                                            <MudText Typo="Typo.caption" Color="Color.Primary">קובץ</MudText>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Warning">לא הועלה קובץ</MudChip>
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            </MudCard>
+                        </td>
+                    </MudTr>
                 }
-                else
-                {
-                    <MudText>ללא תפוגה</MudText>
-                }
-            </MudTd>
-            <MudTd>
-                @if (context.Status == "Pending_Review")
-                {
-                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => ApproveDoc(context))">אשר</MudButton>
-                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => RejectDoc(context))">דחה</MudButton>
-                }
-                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Href="@context.FileUrl" Target="_blank" />
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+            </ChildRowContent>
+        </MudTable>
+    }
 }
+
+<!-- Upload Dialog -->
+<MudDialog @bind-Visible="uploadDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true }">
+    <TitleContent>
+        <MudText Typo="Typo.h6">העלאת מסמך חדש</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudSelect T="string" @bind-Value="newDoc.DocType" Label="סוג מסמך" Variant="Variant.Outlined" Class="mb-3" Required="true">
+            <MudSelectItem Value="@("National_ID_Card")">תעודת זהות</MudSelectItem>
+            <MudSelectItem Value="@("Police_Clearance")">אישור משטרה</MudSelectItem>
+            <MudSelectItem Value="@("Certification")">תעודת הסמכה</MudSelectItem>
+            <MudSelectItem Value="@("Tax_Withholding")">ניכוי מס במקור</MudSelectItem>
+            <MudSelectItem Value="@("Bank_Confirmation")">אישור ניהול חשבון</MudSelectItem>
+            <MudSelectItem Value="@("Contract")">חוזה</MudSelectItem>
+            <MudSelectItem Value="@("Other")">אחר</MudSelectItem>
+        </MudSelect>
+        <MudDatePicker @bind-Date="expirationDate" Label="תאריך תפוגה (אופציונלי)" Variant="Variant.Outlined" Class="mb-3" />
+        <MudFileUpload T="IBrowserFile" Accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" FilesChanged="OnFileSelected" MaximumFileCount="1">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" FullWidth="true">
+                    @(selectedFile is not null ? selectedFile.Name : "בחר קובץ")
+                </MudButton>
+            </ActivatorContent>
+        </MudFileUpload>
+        @if (uploading)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-2" />
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseUploadDialog">ביטול</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UploadDocument" Disabled="@(uploading || selectedFile is null || string.IsNullOrEmpty(newDoc.DocType))">
+            העלה
+        </MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     private List<Coach> coaches = new();
     private List<CoachDocument> documents = new();
     private string selectedCoachId = "";
+    private string? expandedDocId;
+    private bool loading;
+    private Dictionary<string, string> signedUrls = new();
+
+    // Upload dialog
+    private bool uploadDialogVisible;
+    private CoachDocument newDoc = new();
+    private DateTime? expirationDate;
+    private IBrowserFile? selectedFile;
+    private bool uploading;
 
     protected override async Task OnInitializedAsync()
     {
@@ -62,8 +215,103 @@
     private async Task LoadDocs(string coachId)
     {
         selectedCoachId = coachId;
-        if (string.IsNullOrEmpty(coachId)) return;
+        expandedDocId = null;
+        if (string.IsNullOrEmpty(coachId)) { documents.Clear(); return; }
+        loading = true;
         try { documents = await Data.GetDocumentsByCoachAsync(coachId); } catch { }
+        finally { loading = false; }
+    }
+
+    private async void OnRowClicked(TableRowClickEventArgs<CoachDocument> args)
+    {
+        if (args.Item is null) return;
+        if (expandedDocId == args.Item.DocId)
+        {
+            expandedDocId = null;
+            return;
+        }
+        expandedDocId = args.Item.DocId;
+
+        // Generate signed URL if needed
+        if (HasValidPath(args.Item.FileUrl) && !signedUrls.ContainsKey(args.Item.DocId))
+        {
+            try
+            {
+                var url = await SupabaseClient.Storage.From("documents").CreateSignedUrl(args.Item.FileUrl, 3600);
+                signedUrls[args.Item.DocId] = url;
+                StateHasChanged();
+            }
+            catch { }
+        }
+    }
+
+    private async Task OpenDocInNewTab(CoachDocument doc)
+    {
+        try
+        {
+            string url;
+            if (signedUrls.TryGetValue(doc.DocId, out var cached))
+                url = cached;
+            else
+            {
+                url = await SupabaseClient.Storage.From("documents").CreateSignedUrl(doc.FileUrl, 3600);
+                signedUrls[doc.DocId] = url;
+            }
+            await JS.InvokeVoidAsync("open", url, "_blank");
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה בפתיחת מסמך: {ex.Message}", Severity.Error); }
+    }
+
+    private void OpenUploadDialog()
+    {
+        newDoc = new CoachDocument { CoachId = selectedCoachId };
+        expirationDate = null;
+        selectedFile = null;
+        uploading = false;
+        uploadDialogVisible = true;
+    }
+
+    private void CloseUploadDialog() => uploadDialogVisible = false;
+
+    private void OnFileSelected(IBrowserFile file) => selectedFile = file;
+
+    private async Task UploadDocument()
+    {
+        if (selectedFile is null || string.IsNullOrEmpty(newDoc.DocType)) return;
+
+        uploading = true;
+        try
+        {
+            // Read file bytes
+            using var stream = selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            var fileBytes = ms.ToArray();
+
+            // Upload to Supabase Storage
+            var ext = Path.GetExtension(selectedFile.Name);
+            var fileName = $"{selectedCoachId}/{newDoc.DocType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}{ext}";
+
+            await SupabaseClient.Storage.From("documents").Upload(fileBytes, fileName, new Supabase.Storage.FileOptions
+            {
+                ContentType = selectedFile.ContentType
+            });
+
+            // Store the storage path (not a public URL) since bucket is private
+            newDoc.FileUrl = fileName;
+            newDoc.ExpirationDate = expirationDate;
+            newDoc.Status = "Pending_Review";
+
+            await Data.CreateDocumentAsync(newDoc);
+            documents.Add(newDoc);
+            Snackbar.Add("מסמך הועלה בהצלחה", Severity.Success);
+            CloseUploadDialog();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאה בהעלאה: {ex.Message}", Severity.Error);
+        }
+        finally { uploading = false; }
     }
 
     private async Task ApproveDoc(CoachDocument doc)
@@ -80,6 +328,28 @@
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
 
+    private async Task DeleteDoc(CoachDocument doc)
+    {
+        try
+        {
+            await Data.DeleteDocumentAsync(doc.DocId);
+            documents.Remove(doc);
+            Snackbar.Add("מסמך נמחק", Severity.Info);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+    }
+
+    private static bool HasValidPath(string? path) =>
+        !string.IsNullOrWhiteSpace(path) && path.Contains('/');
+
+    private static bool IsPreviewable(string? path) =>
+        HasValidPath(path) && (IsImage(path) || path!.Contains(".pdf", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsImage(string? path) =>
+        path is not null && (path.Contains(".png", StringComparison.OrdinalIgnoreCase)
+        || path.Contains(".jpg", StringComparison.OrdinalIgnoreCase)
+        || path.Contains(".jpeg", StringComparison.OrdinalIgnoreCase));
+
     private string GetDocTypeText(string t) => t switch
     {
         "National_ID_Card" => "תעודת זהות",
@@ -87,6 +357,7 @@
         "Certification" => "תעודת הסמכה",
         "Tax_Withholding" => "ניכוי מס במקור",
         "Bank_Confirmation" => "אישור ניהול חשבון",
+        "Contract" => "חוזה",
         _ => t
     };
 

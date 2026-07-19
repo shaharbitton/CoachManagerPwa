@@ -231,3 +231,64 @@ CREATE POLICY "Allow public read from signatures"
 ON storage.objects FOR SELECT
 TO anon
 USING (bucket_id = 'signatures');
+
+-- ==========================================
+-- 8. Supabase Storage – מדיניות RLS עבור bucket "documents"
+-- ==========================================
+-- מסמכים מאוחסנים תחת נתיב: {coach_id}/filename
+-- מאמן רואה רק את הקבצים שלו, אדמין רואה הכל
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('documents', 'documents', false)
+ON CONFLICT (id) DO UPDATE SET public = false;
+
+DROP POLICY IF EXISTS "Admin full access to documents" ON storage.objects;
+CREATE POLICY "Admin full access to documents"
+ON storage.objects FOR ALL
+TO authenticated
+USING (bucket_id = 'documents' AND public.is_admin())
+WITH CHECK (bucket_id = 'documents' AND public.is_admin());
+
+DROP POLICY IF EXISTS "Coach upload own documents" ON storage.objects;
+CREATE POLICY "Coach upload own documents"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'documents'
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
+
+DROP POLICY IF EXISTS "Coach read own documents" ON storage.objects;
+CREATE POLICY "Coach read own documents"
+ON storage.objects FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'documents'
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- ==========================================
+-- 9. Supabase Storage – bucket "resources" (ציבורי)
+-- ==========================================
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('resources', 'resources', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Allow authenticated uploads to resources" ON storage.objects;
+CREATE POLICY "Allow authenticated uploads to resources"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'resources');
+
+DROP POLICY IF EXISTS "Allow public read from resources" ON storage.objects;
+CREATE POLICY "Allow public read from resources"
+ON storage.objects FOR SELECT
+TO anon
+USING (bucket_id = 'resources');
+
+DROP POLICY IF EXISTS "Allow authenticated read from resources" ON storage.objects;
+CREATE POLICY "Allow authenticated read from resources"
+ON storage.objects FOR SELECT
+TO authenticated
+USING (bucket_id = 'resources');

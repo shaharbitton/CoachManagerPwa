@@ -56,8 +56,8 @@
         <MudTd>@context.HoursReported</MudTd>
         <MudTd><MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@GetStatusText(context.Status)</MudChip></MudTd>
         <MudTd>
-            <MudIcon Icon="@(string.IsNullOrEmpty(context.SignatureUrl) ? Icons.Material.Filled.Close : Icons.Material.Filled.Check)"
-                     Color="@(string.IsNullOrEmpty(context.SignatureUrl) ? Color.Error : Color.Success)" Size="Size.Small" />
+            <MudIcon Icon="@(HasValidSignature(context) ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                     Color="@(HasValidSignature(context) ? Color.Success : Color.Error)" Size="Size.Small" />
         </MudTd>
         <MudTd>
             <MudIcon Icon="@(context.GpsVerified ? Icons.Material.Filled.GpsFixed : Icons.Material.Filled.GpsOff)"
@@ -111,11 +111,18 @@
                                     <MudText Typo="Typo.body2">@context.Description</MudText>
                                 </MudItem>
                             }
-                            @if (!string.IsNullOrEmpty(context.SignatureUrl))
+                            @if (HasValidSignature(context))
                             {
                                 <MudItem xs="12" sm="6">
                                     <MudText Typo="Typo.caption" Color="Color.Primary">חתימה</MudText>
                                     <MudImage Src="@context.SignatureUrl" Alt="חתימה" Width="200" Height="80" ObjectFit="ObjectFit.Contain" Class="border-solid border mud-border-primary rounded" />
+                                </MudItem>
+                            }
+                            else
+                            {
+                                <MudItem xs="12" sm="6">
+                                    <MudText Typo="Typo.caption" Color="Color.Primary">חתימה</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Warning">טרם נחתם</MudChip>
                                 </MudItem>
                             }
                         </MudGrid>
@@ -190,6 +197,7 @@
 
     private void OnRowClicked(TableRowClickEventArgs<TimeEntry> args)
     {
+        if (args.Item is null) return;
         expandedEntryId = expandedEntryId == args.Item.EntryId ? null : args.Item.EntryId;
     }
 
@@ -230,6 +238,10 @@
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
+
+    private static bool HasValidSignature(TimeEntry entry) =>
+        !string.IsNullOrWhiteSpace(entry.SignatureUrl)
+        && entry.SignatureUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase);
 
     private Color GetStatusColor(string s) => s switch
     {
