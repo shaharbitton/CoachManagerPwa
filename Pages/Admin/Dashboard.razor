@@ -6,6 +6,16 @@
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">לוח בקרה - סקירה כללית</MudText>
 
+@if (_loading)
+{
+    <MudOverlay Visible="true" DarkBackground="false" Absolute="false">
+        <MudStack AlignItems="AlignItems.Center" Spacing="2">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            <MudText Typo="Typo.body1">טוען נתונים...</MudText>
+        </MudStack>
+    </MudOverlay>
+}
+
 @if (errorMessage != null)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">שגיאה: @errorMessage</MudAlert>
@@ -123,41 +133,50 @@
     private List<CoachDocument> pendingDocs = new();
     private List<Coach> coaches = new();
     private string? errorMessage;
+    private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            coaches = await Data.GetCoachesAsync();
+            // Load core counts in parallel
+            var coachesTask = Data.GetCoachesAsync();
+            var clientsTask = Data.GetClientsAsync();
+            var assignmentsTask = Data.GetAssignmentsAsync();
+            var entriesTask = Data.GetTimeEntriesAsync();
+
+            await Task.WhenAll(coachesTask, clientsTask, assignmentsTask, entriesTask);
+
+            coaches = coachesTask.Result;
             coachCount = coaches.Count;
+            clientCount = clientsTask.Result.Count;
 
-            var clients = await Data.GetClientsAsync();
-            clientCount = clients.Count;
-
-            var assignments = await Data.GetAssignmentsAsync();
+            var assignments = assignmentsTask.Result;
             assignmentCount = assignments.Count(a => a.Status == "Active");
 
-            recentEntries = await Data.GetTimeEntriesAsync();
+            recentEntries = entriesTask.Result;
             pendingEntries = recentEntries.Count(e => e.Status is "Pending_Signature" or "Client_Approved");
 
-            // Load pending documents across all coaches
-            foreach (var coach in coaches)
-            {
-                try
-                {
-                    var docs = await Data.GetDocumentsByCoachAsync(coach.CoachId);
-                    pendingDocs.AddRange(docs.Where(d => d.Status == "Pending_Review"));
-                }
-                catch { }
-            }
+            // Show partial data immediately
+            _loading = false;
+            StateHasChanged();
 
-            // Refresh notification badge
-            await NotificationSvc.RefreshNotificationCountAsync();
+            // Load pending documents in parallel (background)
+            var docTasks = coaches.Select(c => Data.GetDocumentsByCoachAsync(c.CoachId));
+            var allDocs = await Task.WhenAll(docTasks);
+            pendingDocs = allDocs.SelectMany(docs => docs.Where(d => d.Status == "Pending_Review")).ToList();
+
+            // Refresh notification badge (background)
+            _ = NotificationSvc.RefreshNotificationCountAsync();
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
             Console.WriteLine($"Dashboard error: {ex}");
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 
