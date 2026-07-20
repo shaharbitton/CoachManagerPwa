@@ -1,0 +1,160 @@
+@page "/coach/notifications"
+@inject IDataService Data
+@inject AppState AppState
+@inject NotificationService NotificationSvc
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">
+    <MudIcon Icon="@Icons.Material.Filled.Notifications" Class="me-2" />
+    ההתראות שלי
+</MudText>
+
+@if (loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    @if (!expiringDocs.Any() && !rejectedDocs.Any() && !nearLimitAssignments.Any())
+    {
+        <MudCard Elevation="2" Class="pa-6 rounded-lg">
+            <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="font-size: 4rem;" Color="Color.Success" />
+                <MudText Typo="Typo.h6">אין התראות</MudText>
+                <MudText Color="Color.Default">הכל תקין!</MudText>
+            </MudStack>
+        </MudCard>
+    }
+    else
+    {
+        @if (rejectedDocs.Any())
+        {
+            <MudCard Elevation="2" Class="pa-4 rounded-lg mb-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" />
+                    <MudText Typo="Typo.h6" Class="ms-2">מסמכים שנדחו (@rejectedDocs.Count)</MudText>
+                </MudStack>
+                <MudList T="CoachDocument" Dense="true">
+                    @foreach (var doc in rejectedDocs)
+                    {
+                        <MudListItem Icon="@Icons.Material.Filled.Description">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText>@GetDocTypeText(doc.DocType) — יש להעלות מחדש</MudText>
+                                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Href="coach/documents">טפל</MudButton>
+                            </MudStack>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudCard>
+        }
+
+        @if (expiringDocs.Any())
+        {
+            <MudCard Elevation="2" Class="pa-4 rounded-lg mb-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" />
+                    <MudText Typo="Typo.h6" Class="ms-2">מסמכים שעומדים לפוג (@expiringDocs.Count)</MudText>
+                </MudStack>
+                <MudList T="CoachDocument" Dense="true">
+                    @foreach (var doc in expiringDocs)
+                    {
+                        var days = (doc.ExpirationDate!.Value - DateTime.Today).Days;
+                        <MudListItem Icon="@Icons.Material.Filled.Schedule">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText>@GetDocTypeText(doc.DocType)</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@(days <= 0 ? Color.Error : days <= 7 ? Color.Warning : Color.Info)">
+                                    @(days <= 0 ? "פג תוקף!" : $"{days} ימים")
+                                </MudChip>
+                            </MudStack>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudCard>
+        }
+
+        @if (nearLimitAssignments.Any())
+        {
+            <MudCard Elevation="2" Class="pa-4 rounded-lg mb-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Color="Color.Warning" />
+                    <MudText Typo="Typo.h6" Class="ms-2">שיבוצים קרובים למגבלת שעות (@nearLimitAssignments.Count)</MudText>
+                </MudStack>
+                <MudList T="AssignmentAlert" Dense="true">
+                    @foreach (var a in nearLimitAssignments)
+                    {
+                        <MudListItem Icon="@Icons.Material.Filled.Timer">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText>@a.ClientName</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@(a.Percentage >= 100 ? Color.Error : Color.Warning)">
+                                    @a.Percentage.ToString("0")%
+                                </MudChip>
+                            </MudStack>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudCard>
+        }
+    }
+}
+
+@code {
+    private bool loading = true;
+    private List<CoachDocument> expiringDocs = new();
+    private List<CoachDocument> rejectedDocs = new();
+    private List<AssignmentAlert> nearLimitAssignments = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var coachId = AppState.CurrentUserId;
+
+            var docs = await Data.GetDocumentsByCoachAsync(coachId);
+            rejectedDocs = docs.Where(d => d.Status == "Rejected").ToList();
+            expiringDocs = docs.Where(d => d.Status == "Approved" && d.ExpirationDate.HasValue && d.ExpirationDate.Value <= DateTime.Today.AddDays(30)).ToList();
+
+            var assignments = await Data.GetAssignmentsAsync();
+            var myAssignments = assignments.Where(a => a.CoachId == coachId && a.Status == "Active" && a.AllocatedHours.HasValue && a.AllocatedHours > 0).ToList();
+
+            if (myAssignments.Any())
+            {
+                var timeEntries = await Data.GetTimeEntriesAsync();
+                var clients = await Data.GetClientsAsync();
+
+                foreach (var a in myAssignments)
+                {
+                    var used = timeEntries.Where(e => e.AssignId == a.AssignId).Sum(e => e.HoursReported);
+                    var pct = (double)(used / a.AllocatedHours!.Value * 100);
+                    if (pct >= 75)
+                    {
+                        nearLimitAssignments.Add(new AssignmentAlert
+                        {
+                            ClientName = clients.FirstOrDefault(c => c.ClientId == a.ClientId)?.ClientName ?? "לקוח",
+                            Percentage = pct
+                        });
+                    }
+                }
+            }
+
+            await NotificationSvc.RefreshNotificationCountAsync();
+        }
+        catch { }
+        finally { loading = false; }
+    }
+
+    private static string GetDocTypeText(string t) => t switch
+    {
+        "National_ID_Card" => "תעודת זהות",
+        "Police_Clearance" => "אישור משטרה",
+        "Certification" => "תעודת הסמכה",
+        "Tax_Withholding" => "ניכוי מס במקור",
+        "Bank_Confirmation" => "אישור ניהול חשבון",
+        "Contract" => "חוזה",
+        _ => t
+    };
+
+    private class AssignmentAlert
+    {
+        public string ClientName { get; set; } = "";
+        public double Percentage { get; set; }
+    }
+}

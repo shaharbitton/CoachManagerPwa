@@ -33,7 +33,7 @@ else
             <MudSpacer />
             <MudChip T="string" Color="Color.Secondary" Size="Size.Small">@AppState.CurrentRole</MudChip>
             <MudBadge Content="@AppState.NotificationCount" Color="Color.Error" Visible="@(AppState.NotificationCount > 0)" Overlap="true">
-                <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Href="admin/notifications" />
+                <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Href="@(AppState.IsAdmin ? "admin/notifications" : "coach/notifications")" />
             </MudBadge>
             <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit">
                 <MudMenuItem Href="profile">פרופיל</MudMenuItem>

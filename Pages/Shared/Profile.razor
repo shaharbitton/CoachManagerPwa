@@ -2,6 +2,7 @@
 @inject AppState AppState
 @inject IDataService Data
 @inject ISnackbar Snackbar
+@inject Supabase.Client SupabaseClient
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">הפרופיל שלי</MudText>
 
@@ -65,15 +66,75 @@
             <MudListItem Icon="@Icons.Material.Filled.Receipt">אישור ניכוי מס במקור</MudListItem>
             <MudListItem Icon="@Icons.Material.Filled.AccountBalance">אישור ניהול חשבון בנק</MudListItem>
         </MudList>
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Upload" Class="mt-3">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Upload" Class="mt-3" OnClick="OpenUploadDialog">
             העלה מסמך
         </MudButton>
+
+        @if (myDocuments.Any())
+        {
+            <MudTable Items="myDocuments" Hover="true" Dense="true" Elevation="1" Class="mt-4" T="CoachDocument">
+                <HeaderContent>
+                    <MudTh>סוג</MudTh>
+                    <MudTh>סטטוס</MudTh>
+                    <MudTh>תפוגה</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@GetDocTypeText(context.DocType)</MudTd>
+                    <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.Status == "Approved" ? Color.Success : context.Status == "Rejected" ? Color.Error : Color.Warning)">@GetDocStatusText(context.Status)</MudChip></MudTd>
+                    <MudTd>@(context.ExpirationDate?.ToString("dd/MM/yyyy") ?? "—")</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
     </MudTabPanel>
 </MudTabs>
+
+<!-- Upload Dialog -->
+<MudDialog @bind-Visible="uploadDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true }">
+    <TitleContent>
+        <MudText Typo="Typo.h6">העלאת מסמך</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudSelect T="string" @bind-Value="newDocType" Label="סוג מסמך" Variant="Variant.Outlined" Class="mb-3" Required="true">
+            <MudSelectItem Value="@("National_ID_Card")">תעודת זהות</MudSelectItem>
+            <MudSelectItem Value="@("Police_Clearance")">אישור משטרה</MudSelectItem>
+            <MudSelectItem Value="@("Certification")">תעודת הסמכה</MudSelectItem>
+            <MudSelectItem Value="@("Tax_Withholding")">ניכוי מס במקור</MudSelectItem>
+            <MudSelectItem Value="@("Bank_Confirmation")">אישור ניהול חשבון</MudSelectItem>
+            <MudSelectItem Value="@("Contract")">חוזה</MudSelectItem>
+            <MudSelectItem Value="@("Other")">אחר</MudSelectItem>
+        </MudSelect>
+        <MudDatePicker @bind-Date="docExpirationDate" Label="תאריך תפוגה (אופציונלי)" Variant="Variant.Outlined" Class="mb-3" />
+        <MudFileUpload T="IBrowserFile" Accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" FilesChanged="OnFileSelected" MaximumFileCount="1">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" FullWidth="true">
+                    @(selectedFile is not null ? selectedFile.Name : "בחר קובץ")
+                </MudButton>
+            </ActivatorContent>
+        </MudFileUpload>
+        @if (uploading)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-2" />
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => uploadDialogVisible = false)">ביטול</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UploadDocument" Disabled="@(uploading || selectedFile is null || string.IsNullOrEmpty(newDocType))">
+            העלה
+        </MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     private Coach coach = new();
     private CoachBankDetails bankDetails = new();
+    private List<CoachDocument> myDocuments = new();
+
+    // Upload dialog state
+    private bool uploadDialogVisible;
+    private string? newDocType;
+    private DateTime? docExpirationDate;
+    private IBrowserFile? selectedFile;
+    private bool uploading;
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,6 +145,8 @@
 
             var b = await Data.GetBankDetailsByCoachAsync(AppState.CurrentUserId);
             if (b != null) bankDetails = b;
+
+            myDocuments = await Data.GetDocumentsByCoachAsync(AppState.CurrentUserId);
         }
         catch { }
     }
@@ -108,4 +171,69 @@
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
+
+    private void OpenUploadDialog()
+    {
+        newDocType = null;
+        docExpirationDate = null;
+        selectedFile = null;
+        uploading = false;
+        uploadDialogVisible = true;
+    }
+
+    private void OnFileSelected(IBrowserFile file) => selectedFile = file;
+
+    private async Task UploadDocument()
+    {
+        if (selectedFile is null || string.IsNullOrEmpty(newDocType)) return;
+
+        uploading = true;
+        try
+        {
+            using var stream = selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            var fileBytes = ms.ToArray();
+
+            var ext = Path.GetExtension(selectedFile.Name);
+            var fileName = $"{AppState.CurrentUserId}/{newDocType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}{ext}";
+
+            await SupabaseClient.Storage.From("documents").Upload(fileBytes, fileName, new Supabase.Storage.FileOptions
+            {
+                ContentType = selectedFile.ContentType
+            });
+
+            var newDoc = new CoachDocument
+            {
+                CoachId = AppState.CurrentUserId,
+                DocType = newDocType,
+                FileUrl = fileName,
+                ExpirationDate = docExpirationDate,
+                Status = "Pending_Review"
+            };
+
+            await Data.CreateDocumentAsync(newDoc);
+            myDocuments.Add(newDoc);
+            Snackbar.Add("מסמך הועלה בהצלחה וממתין לאישור", Severity.Success);
+            uploadDialogVisible = false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאה בהעלאה: {ex.Message}", Severity.Error);
+        }
+        finally { uploading = false; }
+    }
+
+    private static string GetDocTypeText(string t) => t switch
+    {
+        "National_ID_Card" => "תעודת זהות",
+        "Police_Clearance" => "אישור משטרה",
+        "Certification" => "תעודת הסמכה",
+        "Tax_Withholding" => "ניכוי מס במקור",
+        "Bank_Confirmation" => "אישור ניהול חשבון",
+        "Contract" => "חוזה",
+        _ => t
+    };
+
+    private static string GetDocStatusText(string s) => s switch { "Pending_Review" => "ממתין", "Approved" => "מאושר", "Rejected" => "נדחה", _ => s };
 }
