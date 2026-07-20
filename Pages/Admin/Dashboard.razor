@@ -2,7 +2,7 @@
 @inject IDataService Data
 @inject AppState AppState
 @inject NavigationManager Nav
-@inject Supabase.Client SupabaseClient
+@inject NotificationService NotificationSvc
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">לוח בקרה - סקירה כללית</MudText>
 
@@ -151,21 +151,8 @@
                 catch { }
             }
 
-            // Update notification count
-            var expiringCount = 0;
-            foreach (var coach in coaches)
-            {
-                try
-                {
-                    var docs = await Data.GetDocumentsByCoachAsync(coach.CoachId);
-                    expiringCount += docs.Count(d => d.ExpirationDate.HasValue && d.ExpirationDate.Value <= DateTime.Today.AddDays(30) && d.Status == "Approved");
-                }
-                catch { }
-            }
-            var nearLimitAssignments = assignments.Count(a => a.Status == "Active" && a.AllocatedHours.HasValue &&
-                recentEntries.Where(e => e.AssignId == a.AssignId).Sum(e => e.HoursReported) >= a.AllocatedHours.Value * 0.8m);
-
-            AppState.NotificationCount = pendingDocs.Count + expiringCount + nearLimitAssignments;
+            // Refresh notification badge
+            await NotificationSvc.RefreshNotificationCountAsync();
         }
         catch (Exception ex)
         {

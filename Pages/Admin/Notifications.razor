@@ -2,6 +2,7 @@
 @inject IDataService Data
 @inject AppState AppState
 @inject NavigationManager Nav
+@inject NotificationService NotificationSvc
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">
     <MudIcon Icon="@Icons.Material.Filled.Notifications" Class="me-2" />
@@ -171,7 +172,7 @@ else
             {
                 var used = timeEntries.Where(e => e.AssignId == a.AssignId).Sum(e => e.HoursReported);
                 var pct = (double)(used / a.AllocatedHours!.Value * 100);
-                if (pct >= 80)
+                if (pct >= 75)
                 {
                     var coach = coaches.FirstOrDefault(c => c.CoachId == a.CoachId);
                     var client = clients.FirstOrDefault(c => c.ClientId == a.ClientId);
@@ -184,7 +185,7 @@ else
                 }
             }
 
-            AppState.NotificationCount = pendingDocs.Count + expiringDocs.Count + nearLimitAssignments.Count;
+            AppState.SetNotificationCount(pendingDocs.Count + expiringDocs.Count + nearLimitAssignments.Count);
         }
         catch { }
         finally { loading = false; }

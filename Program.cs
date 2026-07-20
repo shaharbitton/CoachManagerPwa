@@ -25,5 +25,6 @@ builder.Services.AddScoped(sp =>
 
 builder.Services.AddScoped<IDataService, SupabaseDataService>();
 builder.Services.AddSingleton<AppState>();
+builder.Services.AddScoped<NotificationService>();
 
 await builder.Build().RunAsync();

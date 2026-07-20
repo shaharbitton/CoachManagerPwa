@@ -57,7 +57,7 @@ else
                 </MudStack>
                 @if (allocated > 0)
                 {
-                    <MudProgressLinear Value="@(Math.Min((double)(used / allocated * 100), 100))" Color="@(used >= allocated ? Color.Error : used >= allocated * 0.8m ? Color.Warning : Color.Success)" Class="mt-3" Rounded="true" Size="Size.Medium">
+                    <MudProgressLinear Value="@(Math.Min((double)(used / allocated * 100), 100))" Color="@(used >= allocated ? Color.Error : used >= allocated * 0.75m ? Color.Warning : Color.Success)" Class="mt-3" Rounded="true" Size="Size.Medium">
                         <MudText Typo="Typo.caption"><b>@((used / allocated * 100).ToString("0"))%</b></MudText>
                     </MudProgressLinear>
                 }

@@ -20,6 +20,7 @@
         <MudTh>מאמן</MudTh>
         <MudTh>לקוח</MudTh>
         <MudTh>שעות מוקצות</MudTh>
+        <MudTh>שעות מנוצלות</MudTh>
         <MudTh>סטטוס</MudTh>
         <MudTh>פעולות</MudTh>
     </HeaderContent>
@@ -27,6 +28,18 @@
         <MudTd>@GetCoachName(context.CoachId)</MudTd>
         <MudTd>@GetClientName(context.ClientId)</MudTd>
         <MudTd>@context.AllocatedHours</MudTd>
+        <MudTd>
+            @{ var usedHrs = GetUsedHours(context.AssignId); var allocHrs = context.AllocatedHours ?? 0; }
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                <MudText>@usedHrs.ToString("0.#")</MudText>
+                @if (allocHrs > 0)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="@(usedHrs >= allocHrs ? Color.Error : usedHrs >= allocHrs * 0.75m ? Color.Warning : Color.Success)">
+                        @((usedHrs / allocHrs * 100).ToString("0"))%
+                    </MudChip>
+                }
+            </MudStack>
+        </MudTd>
         <MudTd>
             <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@GetStatusText(context.Status)</MudChip>
         </MudTd>
@@ -40,6 +53,7 @@
     private List<Assignment> assignments = new();
     private List<Coach> coaches = new();
     private List<ClientOrg> clients = new();
+    private List<TimeEntry> timeEntries = new();
     private string statusFilter = "all";
     private bool loading = true;
 
@@ -53,10 +67,13 @@
             assignments = await Data.GetAssignmentsAsync();
             coaches = await Data.GetCoachesAsync();
             clients = await Data.GetClientsAsync();
+            timeEntries = await Data.GetTimeEntriesAsync();
         }
         catch { }
         finally { loading = false; }
     }
+
+    private decimal GetUsedHours(string assignId) => timeEntries.Where(e => e.AssignId == assignId).Sum(e => e.HoursReported);
 
     private string GetCoachName(string id)
     {

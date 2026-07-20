@@ -3,6 +3,7 @@
 @inject AppState AppState
 @inject NavigationManager Nav
 @inject Supabase.Client SupabaseClient
+@inject NotificationService NotificationSvc
 @implements IDisposable
 
 <MudRTLProvider RightToLeft="true">
@@ -101,6 +102,7 @@ else
 @code {
     private bool _drawerOpen = true;
     private Timer? _tokenTimer;
+    private Timer? _notificationTimer;
 
     private MudTheme _theme = new()
     {
@@ -125,6 +127,9 @@ else
 
         // Check token validity every 60 seconds
         _tokenTimer = new Timer(async _ => await CheckTokenValidity(), null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
+
+        // Refresh notification count every 2 minutes
+        _notificationTimer = new Timer(async _ => await RefreshNotifications(), null, TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(2));
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -195,6 +200,13 @@ else
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 
+    private async Task RefreshNotifications()
+    {
+        if (!AppState.IsAuthenticated || !AppState.IsAdmin) return;
+        await NotificationSvc.RefreshNotificationCountAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
     private void SwitchRole()
     {
         AppState.SetRole(AppState.IsAdmin ? "Coach" : "Admin");
@@ -212,5 +224,6 @@ else
         AppState.OnChange -= StateHasChanged;
         Nav.LocationChanged -= OnLocationChanged;
         _tokenTimer?.Dispose();
+        _notificationTimer?.Dispose();
     }
 }

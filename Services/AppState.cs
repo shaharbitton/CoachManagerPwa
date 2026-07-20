@@ -8,7 +8,13 @@ public class AppState
     public bool IsAuthenticated { get; private set; }
     public bool RequiresOnboarding { get; set; }
     public bool UsedDefaultPassword { get; set; }
-    public int NotificationCount { get; set; }
+    public int NotificationCount { get; private set; }
+
+    public void SetNotificationCount(int count)
+    {
+        NotificationCount = count;
+        OnChange?.Invoke();
+    }
 
     public event Action? OnChange;
 

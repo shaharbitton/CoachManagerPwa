@@ -156,6 +156,19 @@
             return;
         }
 
+        // Check quota - block if hours would exceed allocation
+        var assignment = assignments.FirstOrDefault(a => a.AssignId == newEntry.AssignId);
+        if (assignment?.AllocatedHours is > 0)
+        {
+            var usedHours = recentEntries.Where(e => e.AssignId == newEntry.AssignId).Sum(e => e.HoursReported);
+            if (usedHours + newEntry.HoursReported > assignment.AllocatedHours.Value)
+            {
+                var remaining = assignment.AllocatedHours.Value - usedHours;
+                Snackbar.Add($"לא ניתן לדווח מעבר למכסה! נותרו {remaining:0.#} שעות מתוך {assignment.AllocatedHours.Value:0.#} מוקצות.", Severity.Error);
+                return;
+            }
+        }
+
         // Check signature is not empty
         var isEmpty = await JS.InvokeAsync<bool>("signaturePad.isEmpty");
         if (isEmpty)

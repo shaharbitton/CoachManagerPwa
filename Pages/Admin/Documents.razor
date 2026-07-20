@@ -4,6 +4,7 @@
 @inject IDialogService DialogService
 @inject Supabase.Client SupabaseClient
 @inject IJSRuntime JS
+@inject NotificationService NotificationSvc
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">ניהול מסמכים ואישורים</MudText>
 
@@ -357,14 +358,14 @@
     private async Task ApproveDoc(CoachDocument doc)
     {
         doc.Status = "Approved";
-        try { await Data.UpdateDocumentAsync(doc); Snackbar.Add("מסמך אושר", Severity.Success); }
+        try { await Data.UpdateDocumentAsync(doc); Snackbar.Add("מסמך אושר", Severity.Success); await NotificationSvc.RefreshNotificationCountAsync(); }
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
 
     private async Task RejectDoc(CoachDocument doc)
     {
         doc.Status = "Rejected";
-        try { await Data.UpdateDocumentAsync(doc); Snackbar.Add("מסמך נדחה", Severity.Warning); }
+        try { await Data.UpdateDocumentAsync(doc); Snackbar.Add("מסמך נדחה", Severity.Warning); await NotificationSvc.RefreshNotificationCountAsync(); }
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
 
@@ -375,6 +376,7 @@
             await Data.DeleteDocumentAsync(doc.DocId);
             documents.Remove(doc);
             Snackbar.Add("מסמך נמחק", Severity.Info);
+            await NotificationSvc.RefreshNotificationCountAsync();
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
