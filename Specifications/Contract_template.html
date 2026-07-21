@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: 'David', 'Arial', sans-serif;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #222;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 30px;
+            text-decoration: underline;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+
+        .parties {
+            margin-bottom: 20px;
+        }
+
+        .parties strong {
+            display: inline;
+        }
+
+        .field-value {
+            font-weight: bold;
+            color: #1a365d;
+            border-bottom: 1px solid #999;
+            padding: 0 4px;
+            min-width: 120px;
+            display: inline-block;
+        }
+
+        .commitment-list {
+            padding-right: 20px;
+            margin: 8px 0;
+        }
+
+        .commitment-list li {
+            margin-bottom: 4px;
+        }
+
+        .sub-list {
+            padding-right: 20px;
+            margin: 8px 0;
+            list-style-type: disc;
+        }
+
+        .sub-list li {
+            margin-bottom: 4px;
+        }
+
+        .signature-section {
+            margin-top: 40px;
+            page-break-inside: avoid;
+        }
+
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .signature-block {
+            text-align: center;
+            width: 45%;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 60px;
+            padding-top: 5px;
+        }
+
+        .signature-image {
+            max-height: 80px;
+            margin-top: 10px;
+        }
+
+        .date-line {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<h1>הסכם התקשרות</h1>
+
+<div class="parties">
+    <p><strong>בין:</strong></p>
+    <p>ארקן ישראל, ספורט עם ירון (להלן: "העוסק")</p>
+    <p><strong>לבין:</strong></p>
+    <p>
+        שם המדריך/מאמן: <span class="field-value">{{FIRST_NAME}} {{LAST_NAME}}</span>
+        &nbsp;&nbsp;
+        ת.ז.: <span class="field-value">{{NATIONAL_ID}}</span>
+    </p>
+    <p>כתובת: <span class="field-value">{{ADDRESS}}</span></p>
+    <p>(להלן: "המדריך/מאמן")</p>
+</div>
+
+<!-- סעיף 1 -->
+<p class="section-title">1. מטרת ההתקשרות:</p>
+<p>המאמן יספק שירותי הדרכה, אימון והפעלות מטעם החברה, בהתאם לצורכי החברה, בבתי ספר, מוסדות, רשויות מקומיות, חברות או כל גוף אחר עמו תתקשר החברה.</p>
+
+<!-- סעיף 2 -->
+<p class="section-title">2. תקופת ההתקשרות:</p>
+<p>הסכם זה ייכנס לתוקף בתאריך <span class="field-value">{{CONTRACT_DATE}}</span> ויישאר בתוקף עד לסיומו על ידי אחד הצדדים, בהודעה מוקדמת של 14 ימים, אלא אם נקבע אחרת בכתב.</p>
+
+<!-- סעיף 3 -->
+<p class="section-title">3. פרטי התקשרות:</p>
+<p>שם המוסד/ביה"ס/הלקוח: <span class="field-value">{{CLIENT_NAME}}</span></p>
+<p>כתובת המוסד: <span class="field-value">{{CLIENT_ADDRESS}}</span></p>
+<p>תקופת התקשרות עבור מוסד זה:</p>
+<p>מתאריך <span class="field-value">{{PERIOD_START}}</span> ועד תאריך <span class="field-value">{{PERIOD_END}}</span></p>
+
+<!-- סעיף 4 -->
+<p class="section-title">4. תנאי העבודה:</p>
+<p>א. מועדי העבודה, מקום העבודה, היקף השעות והתמורה ייקבעו מעת לעת על ידי החברה ובהתאם לצרכי הפעילות.</p>
+<p>ב. החברה רשאית לעדכן את התעריף, ימי העבודה, שעות העבודה ומיקום הפעילות, בהודעה מראש למאמן.</p>
+<p>ג. פרטי ההתקשרות העדכניים יופיעו בנספח או בהודעה כתובה (דוא"ל, WhatsApp או כל אמצעי תקשורת מוסכם אחר), והם יהוו חלק בלתי נפרד מהסכם זה.</p>
+
+<!-- סעיף 5 -->
+<p class="section-title">5. התחייבות המדריך/המאמן:</p>
+<ul class="commitment-list">
+    <li>לייצג את החברה באופן מקצועי, מכבד וראוי.</li>
+    <li>להגיע בזמן לכל פעילות.</li>
+    <li>לשמור על כללי בטיחות ומשמעת.</li>
+    <li>לדווח באתר/באפליקציה או בדרך שנקבעה מראש נוכחות בתום כל פעילות.</li>
+    <li>לשמור על סודיות מלאה לגבי מידע עסקי, לקוחות, תכנים, שיטות עבודה ורשימות לקוחות של החברה.</li>
+</ul>
+<p>במהלך תקופת ההתקשרות וכן במשך 36 חודשים ממועד סיומה, מתחייב המאמן שלא, במישרין או בעקיפין:</p>
+<ul class="sub-list">
+    <li>לספק שירותים דומים לכל לקוח, מוסד, בית ספר, רשות מקומית או גוף אליו הגיע באמצעות החברה, ללא אישור מראש ובכתב מהחברה.</li>
+    <li>לפנות ללקוחות החברה לצורך מתן שירות באופן עצמאי.</li>
+    <li>להעביר או לעשות שימוש בפרטי לקוחות, מחירים, חומרי הדרכה או מידע עסקי של החברה.</li>
+</ul>
+<p>אין באמור כדי למנוע מהמאמן לעסוק בתחום ההדרכה באופן כללי, ובלבד שלא יעשה שימוש בקשרי החברה, בלקוחותיה או במידע העסקי שלה.</p>
+
+<!-- סעיף 6 -->
+<p class="section-title">6. קניין רוחני</p>
+<p>כל חומר מקצועי, מערכי שיעור, מצגות, תוכניות עבודה, משחקים, תכנים, סרטונים או כל חומר אחר שיימסר למאמן או יפותח במסגרת פעילותו עבור החברה, יהיו רכושה הבלעדי של החברה.</p>
+
+<!-- סעיף 7 -->
+<p class="section-title">7. סיום ההתקשרות</p>
+<p>החברה רשאית להפסיק את ההתקשרות באופן מיידי במקרה של הפרת הסכם זה, התנהגות בלתי הולמת, פגיעה במוניטין החברה או הפרת הוראות הדין.</p>
+
+<!-- סעיף 8 -->
+<p class="section-title">8. שונות</p>
+<p>א. כל שינוי להסכם זה יהיה בכתב בלבד.</p>
+<p>ב. הסכם זה מהווה את מלוא ההבנות בין הצדדים.</p>
+<p>ג. סמכות השיפוט הבלעדית תהיה לבית המשפט המוסמך במחוז מרכז.</p>
+
+<!-- חתימות -->
+<div class="signature-section">
+    <p><strong>ולראיה באו הצדדים על החתום:</strong></p>
+    <div class="signature-row">
+        <div class="signature-block">
+            <p>ארקן ישראל, ספורט עם ירון</p>
+            <div class="signature-line">חתימת העוסק</div>
+        </div>
+        <div class="signature-block">
+            <p>{{FIRST_NAME}} {{LAST_NAME}}</p>
+            <!-- COACH_SIGNATURE_PLACEHOLDER -->
+            <div class="signature-line">חתימת המדריך/המאמן</div>
+        </div>
+    </div>
+    <p class="date-line">תאריך חתימה: <span class="field-value">{{SIGNATURE_DATE}}</span></p>
+</div>
+
+<!--
+=== PLACEHOLDER REFERENCE ===
+{{FIRST_NAME}}       - שם פרטי של המאמן
+{{LAST_NAME}}        - שם משפחה של המאמן
+{{NATIONAL_ID}}      - מספר תעודת זהות
+{{ADDRESS}}          - כתובת המאמן (מתוך AvailabilityArea או שדה עתידי)
+{{CONTRACT_DATE}}    - תאריך כניסה לתוקף (תאריך החתימה)
+{{CLIENT_NAME}}      - שם הלקוח/מוסד (ימולא מאוחר או יישאר ריק)
+{{CLIENT_ADDRESS}}   - כתובת הלקוח (ימולא מאוחר או יישאר ריק)
+{{PERIOD_START}}     - תחילת תקופת ההתקשרות (ימולא מאוחר או יישאר ריק)
+{{PERIOD_END}}       - סיום תקופת ההתקשרות (ימולא מאוחר או יישאר ריק)
+{{SIGNATURE_DATE}}   - תאריך החתימה בפועל (auto-filled)
+COACH_SIGNATURE_PLACEHOLDER - יוחלף ב-<img> של חתימת המאמן מה-Canvas
+===
+-->
+
+</body>
+</html>

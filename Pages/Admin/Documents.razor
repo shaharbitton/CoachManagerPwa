@@ -170,8 +170,6 @@
             <MudSelectItem Value="@("Certification")">תעודת הסמכה</MudSelectItem>
             <MudSelectItem Value="@("Tax_Withholding")">ניכוי מס במקור</MudSelectItem>
             <MudSelectItem Value="@("Bank_Confirmation")">אישור ניהול חשבון</MudSelectItem>
-            <MudSelectItem Value="@("Contract")">חוזה</MudSelectItem>
-            <MudSelectItem Value="@("Other")">אחר</MudSelectItem>
         </MudSelect>
         <MudDatePicker @bind-Date="expirationDate" Label="תאריך תפוגה (אופציונלי)" Variant="Variant.Outlined" Class="mb-3" />
         <MudFileUpload T="IBrowserFile" Accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" FilesChanged="OnFileSelected" MaximumFileCount="1">
