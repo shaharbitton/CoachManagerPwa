@@ -27,8 +27,9 @@ else
             {
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" OnClick="ToggleDrawer" />
             }
+            <MudImage Src="images/arcan-logo.png" Alt="Arcan" Width="36" Height="36" ObjectFit="ObjectFit.Contain" Style="border-radius: 50%; background: white; padding: 2px;" Class="me-2" />
             <MudText Typo="Typo.h6" Style="font-weight: bold;">
-                @(AppState.IsAdmin ? "לוח בקרה - ניהול" : "אפליקציית מאמן")
+                @(AppState.IsAdmin ? "Arcan - ניהול" : "Arcan - מאמן")
             </MudText>
             <MudSpacer />
             <MudChip T="string" Color="Color.Secondary" Size="Size.Small">@AppState.CurrentRole</MudChip>
