@@ -30,8 +30,8 @@ else
                     <MudAvatar Color="Color.Primary"><MudIcon Icon="@Icons.Material.Filled.Business" /></MudAvatar>
                 </CardHeaderAvatar>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">@(client?.ClientName ?? "לקוח")</MudText>
-                    <MudText Typo="Typo.caption">@(client?.City ?? "")</MudText>
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">@GetEngagementName(assignment)</MudText>
+                    <MudText Typo="Typo.caption">@(client?.ClientName ?? "לקוח") · @(client?.City ?? "")</MudText>
                 </CardHeaderContent>
                 <CardHeaderActions>
                     <MudChip T="string" Size="Size.Small" Color="@(assignment.Status == "Active" ? Color.Success : Color.Default)">
@@ -78,6 +78,7 @@ else
     private List<Assignment> assignments = new();
     private List<ClientOrg> clients = new();
     private List<TE> allEntries = new();
+    private List<ClientContract> allContracts = new();
     private bool loading = true;
 
     protected override async Task OnInitializedAsync()
@@ -87,9 +88,20 @@ else
             assignments = await Data.GetAssignmentsByCoachAsync(AppState.CurrentUserId);
             clients = await Data.GetClientsAsync();
             allEntries = await Data.GetTimeEntriesAsync();
+            allContracts = await Data.GetAllContractsAsync();
         }
         catch { }
         finally { loading = false; }
+    }
+
+    private string GetEngagementName(Assignment a)
+    {
+        if (!string.IsNullOrEmpty(a.ContractId))
+        {
+            var contract = allContracts.FirstOrDefault(c => c.ContractId == a.ContractId);
+            if (!string.IsNullOrWhiteSpace(contract?.EngagementName)) return contract.EngagementName;
+        }
+        return "כללי";
     }
 
     private int GetEntryCount(string assignId) => allEntries.Count(e => e.AssignId == assignId);

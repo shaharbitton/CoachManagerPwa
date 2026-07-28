@@ -18,6 +18,9 @@
                 <MudTextField @bind-Value="Coach.LastName" Label="שם משפחה" Variant="Variant.Outlined" Required="true" />
             </MudItem>
             <MudItem xs="6">
+                <MudTextField @bind-Value="Coach.Phone" Label="טלפון" Variant="Variant.Outlined" InputType="InputType.Telephone" />
+            </MudItem>
+            <MudItem xs="6">
                 <MudDatePicker @bind-Date="birthDate" Label="תאריך לידה" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="6">
@@ -63,7 +66,7 @@
             Snackbar.Add("שם פרטי ושם משפחה הם שדות חובה", Severity.Warning);
             return;
         }
-        Coach.BirthDate = birthDate;
+        Coach.BirthDate = birthDate.HasValue ? DateTime.SpecifyKind(birthDate.Value.Date, DateTimeKind.Utc) : null;
         MudDialog.Close(DialogResult.Ok(new CoachDialogResult { Coach = Coach, Email = Email }));
     }
 

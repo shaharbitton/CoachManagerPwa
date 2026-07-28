@@ -19,8 +19,8 @@
 
     private void Submit()
     {
-        if (effectiveFrom.HasValue) Rate.EffectiveFrom = effectiveFrom.Value;
-        Rate.EffectiveTo = effectiveTo;
+        if (effectiveFrom.HasValue) Rate.EffectiveFrom = DateTime.SpecifyKind(effectiveFrom.Value.Date, DateTimeKind.Utc);
+        Rate.EffectiveTo = effectiveTo.HasValue ? DateTime.SpecifyKind(effectiveTo.Value.Date, DateTimeKind.Utc) : null;
         MudDialog.Close(DialogResult.Ok(Rate));
     }
 

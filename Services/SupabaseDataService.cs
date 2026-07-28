@@ -171,6 +171,21 @@ public class SupabaseDataService : IDataService
         return response.Models.First();
     }
 
+    public async Task<CoachRate> UpdateRateAsync(CoachRate rate)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachRate>().Update(rate);
+        return response.Models.First();
+    }
+
+    public async Task DeleteRateAsync(string rateId)
+    {
+        await EnsureInitializedAsync();
+        await _client.From<CoachRate>()
+            .Where(r => r.RateId == rateId)
+            .Delete();
+    }
+
     // ===== Clients =====
 
     public async Task<List<ClientOrg>> GetClientsAsync()
@@ -205,6 +220,13 @@ public class SupabaseDataService : IDataService
 
     // ===== Client Contracts =====
 
+    public async Task<List<ClientContract>> GetAllContractsAsync()
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<ClientContract>().Get();
+        return response.Models;
+    }
+
     public async Task<List<ClientContract>> GetContractsByClientAsync(string clientId)
     {
         await EnsureInitializedAsync();
@@ -219,6 +241,21 @@ public class SupabaseDataService : IDataService
         await EnsureInitializedAsync();
         var response = await _client.From<ClientContract>().Insert(contract);
         return response.Models.First();
+    }
+
+    public async Task<ClientContract> UpdateContractAsync(ClientContract contract)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<ClientContract>().Update(contract);
+        return response.Models.First();
+    }
+
+    public async Task DeleteContractAsync(string contractId)
+    {
+        await EnsureInitializedAsync();
+        await _client.From<ClientContract>()
+            .Where(c => c.ContractId == contractId)
+            .Delete();
     }
 
     // ===== Assignments =====
@@ -260,6 +297,14 @@ public class SupabaseDataService : IDataService
         await EnsureInitializedAsync();
         var response = await _client.From<Assignment>().Update(assignment);
         return response.Models.First();
+    }
+
+    public async Task DeleteAssignmentAsync(string assignId)
+    {
+        await EnsureInitializedAsync();
+        await _client.From<Assignment>()
+            .Where(a => a.AssignId == assignId)
+            .Delete();
     }
 
     // ===== Time Entries =====

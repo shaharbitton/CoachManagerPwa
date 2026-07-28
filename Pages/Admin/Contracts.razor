@@ -22,16 +22,29 @@
 
     <MudTable Items="contracts" Hover="true" Elevation="2" Dense="true">
         <HeaderContent>
+            <MudTh>שם התקשרות</MudTh>
             <MudTh>תעריף חיוב (₪/שעה)</MudTh>
             <MudTh>היקף שעות</MudTh>
             <MudTh>תנאי תשלום</MudTh>
             <MudTh>תקופה</MudTh>
+            <MudTh>לו"ז</MudTh>
+            <MudTh>פעולות</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd Style="font-weight: bold;">₪@context.BillingRatePerHour</MudTd>
+            <MudTd Style="font-weight: bold;">@(string.IsNullOrWhiteSpace(context.EngagementName) ? "כללי" : context.EngagementName)</MudTd>
+            <MudTd>₪@context.BillingRatePerHour</MudTd>
             <MudTd>@context.WorkScopeHours</MudTd>
             <MudTd>@context.PaymentTerms</MudTd>
             <MudTd>@context.StartDate.ToString("dd/MM/yyyy") - @(context.EndDate?.ToString("dd/MM/yyyy") ?? "פתוח")</MudTd>
+            <MudTd>
+                <MudIcon Icon="@(string.IsNullOrWhiteSpace(context.PreferredSchedule) ? Icons.Material.Outlined.EventBusy : Icons.Material.Filled.EventAvailable)"
+                         Color="@(string.IsNullOrWhiteSpace(context.PreferredSchedule) ? Color.Default : Color.Success)"
+                         Size="Size.Small" />
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditContract(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteContract(context))" />
+            </MudTd>
         </RowTemplate>
     </MudTable>
 }
@@ -56,7 +69,7 @@
     private async Task AddContract()
     {
         var contract = new ClientContract { ClientId = selectedClientId };
-        var parameters = new DialogParameters<ContractDialog> { { x => x.Contract, contract } };
+        var parameters = new DialogParameters<ContractDialog> { { x => x.Contract, contract }, { x => x.IsNew, true } };
         var dialog = await Dialog.ShowAsync<ContractDialog>("הוספת הסכם", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: ClientContract newContract })
@@ -69,5 +82,33 @@
             }
             catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
         }
+    }
+
+    private async Task EditContract(ClientContract contract)
+    {
+        var parameters = new DialogParameters<ContractDialog> { { x => x.Contract, contract }, { x => x.IsNew, false } };
+        var dialog = await Dialog.ShowAsync<ContractDialog>("עריכת הסכם", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: ClientContract updated })
+        {
+            try
+            {
+                await Data.UpdateContractAsync(updated);
+                contracts = await Data.GetContractsByClientAsync(selectedClientId);
+                Snackbar.Add("הסכם עודכן", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private async Task DeleteContract(ClientContract contract)
+    {
+        try
+        {
+            await Data.DeleteContractAsync(contract.ContractId);
+            contracts = await Data.GetContractsByClientAsync(selectedClientId);
+            Snackbar.Add("הסכם נמחק", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
 }

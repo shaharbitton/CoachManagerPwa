@@ -24,7 +24,7 @@
     <MudDatePicker @bind-Date="workDate" Label="תאריך עבודה" Variant="Variant.Outlined" Class="mb-3" />
 
     <MudNumericField T="decimal" @bind-Value="newEntry.HoursReported" Label="שעות" Variant="Variant.Outlined"
-                     Min="0.5m" Max="12m" Step="0.5m" Class="mb-3" />
+                     Min="1m" Max="6m" Step="1m" Class="mb-3" />
 
     <MudTextField @bind-Value="newEntry.Description" Label="תיאור תכולת השיעור" Variant="Variant.Outlined" Lines="2" Class="mb-3" />
 
@@ -182,7 +182,7 @@
         submitting = true;
         try
         {
-            if (workDate.HasValue) newEntry.WorkDate = workDate.Value;
+            if (workDate.HasValue) newEntry.WorkDate = DateTime.SpecifyKind(workDate.Value.Date, DateTimeKind.Utc);
 
             // Get signature as PNG bytes and upload to Supabase Storage
             var signatureBytes = await JS.InvokeAsync<byte[]>("signaturePad.toBytes");

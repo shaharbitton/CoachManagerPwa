@@ -2,10 +2,11 @@
     <DialogContent>
         <MudTextField @bind-Value="Group.GroupName" Label="שם הקבוצה" Variant="Variant.Outlined" Required="true"
                       Placeholder="אורט - כיתה ז'1 - רובוטיקה" />
-        <MudSelect T="string" @bind-Value="Group.AssignId" Label="שיבוץ" Variant="Variant.Outlined" Class="mt-3" Required="true">
+        <MudSelect T="string" @bind-Value="Group.AssignId" Label="שיבוץ (לקוח / התקשרות)" Variant="Variant.Outlined" Class="mt-3" Required="true"
+                   Placeholder="בחר שיבוץ">
             @foreach (var a in Assignments)
             {
-                <MudSelectItem Value="@a.AssignId">שיבוץ - @a.AssignId[..8]</MudSelectItem>
+                <MudSelectItem Value="@a.AssignId">@GetAssignmentLabel(a)</MudSelectItem>
             }
         </MudSelect>
     </DialogContent>
@@ -19,10 +20,26 @@
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public TrainingGroup Group { get; set; } = new();
     [Parameter] public List<Assignment> Assignments { get; set; } = new();
+    [Parameter] public List<ClientOrg> Clients { get; set; } = new();
+
+    private string GetAssignmentLabel(Assignment a)
+    {
+        var client = Clients.FirstOrDefault(c => c.ClientId == a.ClientId);
+        var clientName = client?.ClientName ?? "לקוח";
+        var hours = a.AllocatedHours?.ToString("0") ?? "-";
+        return $"{clientName} ({hours} שעות)";
+    }
 
     private void Submit()
     {
         if (string.IsNullOrWhiteSpace(Group.GroupName)) return;
+        if (string.IsNullOrWhiteSpace(Group.AssignId)) return;
+
+        // Set ClientId from the selected assignment
+        var selectedAssignment = Assignments.FirstOrDefault(a => a.AssignId == Group.AssignId);
+        if (selectedAssignment != null)
+            Group.ClientId = selectedAssignment.ClientId;
+
         MudDialog.Close(DialogResult.Ok(Group));
     }
 

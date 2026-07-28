@@ -31,6 +31,8 @@ public interface IDataService
     Task<List<CoachRate>> GetRatesByCoachAsync(string coachId);
     Task<CoachRate?> GetActiveRateForAssignmentAsync(string coachId, string? assignId);
     Task<CoachRate> CreateRateAsync(CoachRate rate);
+    Task<CoachRate> UpdateRateAsync(CoachRate rate);
+    Task DeleteRateAsync(string rateId);
 
     // Clients
     Task<List<ClientOrg>> GetClientsAsync();
@@ -39,8 +41,11 @@ public interface IDataService
     Task<ClientOrg> UpdateClientAsync(ClientOrg client);
 
     // Client Contracts
+    Task<List<ClientContract>> GetAllContractsAsync();
     Task<List<ClientContract>> GetContractsByClientAsync(string clientId);
     Task<ClientContract> CreateContractAsync(ClientContract contract);
+    Task<ClientContract> UpdateContractAsync(ClientContract contract);
+    Task DeleteContractAsync(string contractId);
 
     // Assignments
     Task<List<Assignment>> GetAssignmentsAsync();
@@ -48,6 +53,7 @@ public interface IDataService
     Task<Assignment?> GetAssignmentByIdAsync(string assignId);
     Task<Assignment> CreateAssignmentAsync(Assignment assignment);
     Task<Assignment> UpdateAssignmentAsync(Assignment assignment);
+    Task DeleteAssignmentAsync(string assignId);
 
     // Time Entries
     Task<List<TimeEntry>> GetTimeEntriesAsync();

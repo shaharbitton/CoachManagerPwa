@@ -1,8 +1,11 @@
+@inject IDataService Data
+@inject ISnackbar Snackbar
+
 <MudDialog>
     <DialogContent>
         <MudGrid>
             <MudItem xs="12">
-                <MudSelect T="string" @bind-Value="Assignment.CoachId" Label="מאמן" Variant="Variant.Outlined" Required="true">
+                <MudSelect T="string" Value="Assignment.CoachId" ValueChanged="OnCoachChanged" Label="מאמן" Variant="Variant.Outlined" Required="true">
                     @foreach (var c in Coaches)
                     {
                         <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
@@ -10,15 +13,23 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12">
-                <MudSelect T="string" @bind-Value="Assignment.ClientId" Label="לקוח / מוסד" Variant="Variant.Outlined" Required="true">
+                <MudSelect T="string" Value="Assignment.ClientId" ValueChanged="OnClientChanged" Label="לקוח / מוסד" Variant="Variant.Outlined" Required="true">
                     @foreach (var c in Clients)
                     {
                         <MudSelectItem Value="@c.ClientId">@c.ClientName</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
-            <MudItem xs="6">
-                <MudNumericField T="decimal?" @bind-Value="Assignment.AllocatedHours" Label="שעות מוקצות" Variant="Variant.Outlined" />
+            <MudItem xs="12">
+                <MudSelect T="string" Value="Assignment.ContractId" ValueChanged="OnContractChanged" Label="חוזה לקוח" Variant="Variant.Outlined" Clearable="true">
+                    @foreach (var ct in clientContracts)
+                    {
+                        <MudSelectItem Value="@ct.ContractId">@(string.IsNullOrWhiteSpace(ct.EngagementName) ? "כללי" : ct.EngagementName) — ₪@ct.BillingRatePerHour/שעה</MudSelectItem>
+                    }
+                </MudSelect>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField T="decimal?" @bind-Value="Assignment.AllocatedHours" Label="שעות מוקצות" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="6">
                 <MudSelect T="string" @bind-Value="Assignment.Status" Label="סטטוס" Variant="Variant.Outlined">
@@ -27,6 +38,51 @@
                     <MudSelectItem Value="@("Cancelled")">בוטל</MudSelectItem>
                 </MudSelect>
             </MudItem>
+
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2" Class="mb-1">תעריף מאמן</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudRadioGroup T="string" @bind-Value="rateMode">
+                    <MudRadio Value="@("default")" Color="Color.Primary">תעריף ברירת מחדל (לפי המאמן)</MudRadio>
+                    <MudRadio Value="@("existing")" Color="Color.Primary">בחר תעריף ספציפי</MudRadio>
+                    <MudRadio Value="@("new")" Color="Color.Primary">צור תעריף חדש</MudRadio>
+                </MudRadioGroup>
+            </MudItem>
+
+            @if (rateMode == "default")
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info" Dense="true">
+                        התעריף ייקבע אוטומטית לפי התעריף העדכני ביותר של המאמן. אם שכר המאמן יעודכן בעתיד — גם כאן התעריף יתעדכן אוטומטית.
+                    </MudAlert>
+                </MudItem>
+            }
+
+            @if (rateMode == "existing")
+            {
+                <MudItem xs="12">
+                    <MudSelect T="string" @bind-Value="Assignment.CoachRateId" Label="תעריף ספציפי" Variant="Variant.Outlined" Clearable="true"
+                               MaxHeight="200">
+                        @foreach (var r in coachRates)
+                        {
+                            <MudSelectItem Value="@r.RateId">₪@r.HourlyRate (מ-@r.EffectiveFrom.ToString("dd/MM/yy"))</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudText Typo="Typo.caption" Color="Color.Default" Class="mt-1">
+                        תעריף ספציפי לא יתעדכן אוטומטית — גם אם שכר המאמן ישתנה.
+                    </MudText>
+                </MudItem>
+            }
+            else if (rateMode == "new")
+            {
+                <MudItem xs="12">
+                    <MudNumericField T="decimal" @bind-Value="newRateAmount" Label="תעריף לשעה (₪)" Variant="Variant.Outlined" Required="true" />
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="mt-1">
+                        שם התקשרות ותאריכים יילקחו אוטומטית מהחוזה שנבחר
+                    </MudText>
+                </MudItem>
+            }
         </MudGrid>
     </DialogContent>
     <DialogActions>
@@ -42,11 +98,110 @@
     [Parameter] public List<ClientOrg> Clients { get; set; } = new();
     [Parameter] public bool IsNew { get; set; }
 
-    private void Submit()
+    private List<CoachRate> coachRates = new();
+    private List<ClientContract> clientContracts = new();
+    private ClientContract? selectedContract;
+    private string rateMode = "default";
+    private decimal newRateAmount;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Determine initial rate mode based on existing assignment data
+        if (!IsNew && !string.IsNullOrEmpty(Assignment.CoachRateId))
+            rateMode = "existing";
+        else if (!IsNew)
+            rateMode = "default";
+
+        if (!string.IsNullOrEmpty(Assignment.CoachId))
+        {
+            try { coachRates = await Data.GetRatesByCoachAsync(Assignment.CoachId); } catch { }
+        }
+        if (!string.IsNullOrEmpty(Assignment.ClientId))
+        {
+            try { clientContracts = await Data.GetContractsByClientAsync(Assignment.ClientId); } catch { }
+        }
+        if (!string.IsNullOrEmpty(Assignment.ContractId))
+        {
+            selectedContract = clientContracts.FirstOrDefault(c => c.ContractId == Assignment.ContractId);
+        }
+    }
+
+    private async Task OnCoachChanged(string coachId)
+    {
+        Assignment.CoachId = coachId;
+        Assignment.CoachRateId = null;
+        coachRates.Clear();
+        if (!string.IsNullOrEmpty(coachId))
+        {
+            try { coachRates = await Data.GetRatesByCoachAsync(coachId); } catch { }
+        }
+    }
+
+    private async Task OnClientChanged(string clientId)
+    {
+        Assignment.ClientId = clientId;
+        Assignment.ContractId = null;
+        selectedContract = null;
+        clientContracts.Clear();
+        if (!string.IsNullOrEmpty(clientId))
+        {
+            try { clientContracts = await Data.GetContractsByClientAsync(clientId); } catch { }
+        }
+    }
+
+    private void OnContractChanged(string? contractId)
+    {
+        Assignment.ContractId = contractId;
+        selectedContract = clientContracts.FirstOrDefault(c => c.ContractId == contractId);
+    }
+
+    private async Task Submit()
     {
         if (string.IsNullOrWhiteSpace(Assignment.CoachId) || string.IsNullOrWhiteSpace(Assignment.ClientId)) return;
-        MudDialog.Close(DialogResult.Ok(Assignment));
+
+        if (IsNew && string.IsNullOrWhiteSpace(Assignment.ContractId))
+        {
+            Snackbar.Add("יש לבחור חוזה לקוח", Severity.Warning);
+            return;
+        }
+
+        if (rateMode == "existing" && string.IsNullOrWhiteSpace(Assignment.CoachRateId))
+        {
+            Snackbar.Add("יש לבחור תעריף מאמן", Severity.Warning);
+            return;
+        }
+
+        if (rateMode == "new" && newRateAmount <= 0)
+        {
+            Snackbar.Add("יש להזין תעריף לשעה", Severity.Warning);
+            return;
+        }
+
+        // Default mode: clear specific rate so it always uses coach's latest
+        if (rateMode == "default")
+        {
+            Assignment.CoachRateId = null;
+        }
+
+        if (rateMode == "new" && newRateAmount > 0)
+        {
+            newRateForCreation = new CoachRate
+            {
+                CoachId = Assignment.CoachId,
+                HourlyRate = newRateAmount,
+                EffectiveFrom = selectedContract != null
+                    ? DateTime.SpecifyKind(selectedContract.StartDate.Date, DateTimeKind.Utc)
+                    : DateTime.SpecifyKind(DateTime.Today, DateTimeKind.Utc),
+                EffectiveTo = selectedContract?.EndDate.HasValue == true
+                    ? DateTime.SpecifyKind(selectedContract.EndDate!.Value.Date, DateTimeKind.Utc)
+                    : null
+            };
+        }
+
+        MudDialog.Close(DialogResult.Ok(new AssignmentDialogResult { Assignment = Assignment, NewRate = newRateForCreation }));
     }
+
+    private CoachRate? newRateForCreation;
 
     private void Cancel() => MudDialog.Cancel();
 }

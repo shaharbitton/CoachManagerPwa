@@ -17,6 +17,7 @@
           RowStyle="cursor: pointer;">
     <HeaderContent>
         <MudTh>שם מלא</MudTh>
+        <MudTh>טלפון</MudTh>
         <MudTh>תעודת זהות</MudTh>
         <MudTh>מקצוע</MudTh>
         <MudTh>מעמד מיסויי</MudTh>
@@ -24,6 +25,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd>@context.FirstName @context.LastName</MudTd>
+        <MudTd Style="direction: ltr;">@context.Phone</MudTd>
         <MudTd>@context.NationalId</MudTd>
         <MudTd>@context.Occupation</MudTd>
         <MudTd>

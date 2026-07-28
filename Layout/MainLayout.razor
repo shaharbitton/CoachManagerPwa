@@ -46,8 +46,15 @@ else
         <!-- תפריט צד לאדמין -->
         @if (AppState.IsAdmin)
         {
-            <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always">
-                <MudNavMenu Class="mt-2" Bordered="true" Color="Color.Primary">
+            <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="@(_drawerPinned ? DrawerVariant.Responsive : DrawerVariant.Temporary)" ClipMode="DrawerClipMode.Always">
+                <MudStack Row="true" Justify="Justify.FlexEnd" Class="pa-1">
+                    <MudTooltip Text="@(_drawerPinned ? "שחרר תפריט" : "נעל תפריט")">
+                        <MudIconButton Icon="@(_drawerPinned ? Icons.Material.Filled.PushPin : Icons.Material.Outlined.PushPin)"
+                                       Size="Size.Small" Color="@(_drawerPinned ? Color.Primary : Color.Default)"
+                                       OnClick="TogglePin" />
+                    </MudTooltip>
+                </MudStack>
+                <MudNavMenu Class="mt-0" Bordered="true" Color="Color.Primary">
                     <MudText Typo="Typo.subtitle2" Class="pa-3" Style="color: #666;">ניהול ותפעול</MudText>
                     <MudNavLink Href="admin/dashboard" Icon="@Icons.Material.Filled.Dashboard" Match="NavLinkMatch.Prefix">לוח בקרה</MudNavLink>
                     <MudNavLink Href="admin/coaches" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">מאמנים</MudNavLink>
@@ -102,6 +109,7 @@ else
 
 @code {
     private bool _drawerOpen = true;
+    private bool _drawerPinned = true;
     private Timer? _tokenTimer;
     private Timer? _notificationTimer;
 
@@ -200,6 +208,12 @@ else
     }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private void TogglePin()
+    {
+        _drawerPinned = !_drawerPinned;
+        if (_drawerPinned) _drawerOpen = true;
+    }
 
     private async Task RefreshNotifications()
     {

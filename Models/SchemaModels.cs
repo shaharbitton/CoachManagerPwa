@@ -64,6 +64,9 @@ public class Coach : BaseModel
     [Column("last_name")]
     public string LastName { get; set; } = string.Empty;
 
+    [Column("phone")]
+    public string? Phone { get; set; }
+
     [Column("national_id")]
     public string? NationalId { get; set; }
 
@@ -231,11 +234,20 @@ public class ClientOrg : BaseModel
     [Column("management_email")]
     public string? ManagementEmail { get; set; }
 
+    [Column("management_phone")]
+    public string? ManagementPhone { get; set; }
+
     [Column("accounting_email")]
     public string? AccountingEmail { get; set; }
 
+    [Column("accounting_phone")]
+    public string? AccountingPhone { get; set; }
+
     [Column("secretariat_email")]
     public string? SecretariatEmail { get; set; }
+
+    [Column("secretariat_phone")]
+    public string? SecretariatPhone { get; set; }
 
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
@@ -253,6 +265,9 @@ public class ClientContract : BaseModel
     [Column("client_id")]
     public string ClientId { get; set; } = string.Empty;
 
+    [Column("engagement_name")]
+    public string? EngagementName { get; set; }
+
     [Column("billing_rate_per_hour")]
     public decimal BillingRatePerHour { get; set; }
 
@@ -267,6 +282,9 @@ public class ClientContract : BaseModel
 
     [Column("end_date")]
     public DateTime? EndDate { get; set; }
+
+    [Column("preferred_schedule")]
+    public string? PreferredSchedule { get; set; }
 
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -286,6 +304,9 @@ public class Assignment : BaseModel
 
     [Column("contract_id")]
     public string? ContractId { get; set; }
+
+    [Column("coach_rate_id")]
+    public string? CoachRateId { get; set; }
 
     [Column("allocated_hours")]
     public decimal? AllocatedHours { get; set; }

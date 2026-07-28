@@ -2,10 +2,11 @@
 @inject IDataService Data
 @inject IDialogService Dialog
 @inject ISnackbar Snackbar
+@inject IJSRuntime JS
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">תעריפים ושכר מאמנים</MudText>
 
-<MudSelect T="string" @bind-Value="selectedCoachId" Label="בחר מאמן" Variant="Variant.Outlined" Class="mb-4">
+<MudSelect T="string" Value="selectedCoachId" ValueChanged="OnCoachSelectedChanged" Label="בחר מאמן" Variant="Variant.Outlined" Class="mb-4">
     @foreach (var c in coaches)
     {
         <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
@@ -16,15 +17,18 @@
 {
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
         <MudText Typo="Typo.h6">היסטוריית תעריפים</MudText>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="AddRate">הוסף תעריף</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="AddRate"
+                   Disabled="@HasOpenBaseRate()">הוסף תעריף</MudButton>
     </MudStack>
 
     <MudTable Items="rates" Hover="true" Elevation="2" Dense="true" Loading="loadingRates">
         <HeaderContent>
             <MudTh>סוג</MudTh>
+            <MudTh>התקשרות</MudTh>
             <MudTh>תעריף לשעה (₪)</MudTh>
             <MudTh>מתאריך</MudTh>
             <MudTh>עד תאריך</MudTh>
+            <MudTh>פעולות</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd>
@@ -32,9 +36,14 @@
                     @(context.AssignId == null ? "בסיס כללי" : "שיבוץ ספציפי")
                 </MudChip>
             </MudTd>
+            <MudTd>@GetEngagementName(context.AssignId)</MudTd>
             <MudTd Style="font-weight: bold;">₪@context.HourlyRate</MudTd>
             <MudTd>@context.EffectiveFrom.ToString("dd/MM/yyyy")</MudTd>
             <MudTd>@(context.EffectiveTo?.ToString("dd/MM/yyyy") ?? "פעיל")</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditRate(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteRate(context))" />
+            </MudTd>
         </RowTemplate>
     </MudTable>
 }
@@ -42,23 +51,46 @@
 @code {
     private List<Coach> coaches = new();
     private List<CoachRate> rates = new();
+    private List<Assignment> assignments = new();
+    private List<ClientContract> allContracts = new();
+    private List<ClientOrg> clients = new();
     private string selectedCoachId = "";
     private bool loadingRates;
 
     protected override async Task OnInitializedAsync()
     {
-        try { coaches = await Data.GetCoachesAsync(); } catch { }
+        try
+        {
+            coaches = await Data.GetCoachesAsync();
+            assignments = await Data.GetAssignmentsAsync();
+            allContracts = await Data.GetAllContractsAsync();
+            clients = await Data.GetClientsAsync();
+        }
+        catch { }
     }
 
-    private async Task OnCoachSelected()
+    private async Task OnCoachSelectedChanged(string coachId)
     {
-        if (string.IsNullOrEmpty(selectedCoachId)) return;
+        selectedCoachId = coachId;
+        if (string.IsNullOrEmpty(selectedCoachId)) { rates.Clear(); return; }
         loadingRates = true;
         try { rates = await Data.GetRatesByCoachAsync(selectedCoachId); } catch { }
         finally { loadingRates = false; }
     }
 
-    protected override async Task OnParametersSetAsync() => await OnCoachSelected();
+    private bool HasOpenBaseRate() => rates.Any(r => r.AssignId == null && r.EffectiveTo == null);
+
+    private string GetEngagementName(string? assignId)
+    {
+        if (string.IsNullOrEmpty(assignId)) return "—";
+        var a = assignments.FirstOrDefault(x => x.AssignId == assignId);
+        if (a != null && !string.IsNullOrEmpty(a.ContractId))
+        {
+            var contract = allContracts.FirstOrDefault(c => c.ContractId == a.ContractId);
+            if (!string.IsNullOrWhiteSpace(contract?.EngagementName)) return contract.EngagementName;
+        }
+        return "כללי";
+    }
 
     private async Task AddRate()
     {
@@ -76,5 +108,72 @@
             }
             catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
         }
+    }
+
+    private async Task EditRate(CoachRate rate)
+    {
+        var parameters = new DialogParameters<RateDialog> { { x => x.Rate, rate } };
+        var dialog = await Dialog.ShowAsync<RateDialog>("עריכת תעריף", parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: CoachRate updated })
+        {
+            try
+            {
+                await Data.UpdateRateAsync(updated);
+                rates = await Data.GetRatesByCoachAsync(selectedCoachId);
+                Snackbar.Add("תעריף עודכן", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private async Task DeleteRate(CoachRate rate)
+    {
+        // Find assignments linked to this rate
+        var linkedAssignments = assignments
+            .Where(a => a.CoachRateId == rate.RateId)
+            .ToList();
+
+        if (linkedAssignments.Any())
+        {
+            var lines = new List<string> { "מחיקת תעריף זה תשפיע על השיבוצים הבאים:" };
+            foreach (var a in linkedAssignments)
+            {
+                var clientName = "לקוח לא ידוע";
+                var client = clients.FirstOrDefault(c => c.ClientId == a.ClientId);
+                if (client != null) clientName = client.ClientName;
+
+                var engagementName = "כללי";
+                if (!string.IsNullOrEmpty(a.ContractId))
+                {
+                    var contract = allContracts.FirstOrDefault(c => c.ContractId == a.ContractId);
+                    if (!string.IsNullOrWhiteSpace(contract?.EngagementName)) engagementName = contract.EngagementName;
+                }
+
+                lines.Add($"• {clientName} — {engagementName}");
+            }
+            lines.Add("");
+            lines.Add("קישור התעריף יוסר מהשיבוצים הללו. להמשיך?");
+
+            var message = string.Join("\n", lines);
+            var confirmed = await JS.InvokeAsync<bool>("confirm", message);
+            if (!confirmed) return;
+
+            // Unlink the rate from all linked assignments
+            foreach (var a in linkedAssignments)
+            {
+                a.CoachRateId = null;
+                try { await Data.UpdateAssignmentAsync(a); } catch { }
+            }
+        }
+
+        try
+        {
+            await Data.DeleteRateAsync(rate.RateId);
+            rates = await Data.GetRatesByCoachAsync(selectedCoachId);
+            assignments = await Data.GetAssignmentsAsync();
+            Snackbar.Add("תעריף נמחק", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
 }

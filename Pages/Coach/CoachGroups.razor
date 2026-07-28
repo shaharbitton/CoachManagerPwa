@@ -3,25 +3,42 @@
 @inject AppState AppState
 @inject IDialogService Dialog
 @inject ISnackbar Snackbar
+@inject NavigationManager Nav
 
+@if (loading)
+{
+    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="mt-8" Spacing="3">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+        <MudText Typo="Typo.body2" Color="Color.Default">טוען קבוצות…</MudText>
+    </MudStack>
+}
+else
+{
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">הקבוצות שלי</MudText>
     <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd"
                Size="Size.Small" OnClick="AddGroup">קבוצה חדשה</MudButton>
 </MudStack>
 
-@if (!groups.Any())
+<MudSelect T="string" Value="selectedAssignId" ValueChanged="OnFilterChanged" Label="סנן לפי שיבוץ" Variant="Variant.Outlined" Class="mb-4" Clearable="true">
+    @foreach (var a in assignments)
+    {
+        <MudSelectItem Value="@a.AssignId">@GetAssignmentLabel(a)</MudSelectItem>
+    }
+</MudSelect>
+
+@if (!FilteredGroups.Any())
 {
     <MudCard Elevation="2" Class="pa-6 rounded-lg">
         <MudStack AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.Groups" Style="font-size: 3rem;" Color="Color.Default" />
-            <MudText Color="Color.Default">עדיין לא הקמת קבוצות</MudText>
+            <MudText Color="Color.Default">@(string.IsNullOrEmpty(selectedAssignId) ? "עדיין לא הקמת קבוצות" : "אין קבוצות לשיבוץ זה")</MudText>
         </MudStack>
     </MudCard>
 }
 else
 {
-    @foreach (var group in groups)
+    @foreach (var group in FilteredGroups)
     {
         <MudExpansionPanels Elevation="2" Class="mb-3 rounded-lg">
             <MudExpansionPanel>
@@ -65,15 +82,27 @@ else
 }
 
 @code {
+    [SupplyParameterFromQuery(Name = "assignId")]
+    public string? AssignIdFromQuery { get; set; }
+
     private List<TrainingGroup> groups = new();
     private Dictionary<string, List<Student>> studentsByGroup = new();
     private List<Assignment> assignments = new();
+    private List<ClientOrg> clients = new();
+    private string? selectedAssignId;
+    private bool loading = true;
+
+    private IEnumerable<TrainingGroup> FilteredGroups => string.IsNullOrEmpty(selectedAssignId)
+        ? groups
+        : groups.Where(g => g.AssignId == selectedAssignId);
 
     protected override async Task OnInitializedAsync()
     {
+        selectedAssignId = AssignIdFromQuery;
         try
         {
             assignments = await Data.GetAssignmentsByCoachAsync(AppState.CurrentUserId);
+            clients = await Data.GetClientsAsync();
             groups = await Data.GetGroupsByCoachAsync(AppState.CurrentUserId);
             foreach (var g in groups)
             {
@@ -82,6 +111,20 @@ else
             }
         }
         catch { }
+        finally { loading = false; }
+    }
+
+    private void OnFilterChanged(string? value)
+    {
+        selectedAssignId = value;
+    }
+
+    private string GetAssignmentLabel(Assignment a)
+    {
+        var client = clients.FirstOrDefault(c => c.ClientId == a.ClientId);
+        var clientName = client?.ClientName ?? "לקוח";
+        var hours = a.AllocatedHours?.ToString("0") ?? "-";
+        return $"{clientName} ({hours} שעות)";
     }
 
     private int GetStudentCount(string groupId) =>
@@ -92,7 +135,8 @@ else
         var parameters = new DialogParameters<GroupDialog>
         {
             { x => x.Group, new TrainingGroup { CoachId = AppState.CurrentUserId } },
-            { x => x.Assignments, assignments }
+            { x => x.Assignments, assignments },
+            { x => x.Clients, clients }
         };
         var dialog = await Dialog.ShowAsync<GroupDialog>("הקמת קבוצה חדשה", parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
         var result = await dialog.Result;
@@ -131,4 +175,5 @@ else
     {
         // Navigate to student notes page
     }
+}
 }
