@@ -26,5 +26,8 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<IDataService, SupabaseDataService>();
 builder.Services.AddSingleton<AppState>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddSingleton<ILocalityService>(sp =>
+    new LocalityService(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) }));
+
 
 await builder.Build().RunAsync();

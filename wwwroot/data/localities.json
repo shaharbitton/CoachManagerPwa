@@ -1,0 +1,5090 @@
+﻿[
+  {
+    "name": "אבו ג'ווייעד )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבו גוש",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "אבו סנאן",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אבו סריחאן )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבו עבדון )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבו עמאר )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבו עמרה )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבו קורינאת )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבו קרינאת )יישוב(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבו רובייעה )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבו רוקייק )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבו תלול",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אבטין",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "אבטליון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אביאל",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "אביבים",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "אביגדור",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אביחיל",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "אביטל",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "אביעזר",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "אבירים",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אבן יהודה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "אבן מנחם",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אבן ספיר",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "אבן שמואל",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אבני איתן",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "אבני חפץ",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "אבנת",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "אבשלום",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אדורה",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "אדירים",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "אדמית",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אדרת",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "אודים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "אודם",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "אוהד",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אום אל-פחם",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "אום אל-קוטוף",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "אום בטין",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אומן",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "אומץ",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "אופקים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אור הגנוז",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "אור הנר",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אור יהודה",
+    "subDistrict": "רמת גן"
+  },
+  {
+    "name": "אור עקיבא",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "אורה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "אורות",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אורטל",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "אורים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אורנים",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "אורנית",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "אושה",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "אזור",
+    "subDistrict": "חולון"
+  },
+  {
+    "name": "אחווה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אחוזם",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אחוזת ברק",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "אחיהוד",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אחיטוב",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "אחיסמך",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "אחיעזר",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "אטרש )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "איבים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אייל",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "איילת השחר",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "אילון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אילות",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אילניה",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "אילת",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אירוס",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "איתמר",
+    "subDistrict": "שכם"
+  },
+  {
+    "name": "איתן",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "איתנים",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "אכסאל",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "אל סייד",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אל-עזי",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אל-עריאן",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "אל-רום",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "אלומה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אלומות",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "אלון הגליל",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "אלון מורה",
+    "subDistrict": "שכם"
+  },
+  {
+    "name": "אלון שבות",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "אלוני אבא",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "אלוני הבשן",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "אלוני יצחק",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "אלונים",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "אלי-עד",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "אליאב",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אליכין",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "אליפז",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אליפלט",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "אליקים",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "אלישיב",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "אלישמע",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "אלמגור",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "אלמוג",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "אלעד",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "אלעזר",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "אלפי מנשה",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "אלקוש",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אלקנה",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "אמונים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אמירים",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "אמנון",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "אמציה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אניעם",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "אסד )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אספר",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "אעבלין",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אעצם )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אפיניש )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אפיק",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "אפיקים",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "אפק",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אפרת",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "ארבל",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "ארגמן",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "ארז",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אריאל",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "ארסוף",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "אשבול",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אשבל",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אשדוד",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אשדות יעקב  )איחוד(",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "אשדות יעקב  )מאוחד(",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "אשחר",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אשכולות",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "אשל הנשיא",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אשלים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "אשקלון",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "אשרת",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "אשתאול",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "אתגר",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "באקה אל-גרביה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "באר אורה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "באר גנים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "באר טוביה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "באר יעקב",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "באר מילכה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "באר שבע",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "בארות יצחק",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "בארותיים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בארי",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "בוסתן הגליל",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "בועיינה-נוג'ידאת",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "בוקעאתא",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "בורגתה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בחן",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בטחה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ביצרון",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ביר אל-מכסור",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ביר הדאג'",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ביריה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "בית אורן",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "בית אל",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "בית אלעזרי",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בית אלפא",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בית אריה",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "בית ברל",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "בית ג'ן",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "בית גוברין",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "בית גמליאל",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בית דגן",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "בית הגדי",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "בית הלוי",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בית הלל",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "בית העמק",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "בית הערבה",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "בית השיטה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בית זיד",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בית זית",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "בית זרע",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "בית חורון",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "בית חירות",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בית חלקיה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בית חנן",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בית חנניה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "בית חשמונאי",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "בית יהושע",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בית יוסף",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בית ינאי",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בית יצחק-שער חפר",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בית לחם הגלילית",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בית מאיר",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "בית נחמיה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "בית ניר",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "בית נקופה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "בית עובד",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בית עוזיאל",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "בית עזרא",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "בית עריף",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "בית צבי",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "בית קמה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "בית קשת",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "בית רבן",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בית רימון",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בית שאן",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בית שמש",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "בית שערים",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בית שקמה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ביתן אהרן",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "ביתר עילית",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "בלפוריה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בן זכאי",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בן עמי",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "בן שמן )כפר נוער(",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "בן שמן )מושב(",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "בני ברק",
+    "subDistrict": "רמת גן"
+  },
+  {
+    "name": "בני דקלים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "בני דרום",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בני דרור",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בני יהודה",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "בני נצרים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "בני עטרות",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "בני עי\"ש",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בני ציון",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בני ראם",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בניה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "בנימינה-גבעת עדה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "בסמ\"ה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "בסמת טבעון",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "בענה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "בצרה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בצת",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "בקוע",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "בקעות",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "בר גיורא",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "בר יוחאי",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "ברוכין",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "ברור חיל",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ברוש",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ברכה",
+    "subDistrict": "שכם"
+  },
+  {
+    "name": "ברכיה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ברעם",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "ברק",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "ברקאי",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "ברקן",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "ברקת",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "בת הדר",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "בת חן",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בת חפר",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "בת חצור",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "בת ים",
+    "subDistrict": "חולון"
+  },
+  {
+    "name": "בת עין",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "בת שלמה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "ג'דיידה-מכר",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ג'ולס",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ג'לג'וליה",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "ג'נאביב )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ג'סר א-זרקא",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "ג'ש )גוש חלב(",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "ג'ת",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "גאולי תימן",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "גאולים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "גאליה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גבולות",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "גבים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "גבע",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גבע בנימין",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "גבע כרמל",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "גבעולים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "גבעון החדשה",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "גבעות בר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "גבעת אבני",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "גבעת אלה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גבעת ברנר",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גבעת השלושה",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "גבעת זאב",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "גבעת ח\"ן",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "גבעת חיים )איחוד(",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "גבעת חיים )מאוחד(",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "גבעת יואב",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "גבעת יערים",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "גבעת ישעיהו",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "גבעת כ\"ח",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "גבעת ניל\"י",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "גבעת עוז",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גבעת שמואל",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "גבעת שמש",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "גבעת שפירא",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "גבעתי",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "גבעתיים",
+    "subDistrict": "רמת גן"
+  },
+  {
+    "name": "גברעם",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "גבת",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גדות",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "גדיש",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גדעונה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גדרה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גונן",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "גורן",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "גורנות הגליל",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "גזית",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גזר",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "גיאה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "גיבתון",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גיזו",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "גילון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "גילת",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "גינוסר",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "גיניגר",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גינתון",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "גיתה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "גיתית",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "גלאון",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "גלגל",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "גליל ים",
+    "subDistrict": "תל אביב"
+  },
+  {
+    "name": "גלעד )אבן יצחק(",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גמזו",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "גן הדרום",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גן השומרון",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "גן חיים",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "גן יאשיה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "גן יבנה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גן נר",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "גן שורק",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גן שלמה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גן שמואל",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "גנות",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "גנות הדר",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "גני הדר",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "גני טל",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גני יוחנן",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "גני מודיעין",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "גני עם",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "גני תקווה",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "געש",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "געתון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "גפן",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "גרופית",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "גשור",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "גשר",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "גשר הזיו",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "גת )קיבוץ(",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "גת רימון",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "דאלית אל-כרמל",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "דבורה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "דבוריה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "דבירה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "דברת",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "דגניה א'",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "דגניה ב'",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "דוב\"ב",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "דולב",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "דור",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "דורות",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "דחי",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "דייר אל-אסד",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "דייר חנא",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "דייר ראפאת",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "דימונה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "דישון",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "דליה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "דלתון",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "דמיידה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "דן",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "דפנה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "דקל",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "דריג'את",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "האון",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "הבונים",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "הגושרים",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "הדר עם",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "הוד השרון",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "הודיה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "הודיות",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "הוואשלה )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "הוזייל )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "הושעיה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "הזורע",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "הזורעים",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "החותרים",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "היוגב",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "הילה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "המעפיל",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "הסוללים",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "העוגן",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "הר אדר",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "הר גילה",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "הר עמשא",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "הראל",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "הרדוף",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "הרצליה",
+    "subDistrict": "תל אביב"
+  },
+  {
+    "name": "הררית",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ורד יריחו",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "ורדון",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "זבארגה )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "זבדיאל",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "זוהר",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "זיקים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "זיתן",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "זכרון יעקב",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "זכריה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "זמר",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "זמרת",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "זנוח",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "זרועה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "זרזיר",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "זרחיה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ח'ואלד",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "ח'ואלד )שבט(",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "חבצלת השרון",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "חבר",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "חברון",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "חגור",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "חגי",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "חגלה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "חד-נס",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "חדיד",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "חדרה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "חוג'ייראת )ד'הרה(",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "חולדה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "חולון",
+    "subDistrict": "חולון"
+  },
+  {
+    "name": "חולית",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "חולתה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "חוסן",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "חוסנייה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "חופית",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "חוקוק",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "חורה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "חורפיש",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "חורשים",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "חזון",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "חיבת ציון",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "חיננית",
+    "subDistrict": "ג'נין"
+  },
+  {
+    "name": "חיפה",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "חירות",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "חלוץ",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "חלמיש",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "חלץ",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "חמאם",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "חמד",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "חמדיה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "חמדת",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "חמרה",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "חניאל",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "חניתה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "חנתון",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "חספין",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "חפץ חיים",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "חפצי-בה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "חצב",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "חצבה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "חצור הגלילית",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "חצור-אשדוד",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "חצר בארותיים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "חצרות חולדה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "חצרות יסף",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "חצרות כ\"ח",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "חצרים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "חרב לאת",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "חרוצים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "חריש",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "חרמש",
+    "subDistrict": "ג'נין"
+  },
+  {
+    "name": "חרשים",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "חשמונאים",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "טבריה",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "טובא-זנגריה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "טורעאן",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "טייבה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "טייבה )בעמק(",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "טירה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "טירת יהודה",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "טירת כרמל",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "טירת צבי",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "טל שחר",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "טל-אל",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "טללים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "טלמון",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "טמרה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "טמרה )יזרעאל(",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "טנא",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "טפחות",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "יאנוח-ג'ת",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "יבול",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "יבנאל",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "יבנה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "יגור",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "יגל",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "יד בנימין",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "יד השמונה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "יד חנה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "יד מרדכי",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "יד נתן",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "יד רמב\"ם",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "ידידה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "יהוד-מונוסון",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "יהל",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "יובל",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "יובלים",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "יודפת",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "יונתן",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "יושיביה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "יזרעאל",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "יחיעם",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "יטבתה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ייט\"ב",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "יכיני",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ינוב",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "ינון",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "יסוד המעלה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "יסודות",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "יסעור",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "יעד",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "יעל",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "יעף",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "יערה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "יפיע",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "יפית",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "יפעת",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "יפתח",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "יצהר",
+    "subDistrict": "שכם"
+  },
+  {
+    "name": "יציץ",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "יקום",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "יקיר",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "יקנעם )מושבה(",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "יקנעם עילית",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "יראון",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "ירדנה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "ירוחם",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ירושלים",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "ירחיב",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "ירכא",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ירקונה",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "ישע",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ישעי",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "ישרש",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "יתד",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "יתיר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "כאבול",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כאוכב אבו אל-היג'א",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כברי",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כדורי",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כדיתה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כוכב השחר",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "כוכב יאיר",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "כוכב יעקב",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "כוכב מיכאל",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כורזים",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כחל",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כחלה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "כיסופים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "כישור",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כליל",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כלנית",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כמאנה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כמהין",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "כמון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כנות",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כנף",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "כנרת )מושבה(",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כנרת )קבוצה(",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כסיפה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "כסלון",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "כסרא-סמיע",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כעביה-טבאש-חג'אג'רה",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "כפר אביב",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "כפר אדומים",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "כפר אוריה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "כפר אחים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כפר ביאליק",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "כפר ביל\"ו",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "כפר בלום",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כפר בן נון",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "כפר ברא",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "כפר ברוך",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "כפר גדעון",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "כפר גלים",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "כפר גליקסון",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "כפר גלעדי",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כפר דניאל",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "כפר האורנים",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "כפר החורש",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "כפר המכבי",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "כפר הנגיד",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "כפר הנוער הדתי",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "כפר הנשיא",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כפר הס",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר הרא\"ה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר הרי\"ף",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כפר ויתקין",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר ורבורג",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כפר ורדים",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כפר זוהרים",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "כפר זיתים",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כפר חב\"ד",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "כפר חושן",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כפר חיטים",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כפר חיים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר חנניה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כפר חסידים א'",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "כפר חסידים ב'",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "כפר חרוב",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "כפר טרומן",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "כפר יאסיף",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כפר ידידיה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר יהושע",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "כפר יונה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר יחזקאל",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "כפר יעבץ",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר כמא",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כפר כנא",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "כפר מונש",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר מימון",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "כפר מל\"ל",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "כפר מנדא",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כפר מנחם",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כפר מסריק",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כפר מצר",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "כפר מרדכי",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "כפר נטר",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר סאלד",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כפר סבא",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "כפר סילבר",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כפר סירקין",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "כפר עבודה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "כפר עזה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כפר עציון",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "כפר פינס",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "כפר קאסם",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "כפר קיש",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כפר קרע",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "כפר ראש הנקרה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כפר רוזנואלד )זרעית(",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כפר רופין",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "כפר רות",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "כפר שמאי",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כפר שמואל",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "כפר שמריהו",
+    "subDistrict": "תל אביב"
+  },
+  {
+    "name": "כפר תבור",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כפר תפוח",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "כרי דשא",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כרכום",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "כרם בן זמרה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "כרם בן שמן",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "כרם יבנה )ישיבה(",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "כרם מהר\"ל",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "כרם שלום",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "כרמי יוסף",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "כרמי צור",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "כרמי קטיף",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כרמיאל",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "כרמיה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "כרמים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "כרמל",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "לא רשום",
+    "subDistrict": "לא ידוע"
+  },
+  {
+    "name": "לבון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "לביא",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "לבנים",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "להב",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "להבות הבשן",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "להבות חביבה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "להבים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "לוד",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "לוזית",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "לוחמי הגיטאות",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "לוטם",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "לוטן",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "לימן",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "לכיש",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "לפיד",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "לפידות",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "לקיה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מאור",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מאיר שפיה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מבוא ביתר",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "מבוא דותן",
+    "subDistrict": "ג'נין"
+  },
+  {
+    "name": "מבוא חורון",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "מבוא חמה",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "מבוא מודיעים",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "מבואות ים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "מבועים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מבטחים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מבקיעים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "מבשרת ציון",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "מג'ד אל-כרום",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מג'דל שמס",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "מגאר",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "מגדים",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מגדל",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "מגדל העמק",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מגדל עוז",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "מגדלים",
+    "subDistrict": "שכם"
+  },
+  {
+    "name": "מגידו",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מגל",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מגן",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מגן שאול",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מגשימים",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "מדרך עוז",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מדרשת בן גוריון",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מדרשת רופין",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "מודיעין עילית",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "מודיעין-מכבים-רעות",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "מולדת",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מוצא עילית",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "מוקייבלה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מורן",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מורשת",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מזור",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "מזכרת בתיה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "מזרע",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מזרעה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מחולה",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "מחנה הילה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "מחנה טלי",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מחנה יהודית",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מחנה יוכבד",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מחנה יפה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מחנה יתיר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מחנה מרים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "מחנה תל נוף",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "מחניים",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "מחסיה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "מטולה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "מטע",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "מי עמי",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מיטב",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מייסר",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מיצר",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "מירב",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מירון",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "מישר",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "מיתר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מכורה",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "מכחול",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מכמורת",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "מכמנים",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מלאה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מלילות",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מלכיה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "מלכישוע",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מנוחה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "מנוף",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מנות",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מנחמיה",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "מנרה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "מנשית זבדה",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "מסד",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "מסדה",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "מסילות",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מסילת ציון",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "מסלול",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מסעדה",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "מסעודין אל-עזאזמה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מעברות",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "מעגלים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מעגן",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "מעגן מיכאל",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מעוז חיים",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מעון",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "מעונה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מעיליא",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מעין ברוך",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "מעין צבי",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מעלה אדומים",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "מעלה אפרים",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "מעלה גלבוע",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מעלה גמלא",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "מעלה החמישה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "מעלה לבונה",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "מעלה מכמש",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "מעלה עירון",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מעלה עמוס",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "מעלה שומרון",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "מעלות-תרשיחא",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מענית",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מעש",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "מפלסים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "מצדות יהודה",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "מצובה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מצליח",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "מצפה",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "מצפה אבי\"ב",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מצפה אילן",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מצפה יריחו",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "מצפה נטופה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מצפה רמון",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מצפה שלם",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "מצר",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "מקווה ישראל",
+    "subDistrict": "חולון"
+  },
+  {
+    "name": "מרגליות",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "מרום גולן",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "מרחב עם",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "מרחביה )מושב(",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מרחביה )קיבוץ(",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "מרכז שפירא",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "משאבי שדה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "משגב דב",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "משגב עם",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "משהד",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "משואה",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "משואות יצחק",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "משכיות",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "משמר איילון",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "משמר דוד",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "משמר הירדן",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "משמר הנגב",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "משמר העמק",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "משמר השבעה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "משמר השרון",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "משמרות",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "משמרת",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "משען",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "מתן",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "מתת",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "מתתיהו",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "נאות גולן",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "נאות הכיכר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "נאות מרדכי",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "נאות סמדר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "נאעורה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "נבטים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "נגבה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "נגוהות",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "נהורה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "נהלל",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "נהריה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "נוב",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "נוגה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "נווה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "נווה אבות",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "נווה אור",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "נווה אטי\"ב",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "נווה אילן",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "נווה איתן",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "נווה דניאל",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "נווה זוהר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "נווה זיו",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "נווה חריף",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "נווה ים",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "נווה ימין",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "נווה ירק",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "נווה מבטח",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "נווה מיכאל",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "נווה שלום",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "נועם",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "נוף איילון",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "נופים",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "נופית",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "נופך",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "נוקדים",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "נורדיה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "נורית",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "נחושה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "נחל עוז",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "נחלה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "נחליאל",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "נחלים",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "נחם",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "נחף",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "נחשולים",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "נחשון",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "נחשונים",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "נטועה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "נטור",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "נטע",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "נטעים",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "נטף",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "ניין",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "ניל\"י",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "ניצן",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ניצן ב'",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ניצנה )קהילת חינוך(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ניצני סיני",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ניצני עוז",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "ניצנים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ניר אליהו",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "ניר בנים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ניר גלים",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "ניר דוד )תל עמל(",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "ניר ח\"ן",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ניר יפה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "ניר יצחק",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ניר ישראל",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ניר משה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ניר עוז",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ניר עם",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ניר עציון",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "ניר עקיבא",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ניר צבי",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "נירים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "נירית",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "נירן",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "נמרוד",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "נס הרים",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "נס עמים",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "נס ציונה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "נעורים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "נעלה",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "נעמ\"ה",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "נען",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "נצאצרה )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "נצר חזני",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "נצר סרני",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "נצרת",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "נצרת עילית",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "נשר",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "נתיב הגדוד",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "נתיב הל\"ה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "נתיב העשרה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "נתיב השיירה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "נתיבות",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "נתניה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "סאג'ור",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "סאסא",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "סביון",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "סגולה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "סואעד )חמרייה(",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "סואעד )כמאנה( )שבט(",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "סולם",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "סוסיה",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "סופה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "סח'נין",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "סייד )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "סלמה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "סלעית",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "סמר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "סנסנה",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "סעד",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "סעוה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "סער",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ספיר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "סתריה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "ע'ג'ר",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "עבדון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "עברון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "עגור",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "עדי",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "עדנים",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "עוזה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "עוזייר",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "עולש",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "עומר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עופר",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "עופרה",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "עוצם",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "עוקבי )בנו עוקבה(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עזוז",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עזר",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "עזריאל",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "עזריה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "עזריקם",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "עטאוונה )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עטרת",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "עידן",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עיילבון",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "עיינות",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "עילוט",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "עין איילה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "עין אל-אסד",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "עין גב",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "עין גדי",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עין דור",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "עין הבשור",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עין הוד",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "עין החורש",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "עין המפרץ",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "עין הנצי\"ב",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "עין העמק",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "עין השופט",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "עין השלושה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עין ורד",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "עין זיוון",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "עין חוד",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "עין חצבה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עין חרוד )איחוד(",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "עין חרוד )מאוחד(",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "עין יהב",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עין יעקב",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "עין כרם-בי\"ס חקלאי",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "עין כרמל",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "עין מאהל",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "עין נקובא",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "עין עירון",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "עין צורים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "עין קנייא",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "עין ראפה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "עין שמר",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "עין שריד",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "עין תמר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עינת",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "עיר אובות",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עכו",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "עלומים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עלי",
+    "subDistrict": "שכם"
+  },
+  {
+    "name": "עלי זהב",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "עלמה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "עלמון",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "עמוקה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "עמיחי",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "עמינדב",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "עמיעד",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "עמיעוז",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עמיקם",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "עמיר",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "עמנואל",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "עמקה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ענב",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "עספיא",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "עפולה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "עץ אפרים",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "עצמון שגב",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "עראבה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "עראמשה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ערב אל נעים",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ערד",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "ערוגות",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "ערערה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "ערערה-בנגב",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "עשרת",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "עתלית",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "עתניאל",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "פארן",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "פדואל",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "פדויים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "פדיה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "פוריה - כפר עבודה",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "פוריה - נווה עובד",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "פוריה עילית",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "פוריידיס",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "פורת",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "פטיש",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "פלך",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "פלמחים",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "פני חבר",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "פסגות",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "פסוטה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "פעמי תש\"ז",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "פצאל",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "פקיעין )בוקייעה(",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "פקיעין חדשה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "פרדס חנה-כרכור",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "פרדסיה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "פרוד",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "פרזון",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "פרי גן",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "פתח תקווה",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "פתחיה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "צאלים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "צביה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "צבעון",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "צובה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "צוחר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "צופיה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "צופים",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "צופית",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "צופר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "צוקי ים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "צוקים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "צור הדסה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "צור יצחק",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "צור משה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "צור נתן",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "צוריאל",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "צורית",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ציפורי",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "צלפון",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "צנדלה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "צפריה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "צפרירים",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "צפת",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "צרופה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "צרעה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "קבועה )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "קבוצת יבנה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "קדומים",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "קדימה-צורן",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "קדמה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "קדמת צבי",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "קדר",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "קדרון",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "קדרים",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "קודייראת א-צאנע)שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "קוואעין )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "קוממיות",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "קורנית",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "קטורה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "קיסריה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "קלחים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "קליה",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "קלנסווה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "קלע",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "קציר",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "קצר א-סר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "קצרין",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "קרית אונו",
+    "subDistrict": "רמת גן"
+  },
+  {
+    "name": "קרית ארבע",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "קרית אתא",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "קרית ביאליק",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "קרית גת",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "קרית טבעון",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "קרית ים",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "קרית יערים",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "קרית יערים)מוסד(",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "קרית מוצקין",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "קרית מלאכי",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "קרית נטפים",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "קרית ענבים",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "קרית עקרון",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "קרית שלמה",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "קרית שמונה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "קרני שומרון",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "קשת",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "ראמה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ראס אל-עין",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "ראס עלי",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "ראש העין",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "ראש פינה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "ראש צורים",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "ראשון לציון",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "רבבה",
+    "subDistrict": "שכם"
+  },
+  {
+    "name": "רבדים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "רביבים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "רביד",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "רגבה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "רגבים",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "רהט",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "רווחה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "רוויה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "רוח מדבר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "רוחמה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "רומאנה",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "רומת הייב",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "רועי",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "רותם",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "רחוב",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "רחובות",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "רחלים",
+    "subDistrict": "שכם"
+  },
+  {
+    "name": "ריחאניה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "ריחן",
+    "subDistrict": "ג'נין"
+  },
+  {
+    "name": "ריינה",
+    "subDistrict": "נצרת"
+  },
+  {
+    "name": "רימונים",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "רינתיה",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "רכסים",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "רם-און",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "רמות",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "רמות השבים",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "רמות מאיר",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "רמות מנשה",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "רמות נפתלי",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "רמלה",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "רמת גן",
+    "subDistrict": "רמת גן"
+  },
+  {
+    "name": "רמת דוד",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "רמת הכובש",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "רמת השופט",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "רמת השרון",
+    "subDistrict": "תל אביב"
+  },
+  {
+    "name": "רמת יוחנן",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "רמת ישי",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "רמת מגשימים",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "רמת צבי",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "רמת רזיאל",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "רמת רחל",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "רנן",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "רעים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "רעננה",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "רקפת",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "רשפון",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "רשפים",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "רתמים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שאר ישוב",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "שבי דרום",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שבי ציון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שבי שומרון",
+    "subDistrict": "שכם"
+  },
+  {
+    "name": "שבלי - אום אל-גנם",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "שגב-שלום",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שדה אילן",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "שדה אליהו",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "שדה אליעזר",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "שדה בוקר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שדה דוד",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "שדה ורבורג",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "שדה יואב",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "שדה יעקב",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "שדה יצחק",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "שדה משה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "שדה נחום",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "שדה נחמיה",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "שדה ניצן",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שדה עוזיהו",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "שדה צבי",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שדות ים",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "שדות מיכה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "שדי אברהם",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שדי חמד",
+    "subDistrict": "פתח תקווה"
+  },
+  {
+    "name": "שדי תרומות",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "שדמה",
+    "subDistrict": "רחובות"
+  },
+  {
+    "name": "שדמות דבורה",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "שדמות מחולה",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "שדרות",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "שואבה",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "שובה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שובל",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שוהם",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "שומרה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שומריה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שוקדה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שורש",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "שורשים",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שושנת העמקים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "שזור",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שחר",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "שחרות",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שיבולים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שיטים",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שייח' דנון",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שילה",
+    "subDistrict": "ראמאללה"
+  },
+  {
+    "name": "שילת",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "שכניה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שלווה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "שלווה במדבר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שלוחות",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "שלומי",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שלומית",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שמיר",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "שמעה",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "שמרת",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שמשית",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "שני",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שניר",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "שעב",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שעורים",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "שעל",
+    "subDistrict": "גולן"
+  },
+  {
+    "name": "שעלבים",
+    "subDistrict": "רמלה"
+  },
+  {
+    "name": "שער אפרים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "שער הגולן",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "שער העמקים",
+    "subDistrict": "חיפה"
+  },
+  {
+    "name": "שער מנשה",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "שערי תקווה",
+    "subDistrict": "טול כרם"
+  },
+  {
+    "name": "שפיים",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "שפיר",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "שפר",
+    "subDistrict": "צפת"
+  },
+  {
+    "name": "שפרעם",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שקד",
+    "subDistrict": "ג'נין"
+  },
+  {
+    "name": "שקף",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "שרונה",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "שריגים )לי-און(",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "שריד",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "שרשרת",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "שתולה",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "שתולים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "תאשור",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תדהר",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תובל",
+    "subDistrict": "עכו"
+  },
+  {
+    "name": "תומר",
+    "subDistrict": "ירדן )יריחו("
+  },
+  {
+    "name": "תושיה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תימורים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "תירוש",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "תל אביב - יפו",
+    "subDistrict": "תל אביב"
+  },
+  {
+    "name": "תל יוסף",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "תל יצחק",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "תל מונד",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "תל עדשים",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "תל קציר",
+    "subDistrict": "כנרת"
+  },
+  {
+    "name": "תל שבע",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תל תאומים",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "תלם",
+    "subDistrict": "חברון"
+  },
+  {
+    "name": "תלמי אליהו",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תלמי אלעזר",
+    "subDistrict": "חדרה"
+  },
+  {
+    "name": "תלמי ביל\"ו",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תלמי יוסף",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תלמי יחיאל",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "תלמי יפה",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "תלמים",
+    "subDistrict": "אשקלון"
+  },
+  {
+    "name": "תמרת",
+    "subDistrict": "עפולה"
+  },
+  {
+    "name": "תנובות",
+    "subDistrict": "השרון"
+  },
+  {
+    "name": "תעוז",
+    "subDistrict": "ירושלים"
+  },
+  {
+    "name": "תפרח",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תקומה",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תקוע",
+    "subDistrict": "בית לחם"
+  },
+  {
+    "name": "תראבין א-צאנע )שבט(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תראבין א-צאנע)ישוב(",
+    "subDistrict": "באר שבע"
+  },
+  {
+    "name": "תרום",
+    "subDistrict": "ירושלים"
+  }
+]

@@ -1,4 +1,6 @@
+@using System.Text.Json
 @inject ISnackbar Snackbar
+@inject ILocalityService LocalityService
 
 <MudDialog>
     <DialogContent>
@@ -33,6 +35,49 @@
                     <MudSelectItem Value="@("Licensed_Dealer")">עוסק מורשה</MudSelectItem>
                 </MudSelect>
             </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2" Class="mb-1">אזור זמינות (נפות)</MudText>
+                <MudSelect T="string" Label="בחר נפות" Variant="Variant.Outlined" MultiSelection="true"
+                           @bind-SelectedValues="selectedAreas" MultiSelectionTextFunc="@(vals => string.Join(", ", vals))">
+                    @foreach (var sd in subDistricts)
+                    {
+                        <MudSelectItem Value="@sd">@sd</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.subtitle2" Class="mb-2" Style="font-weight: bold;">ימים ושעות מועדפים</MudText>
+                @foreach (var day in DayNames)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2" Spacing="2">
+                        <MudCheckBox T="bool" Value="@IsDaySelected(day.Key)" ValueChanged="@((bool v) => ToggleDay(day.Key, v))"
+                                     Label="@day.Value" Style="min-width: 90px;" Dense="true" />
+                        @if (IsDaySelected(day.Key))
+                        {
+                            <MudStack Spacing="1">
+                                <MudStack Row="true" Spacing="1" Style="flex-wrap: wrap; direction: ltr;">
+                                    @foreach (var hour in GetVisibleHours(day.Key))
+                                    {
+                                        var h = hour;
+                                        var selected = IsHourSelected(day.Key, h);
+                                        <MudChip T="string" Size="Size.Small"
+                                                 Color="@(selected ? Color.Primary : Color.Default)"
+                                                 Variant="@(selected ? Variant.Filled : Variant.Outlined)"
+                                                 OnClick="@(() => ToggleHour(day.Key, h))"
+                                                 Style="min-width: 52px; cursor: pointer; direction: ltr;">
+                                            @($"{h:00}:00")
+                                        </MudChip>
+                                    }
+                                </MudStack>
+                                <MudLink OnClick="@(() => ToggleExpandDay(day.Key))" Underline="Underline.Always" Typo="Typo.caption" Style="cursor: pointer;">
+                                    @(IsExpanded(day.Key) ? "הצג פחות" : "הצג את כל השעות")
+                                </MudLink>
+                            </MudStack>
+                        }
+                    </MudStack>
+                }
+            </MudItem>
         </MudGrid>
     </DialogContent>
     <DialogActions>
@@ -48,10 +93,66 @@
     [Parameter] public string Email { get; set; } = "";
 
     private DateTime? birthDate;
+    private IReadOnlyCollection<string> selectedAreas = new HashSet<string>();
+    private List<string> subDistricts = new();
+    private Dictionary<string, List<int>> schedule = new();
+    private HashSet<string> expandedDays = new();
 
-    protected override void OnParametersSet()
+    private static readonly Dictionary<string, string> DayNames = new()
+    {
+        ["Sunday"] = "ראשון",
+        ["Monday"] = "שני",
+        ["Tuesday"] = "שלישי",
+        ["Wednesday"] = "רביעי",
+        ["Thursday"] = "חמישי",
+        ["Friday"] = "שישי",
+        ["Saturday"] = "שבת"
+    };
+
+    protected override async Task OnParametersSetAsync()
     {
         birthDate = Coach.BirthDate;
+        await LocalityService.InitializeAsync();
+        subDistricts = LocalityService.GetSubDistricts().ToList();
+
+        if (Coach.AvailabilityArea is { Count: > 0 })
+        {
+            selectedAreas = Coach.AvailabilityArea.ToHashSet();
+        }
+
+        if (!string.IsNullOrWhiteSpace(Coach.PreferredSchedule))
+        {
+            try { schedule = JsonSerializer.Deserialize<Dictionary<string, List<int>>>(Coach.PreferredSchedule) ?? new(); }
+            catch { schedule = new(); }
+        }
+    }
+
+    private bool IsDaySelected(string day) => schedule.TryGetValue(day, out var hours) && hours.Count > 0;
+    private bool IsHourSelected(string day, int hour) => schedule.TryGetValue(day, out var hours) && hours.Contains(hour);
+    private bool IsExpanded(string day) => expandedDays.Contains(day);
+
+    private IEnumerable<int> GetVisibleHours(string day) =>
+        expandedDays.Contains(day) ? Enumerable.Range(0, 24) : Enumerable.Range(8, 9);
+
+    private void ToggleExpandDay(string day)
+    {
+        if (!expandedDays.Add(day)) expandedDays.Remove(day);
+    }
+
+    private void ToggleDay(string day, bool selected)
+    {
+        if (selected)
+            schedule[day] = new List<int> { 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+        else
+            schedule.Remove(day);
+    }
+
+    private void ToggleHour(string day, int hour)
+    {
+        if (!schedule.ContainsKey(day)) schedule[day] = new();
+        if (schedule[day].Contains(hour)) schedule[day].Remove(hour);
+        else schedule[day].Add(hour);
+        schedule[day].Sort();
     }
 
     private void Submit()
@@ -67,6 +168,11 @@
             return;
         }
         Coach.BirthDate = birthDate.HasValue ? DateTime.SpecifyKind(birthDate.Value.Date, DateTimeKind.Utc) : null;
+        Coach.AvailabilityArea = selectedAreas.ToList();
+
+        var filtered = schedule.Where(kv => kv.Value.Count > 0).ToDictionary(kv => kv.Key, kv => kv.Value);
+        Coach.PreferredSchedule = filtered.Count > 0 ? JsonSerializer.Serialize(filtered) : null;
+
         MudDialog.Close(DialogResult.Ok(new CoachDialogResult { Coach = Coach, Email = Email }));
     }
 

@@ -19,7 +19,9 @@
                 <MudTextField @bind-Value="Client.Address" Label="כתובת" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="6">
-                <MudTextField @bind-Value="Client.City" Label="עיר" Variant="Variant.Outlined" />
+                <MudAutocomplete T="string" @bind-Value="Client.City" Label="עיר / יישוב" Variant="Variant.Outlined"
+                                 SearchFunc="SearchLocalities" CoerceValue="true" ResetValueOnEmptyText="true"
+                                 Required="true" RequiredError="יש לבחור יישוב מהרשימה" />
             </MudItem>
             <MudItem xs="12"><MudDivider Class="my-2" /><MudText Typo="Typo.subtitle2">אנשי קשר</MudText></MudItem>
             <MudItem xs="6">
@@ -48,14 +50,31 @@
     </DialogActions>
 </MudDialog>
 
+@inject ILocalityService LocalityService
+
 @code {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public ClientOrg Client { get; set; } = new();
     [Parameter] public bool IsNew { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LocalityService.InitializeAsync();
+    }
+
+    private Task<IEnumerable<string>> SearchLocalities(string value, CancellationToken ct)
+    {
+        var results = LocalityService.SearchLocalities(value ?? "");
+        return Task.FromResult(results);
+    }
+
     private void Submit()
     {
         if (string.IsNullOrWhiteSpace(Client.ClientName)) return;
+        if (string.IsNullOrWhiteSpace(Client.City))
+        {
+            return;
+        }
         MudDialog.Close(DialogResult.Ok(Client));
     }
 

@@ -2,6 +2,7 @@
 @inject IDataService Data
 @inject IDialogService Dialog
 @inject ISnackbar Snackbar
+@inject ILocalityService LocalityService
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול לקוחות ומוסדות</MudText>
@@ -31,7 +32,9 @@
         </MudTd>
         <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditClient(context))" />
-            <MudIconButton Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Info" OnClick="@(() => ViewContracts(context))" />
+            <MudTooltip Text="מאמנים מומלצים לפי אזור">
+                <MudIconButton Icon="@Icons.Material.Filled.TipsAndUpdates" Size="Size.Small" Color="Color.Secondary" OnClick="@(() => ShowRecommendedCoaches(context))" />
+            </MudTooltip>
         </MudTd>
     </RowTemplate>
     <NoRecordsContent>
@@ -51,9 +54,16 @@
             (c.City ?? "").Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
             c.ClientType.Contains(searchText, StringComparison.OrdinalIgnoreCase));
 
+    private List<Coach> allCoaches = new();
+
     protected override async Task OnInitializedAsync()
     {
-        try { clients = await Data.GetClientsAsync(); }
+        try
+        {
+            clients = await Data.GetClientsAsync();
+            allCoaches = await Data.GetCoachesAsync();
+            await LocalityService.InitializeAsync();
+        }
         catch { }
         finally { loading = false; }
     }
@@ -92,9 +102,24 @@
         }
     }
 
-    private void ViewContracts(ClientOrg client)
+    private void ShowRecommendedCoaches(ClientOrg client)
     {
-        // Navigate to contracts view
+        if (string.IsNullOrEmpty(client.City))
+        {
+            Snackbar.Add("ללקוח זה לא הוגדרה עיר — לא ניתן להמליץ", Severity.Warning);
+            return;
+        }
+
+        var recommended = LocalityService.GetRecommendedCoaches(client.City, allCoaches);
+        if (!recommended.Any())
+        {
+            Snackbar.Add($"לא נמצאו מאמנים באזור של {client.City}", Severity.Info);
+            return;
+        }
+
+        var names = string.Join(", ", recommended.Select(c => $"{c.FirstName} {c.LastName}"));
+        var subDistrict = LocalityService.GetSubDistrictForLocality(client.City);
+        Snackbar.Add($"נפת {subDistrict}: {names}", Severity.Info, config => config.VisibleStateDuration = 8000);
     }
 
     private string GetTypeText(string type) => type switch

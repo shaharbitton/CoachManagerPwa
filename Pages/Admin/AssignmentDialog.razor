@@ -1,5 +1,6 @@
 @inject IDataService Data
 @inject ISnackbar Snackbar
+@inject ILocalityService LocalityService
 
 <MudDialog>
     <DialogContent>
@@ -12,6 +13,15 @@
                     }
                 </MudSelect>
             </MudItem>
+            @if (recommendedCoaches.Any())
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info" Dense="true" Icon="@Icons.Material.Filled.Lightbulb">
+                        <MudText Typo="Typo.caption" Style="font-weight:bold;">מאמנים מומלצים לפי אזור הלקוח:</MudText>
+                        <MudText Typo="Typo.caption">@string.Join(", ", recommendedCoaches.Select(c => $"{c.FirstName} {c.LastName}"))</MudText>
+                    </MudAlert>
+                </MudItem>
+            }
             <MudItem xs="12">
                 <MudSelect T="string" Value="Assignment.ClientId" ValueChanged="OnClientChanged" Label="לקוח / מוסד" Variant="Variant.Outlined" Required="true">
                     @foreach (var c in Clients)
@@ -103,9 +113,12 @@
     private ClientContract? selectedContract;
     private string rateMode = "default";
     private decimal newRateAmount;
+    private List<Coach> recommendedCoaches = new();
 
     protected override async Task OnParametersSetAsync()
     {
+        await LocalityService.InitializeAsync();
+
         // Determine initial rate mode based on existing assignment data
         if (!IsNew && !string.IsNullOrEmpty(Assignment.CoachRateId))
             rateMode = "existing";
@@ -119,6 +132,7 @@
         if (!string.IsNullOrEmpty(Assignment.ClientId))
         {
             try { clientContracts = await Data.GetContractsByClientAsync(Assignment.ClientId); } catch { }
+            UpdateRecommendations();
         }
         if (!string.IsNullOrEmpty(Assignment.ContractId))
         {
@@ -146,6 +160,17 @@
         if (!string.IsNullOrEmpty(clientId))
         {
             try { clientContracts = await Data.GetContractsByClientAsync(clientId); } catch { }
+        }
+        UpdateRecommendations();
+    }
+
+    private void UpdateRecommendations()
+    {
+        recommendedCoaches.Clear();
+        var client = Clients.FirstOrDefault(c => c.ClientId == Assignment.ClientId);
+        if (client != null && !string.IsNullOrEmpty(client.City))
+        {
+            recommendedCoaches = LocalityService.GetRecommendedCoaches(client.City, Coaches);
         }
     }
 

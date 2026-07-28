@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Postgrest.Attributes;
 using Postgrest.Models;
 
@@ -86,7 +87,10 @@ public class Coach : BaseModel
     public List<string>? HardSkills { get; set; } // text[] array in PostgreSQL
 
     [Column("availability_area")]
-    public object? AvailabilityArea { get; set; } // JSONB object from PostgreSQL
+    public List<string>? AvailabilityArea { get; set; }
+
+    [Column("preferred_schedule")]
+    public string? PreferredSchedule { get; set; }
 
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

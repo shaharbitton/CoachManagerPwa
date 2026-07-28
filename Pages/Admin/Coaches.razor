@@ -3,6 +3,7 @@
 @inject IDialogService Dialog
 @inject ISnackbar Snackbar
 @inject Supabase.Client SupabaseClient
+@inject ILocalityService LocalityService
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול מאמנים</MudText>
@@ -20,6 +21,7 @@
         <MudTh>טלפון</MudTh>
         <MudTh>תעודת זהות</MudTh>
         <MudTh>מקצוע</MudTh>
+        <MudTh>אזורים</MudTh>
         <MudTh>מעמד מיסויי</MudTh>
         <MudTh>פעולות</MudTh>
     </HeaderContent>
@@ -28,6 +30,7 @@
         <MudTd Style="direction: ltr;">@context.Phone</MudTd>
         <MudTd>@context.NationalId</MudTd>
         <MudTd>@context.Occupation</MudTd>
+        <MudTd>@GetAreasText(context)</MudTd>
         <MudTd>
             <MudChip T="string" Size="Size.Small" Color="@GetTaxColor(context.TaxStatus)">@GetTaxText(context.TaxStatus)</MudChip>
         </MudTd>
@@ -146,4 +149,11 @@
         "Licensed_Dealer" => "עוסק מורשה",
         _ => status
     };
+
+    private string GetAreasText(Coach coach)
+    {
+        if (coach.AvailabilityArea is { Count: > 0 })
+            return string.Join(", ", coach.AvailabilityArea);
+        return "—";
+    }
 }
