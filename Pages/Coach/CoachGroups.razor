@@ -69,8 +69,8 @@ else
                                             <MudText Typo="Typo.caption" Color="Color.Default">@student.GeneralNotes</MudText>
                                         }
                                     </MudStack>
-                                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary"
-                                               OnClick="@(() => ViewNotes(student))">הערות</MudButton>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary"
+                                               OnClick="@(() => ViewNotes(student))" />
                                 </MudStack>
                             </MudCard>
                         }
@@ -79,6 +79,7 @@ else
             </MudExpansionPanel>
         </MudExpansionPanels>
     }
+}
 }
 
 @code {
@@ -171,9 +172,19 @@ else
         }
     }
 
-    private void ViewNotes(Student student)
+    private async Task ViewNotes(Student student)
     {
-        // Navigate to student notes page
+        var parameters = new DialogParameters<StudentDialog> { { x => x.Student, student }, { x => x.IsEdit, true } };
+        var dialog = await Dialog.ShowAsync<StudentDialog>("עריכת משתתף", parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Student updated })
+        {
+            try
+            {
+                await Data.UpdateStudentAsync(updated);
+                Snackbar.Add("הערה עודכנה", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
     }
-}
 }

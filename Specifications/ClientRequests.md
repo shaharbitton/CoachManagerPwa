@@ -8,34 +8,34 @@
 
 ## 🖥️ UI Changes (Frontend Only)
 
-| # | Request | Explanation | Effort | Status |
-|---|---------|-------------|--------|--------|
-| 1 | **Hamburger menu — close on outside click** | Currently the side menu only closes via the X button. Should dismiss when tapping anywhere outside it. | 🟢 Small (1–2h) | ✅ **בוצע** — `DrawerVariant.Temporary` עם overlay סגירה + כפתור Pin/Unpin ב-`MainLayout.razor` |
-| 2 | **Coach: add Phone field** | Display phone number on coach profile/card. Field likely exists in model, needs UI binding. | 🟢 Small (1–2h) | ✅ **בוצע** — שדה `Phone` נוסף למודל `Coach`, ל-`CoachDialog.razor`, ל-`Profile.razor` ולטבלת מאמנים `Coaches.razor` |
-| 3 | **Coach: add Available Days + Hours** | Show coach's available work days and free hours in coach details. | 🟡 Medium (3–4h) | ✅ **בוצע** — `preferred_schedule` JSON נוסף למודל `Coach`, בוחר ימים+שעות ב-`CoachDialog.razor` וב-`Profile.razor` |
-| 4 | **Coach: add Work Region** | Display geographic work area for the coach. | 🟢 Small (1–2h) | ✅ **בוצע** — `availability_area` (נפות) מוצג כעמודה ב-`Coaches.razor`, עריכה ב-`CoachDialog.razor` וב-`Profile.razor` עם `MudSelect MultiSelection` |
-| 5 | **Coach documents: add "Recommendations" type** | Add a new document category option in the upload dialog. | 🟢 Small (1h) | ✅ **בוצע** — נוסף `Recommendations` ב-`Documents.razor`, `CoachDocuments.razor` ו-`GetDocTypeText` |
-| 6 | **Client: add Management Phone** | New phone field on client form. | 🟢 Small (1h) | ✅ **בוצע** — שדה `ManagementPhone` נוסף למודל `ClientOrg` ול-`ClientDialog.razor` |
-| 7 | **Client: add Accounting Phone** | New phone field on client form. | 🟢 Small (1h) | ✅ **בוצע** — שדה `AccountingPhone` נוסף למודל `ClientOrg` ול-`ClientDialog.razor` |
-| 8 | **Client: add Secretary Phone** | New phone field on client form. | 🟢 Small (1h) | ✅ **בוצע** — שדה `SecretariatPhone` נוסף למודל `ClientOrg` ול-`ClientDialog.razor` |
-| 9 | **Client: add Preferred Days & Hours** | Show client's preferred schedule for coaching sessions. | 🟡 Medium (3–4h) | ✅ **בוצע** — מימוש ימים ושעות מועדפים ב-`ContractDialog.razor` (ברמת הסכם) עם `PreferredSchedule` JSON |
-| 10 | **Client: add Allocated Hours display** | Show total allocated hours on client page. | 🟢 Small (2h) | ⬜ טרם בוצע |
-| 11 | **Client: fix document icon click** | Document icon on Clients page doesn't open anything — wire up navigation/dialog. | 🟢 Small (1–2h) | ✅ **בוצע** — הוחלף באייקון המלצה למאמנים (`TipsAndUpdates`) שמציג מאמנים מומלצים לפי אזור הלקוח ב-`Clients.razor` |
-| 12 | **Time Report: add Class (כיתה) field** | Add class/grade selector to the time entry form. | 🟢 Small (2h) | ⬜ טרם בוצע — שדה לא קיים במודל `TimeEntry` |
-| 13 | **Time Report: whole hours only (1–6)** | Replace free-text/half-hour input with integer-only selector (1–6). | 🟢 Small (1–2h) | ✅ **בוצע** — `MudNumericField` עם `Step="1m"` ו-`Min="1m" Max="6m"` ב-`TimeReport.razor` |
-| 14 | **Time Reports Approval: show report date, not assignment date** | Change displayed date column from assignment creation date to actual report date. | 🟢 Small (1–2h) | ⬜ טרם בוצע |
-| 15 | **Rates: add Framework field** | Add "framework" (מסגרת) to rates form/table. | 🟡 Medium (2–3h) | ⬜ טרם בוצע — שדה לא קיים במודל `CoachRate` ולא ב-`RateDialog` |
-| 16 | **Rates: add Class field** | Add class/grade to rates form/table. | 🟢 Small (1–2h) | ⬜ טרם בוצע |
-| 17 | **Rates: fix history not showing new rates** | Bug — newly added rates don't appear in rate history view. | 🟡 Medium (2–4h) | ⬜ טרם בוצע |
-| 18 | **Group creation: add Institution Name** | Add school/institution name field to group form. | 🟢 Small (1h) | ⬜ טרם בוצע — שדה לא קיים במודל `TrainingGroup` |
-| 19 | **Group creation: add Class field** | Add class/grade to group form. | 🟢 Small (1h) | ⬜ טרם בוצע |
-| 20 | **Group creation: add Group Name** | Add explicit group name field. | 🟢 Small (1h) | ✅ **בוצע** — שדה `GroupName` קיים במודל `TrainingGroup` ומוצג ב-`Groups.razor` |
-| 21 | **Group creation: clarify "Assignment" field** | UX issue — coaches don't understand what the assignment dropdown means. Needs label/tooltip improvement. | 🟢 Small (1h) | ✅ **בוצע** — `GroupDialog.razor` מציג שם לקוח + שעות מוקצות במקום UUID, עם label "שיבוץ (לקוח / התקשרות)" |
-| 22 | **Group creation: fix error on save** | Bug — creating a group currently throws an error. Investigate and fix. | 🟡 Medium (2–4h) | ✅ **בוצע** — תוקן ב-`GroupDialog.razor`: וולידציה ל-`AssignId` ריק (UUID error), הגדרת `ClientId` אוטומטית מהשיבוץ |
-| 23 | **Group students: add note per child** | Add a note/comment icon or inline field next to each student in a group. | 🟡 Medium (3–4h) | 🟡 חלקי — מודל `StudentNote` קיים, צריך לוודא UI |
-| 24 | **Contracts page: show weekly hours** | Display weekly hour scope + annual total on the contracts list/detail. | 🟡 Medium (2–3h) | ⬜ טרם בוצע — `Contracts.razor` לא מציג שעות שבועיות |
-| 25 | **Contracts: add Payment Method field** | New field — check / bank transfer. | 🟢 Small (1–2h) | ⬜ טרם בוצע — שדה לא קיים במודל `ClientContract` |
-| 26 | **Coach: admin sets salary per framework** | Admin can configure salary rate per framework on coach profile. | 🟡 Medium (3–4h) | ⬜ טרם בוצע |
+| #   | Request                                                          | Explanation                                                                                              | Effort           | Status                                                                                                                                              |
+| --- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 15  | **Rates: add Framework field**                                   | Add "framework" (מסגרת) to rates form/table.                                                             | 🟡 Medium (2–3h) | ⬜ טרם בוצע — שדה לא קיים במודל `CoachRate` ולא ב-`RateDialog`                                                                                       |
+| 24  | **Contracts page: show weekly hours**                            | Display weekly hour scope + annual total on the contracts list/detail.                                   | 🟡 Medium (2–3h) | ⬜ טרם בוצע — `Contracts.razor` לא מציג שעות שבועיות                                                                                                 |
+| 17  | **Rates: fix history not showing new rates**                     | Bug — newly added rates don't appear in rate history view.                                               | 🟡 Medium (2–4h) | ✅ **בוצע** — היסטוריית תעריפים מוצגת לאחר בחירת מאמן ב-`Rates.razor`, רשימה מתרעננת אוטומטית לאחר הוספה/עריכה/מחיקה |
+| 22  | **Group creation: fix error on save**                            | Bug — creating a group currently throws an error. Investigate and fix.                                   | 🟡 Medium (2–4h) | ✅ **בוצע** — תוקן ב-`GroupDialog.razor`: וולידציה ל-`AssignId` ריק (UUID error), הגדרת `ClientId` אוטומטית מהשיבוץ                                  |
+| 3   | **Coach: add Available Days + Hours**                            | Show coach's available work days and free hours in coach details.                                        | 🟡 Medium (3–4h) | ✅ **בוצע** — `preferred_schedule` JSON נוסף למודל `Coach`, בוחר ימים+שעות ב-`CoachDialog.razor` וב-`Profile.razor`                                  |
+| 9   | **Client: add Preferred Days & Hours**                           | Show client's preferred schedule for coaching sessions.                                                  | 🟡 Medium (3–4h) | ✅ **בוצע** — מימוש ימים ושעות מועדפים ב-`ContractDialog.razor` (ברמת הסכם) עם `PreferredSchedule` JSON                                              |
+| 23  | **Group students: add note per child**                           | Add a note/comment icon or inline field next to each student in a group.                                 | 🟡 Medium (3–4h) | ✅ **בוצע** — שדה `GeneralNotes` ב-`Student` מוצג בקבוצות, ניתן לעריכה דרך כפתור "הערות" שפותח `StudentDialog` לעדכון |
+| 26  | **Coach: admin sets salary per framework**                       | Admin can configure salary rate per framework on coach profile.                                          | 🟡 Medium (3–4h) | ✅ **בוצע** — מיושם דרך הקצאת תעריף לשיבוץ ב-`AssignmentDialog.razor` (תעריף ספציפי/חדש לכל מסגרת) |
+| 5   | **Coach documents: add "Recommendations" type**                  | Add a new document category option in the upload dialog.                                                 | 🟢 Small (1h)    | ✅ **בוצע** — נוסף `Recommendations` ב-`Documents.razor`, `CoachDocuments.razor` ו-`GetDocTypeText`                                                  |
+| 6   | **Client: add Management Phone**                                 | New phone field on client form.                                                                          | 🟢 Small (1h)    | ✅ **בוצע** — שדה `ManagementPhone` נוסף למודל `ClientOrg` ול-`ClientDialog.razor`                                                                   |
+| 7   | **Client: add Accounting Phone**                                 | New phone field on client form.                                                                          | 🟢 Small (1h)    | ✅ **בוצע** — שדה `AccountingPhone` נוסף למודל `ClientOrg` ול-`ClientDialog.razor`                                                                   |
+| 8   | **Client: add Secretary Phone**                                  | New phone field on client form.                                                                          | 🟢 Small (1h)    | ✅ **בוצע** — שדה `SecretariatPhone` נוסף למודל `ClientOrg` ול-`ClientDialog.razor`                                                                  |
+| 18  | **Group creation: add Institution Name**                         | Add school/institution name field to group form.                                                         | 🟢 Small (1h)    | ⬜ טרם בוצע — שדה לא קיים במודל `TrainingGroup`                                                                                                      |
+| 19  | **Group creation: add Class field**                              | Add class/grade to group form.                                                                           | 🟢 Small (1h)    | ⬜ טרם בוצע                                                                                                                                          |
+| 20  | **Group creation: add Group Name**                               | Add explicit group name field.                                                                           | 🟢 Small (1h)    | ✅ **בוצע** — שדה `GroupName` קיים במודל `TrainingGroup` ומוצג ב-`Groups.razor`                                                                      |
+| 21  | **Group creation: clarify "Assignment" field**                   | UX issue — coaches don't understand what the assignment dropdown means. Needs label/tooltip improvement. | 🟢 Small (1h)    | ✅ **בוצע** — `GroupDialog.razor` מציג שם לקוח + שעות מוקצות במקום UUID, עם label "שיבוץ (לקוח / התקשרות)"                                           |
+| 1   | **Hamburger menu — close on outside click**                      | Currently the side menu only closes via the X button. Should dismiss when tapping anywhere outside it.   | 🟢 Small (1–2h)  | ✅ **בוצע** — `DrawerVariant.Temporary` עם overlay סגירה + כפתור Pin/Unpin ב-`MainLayout.razor`                                                      |
+| 2   | **Coach: add Phone field**                                       | Display phone number on coach profile/card. Field likely exists in model, needs UI binding.              | 🟢 Small (1–2h)  | ✅ **בוצע** — שדה `Phone` נוסף למודל `Coach`, ל-`CoachDialog.razor`, ל-`Profile.razor` ולטבלת מאמנים `Coaches.razor`                                 |
+| 4   | **Coach: add Work Region**                                       | Display geographic work area for the coach.                                                              | 🟢 Small (1–2h)  | ✅ **בוצע** — `availability_area` (נפות) מוצג כעמודה ב-`Coaches.razor`, עריכה ב-`CoachDialog.razor` וב-`Profile.razor` עם `MudSelect MultiSelection` |
+| 11  | **Client: fix document icon click**                              | Document icon on Clients page doesn't open anything — wire up navigation/dialog.                         | 🟢 Small (1–2h)  | ✅ **בוצע** — הוחלף באייקון המלצה למאמנים (`TipsAndUpdates`) שמציג מאמנים מומלצים לפי אזור הלקוח ב-`Clients.razor`                                   |
+| 13  | **Time Report: whole hours only (1–6)**                          | Replace free-text/half-hour input with integer-only selector (1–6).                                      | 🟢 Small (1–2h)  | ✅ **בוצע** — `MudNumericField` עם `Step="1m"` ו-`Min="1m" Max="6m"` ב-`TimeReport.razor`                                                            |
+| 14  | **Time Reports Approval: show report date, not assignment date** | Change displayed date column from assignment creation date to actual report date.                        | 🟢 Small (1–2h)  | ⬜ טרם בוצע                                                                                                                                          |
+| 16  | **Rates: add Class field**                                       | Add class/grade to rates form/table.                                                                     | 🟢 Small (1–2h)  | ⬜ טרם בוצע                                                                                                                                          |
+| 25  | **Contracts: add Payment Method field**                          | New field — check / bank transfer.                                                                       | 🟢 Small (1–2h)  | ✅ **בוצע** — שדה `PaymentMethod` נוסף למודל `ClientContract`, `MudSelect` ב-`ContractDialog.razor`, עמודה ב-`Contracts.razor` |
+| 10  | **Client: add Allocated Hours display**                          | Show total allocated hours on client page.                                                               | 🟢 Small (2h)    | ⬜ טרם בוצע                                                                                                                                          |
+| 12  | **Time Report: add Class (כיתה) field**                          | Add class/grade selector to the time entry form.                                                         | 🟢 Small (2h)    | ⬜ טרם בוצע — שדה לא קיים במודל `TimeEntry`                                                                                                          |
 
 **UI Total Estimate (remaining):** ~22–35 hours (מתוך ~40–55 מקורי)
 
@@ -68,9 +68,9 @@
 
 | Category | Items Total | Completed | Partial | Remaining | Est. Remaining Hours |
 |----------|-------------|-----------|---------|-----------|----------------------|
-| UI-only changes | 26 | 13 | 1 | 12 | ~17–28h |
+| UI-only changes | 26 | 17 | 0 | 9 | ~11–18h |
 | Architecture/Backend changes | 14 | 4 | 2 | 8 | ~49–77h |
-| **Total** | **40** | **17** | **3** | **20** | **~66–105h** |
+| **Total** | **40** | **21** | **2** | **17** | **~60–95h** |
 
 ### ✅ Completed Items
 - UI #1: תפריט המבורגר — סגירה בלחיצה מחוץ + כפתור Pin/Unpin ב-`MainLayout.razor`
@@ -85,6 +85,10 @@
 - UI #20: שם קבוצה — שדה `GroupName` קיים במודל ובתצוגה
 - UI #21: הבהרת שדה שיבוץ — מציג שם לקוח + שעות במקום UUID
 - UI #22: תיקון שגיאה ביצירת קבוצה — וולידציית UUID + הגדרת ClientId אוטומטית
+- UI #17: היסטוריית תעריפים — מוצגת לאחר בחירת מאמן, מתרעננת אוטומטית לאחר שינויים
+- UI #23: הערות לתלמיד — שדה `GeneralNotes` ב-`StudentDialog`, מוצג בקבוצות, עריכה דרך כפתור "הערות"
+- UI #25: אמצעי תשלום בחוזה — `PaymentMethod` במודל, `MudSelect` ב-`ContractDialog`, עמודה ב-`Contracts.razor`
+- UI #26: תעריף לפי מסגרת — מיושם דרך הקצאת תעריף לשיבוץ ב-`AssignmentDialog.razor`
 - Backend #1: שדות מאמן — `phone`, `availability_area` (List<string> נפות), `preferred_schedule` (JSON)
 - Backend #2: שדות לקוח — טלפונים נוספו למודל ול-DB
 - Backend #7: טבלת `student_notes` — מודל קיים עם `StudentNote` ו-`Student.GeneralNotes`
@@ -101,26 +105,26 @@
 - **תפריט צד — כפתור הצמדה (Pin)**: מאפשר מעבר בין תפריט קבוע לתפריט זמני
 
 ### 🟡 Partially Completed
-- UI #23: הערות לתלמיד — מודל backend קיים, צריך לוודא חיבור UI מלא
 - Backend #5: שדות קבוצות — `group_name` בוצע, `institution_name` ו-`class_name` חסרים
-- Backend #6: שדות חוזים — מבנה בסיסי קיים, שעות שבועיות ואמצעי תשלום חסרים
+- Backend #6: שדות חוזים — `preferred_schedule`, `engagement_name`, `payment_method` קיימים; שדות שעות שבועיות/שנתיות חסרים
 
 ---
 
 ## 🎯 Recommended Priority (Updated)
 
 ### Phase 1 — Quick wins (UI fixes + small model changes)
-- Fix bugs: ~~group creation error (#22)~~, rates history (#17), ~~document icon click (#11)~~
-- Add simple fields: ~~phones (#6–8)~~, class (#12, #16, #19), framework (#15), payment method (#25)
+- Fix bugs: ~~group creation error (#22)~~, ~~rates history (#17)~~, ~~document icon click (#11)~~
+- Add simple fields: ~~phones (#6–8)~~, class (#12, #16, #19), framework (#15), ~~payment method (#25)~~
 - ~~Hamburger menu dismiss behavior (#1)~~
 - ~~Whole-hours-only constraint (#13)~~
 - ~~Add "Recommendations" doc type (#5, Backend #14)~~
+- Remaining quick: class fields (#12, #16, #19), framework (#15), institution name (#18), show report date (#14), allocated hours display (#10)
 
 ### Phase 2 — Medium features
 - Excel export (Backend #8)
-- Complete per-student notes UI (#23)
+- ~~Complete per-student notes UI (#23)~~ ✅
 - Weekly hours on contracts (#24) + contract PDF generation (Backend #13)
-- Salary per framework — admin (#26)
+- ~~Salary per framework — admin (#26)~~ ✅
 - ~~Coach fields: phone (#2), days/hours (#3), work region (#4, Backend #1)~~ ✅
 
 ### Phase 3 — Major features

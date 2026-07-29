@@ -1,0 +1,23 @@
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Value" Label="@Label" Variant="Variant.Outlined" Required="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">ביטול</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">עדכן</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public string Label { get; set; } = "";
+
+    private void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(Value)) return;
+        MudDialog.Close(DialogResult.Ok(Value));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -1,5 +1,7 @@
 @page "/admin/groups"
+@using CoachManagerPwa.Pages.Coach
 @inject IDataService Data
+@inject IDialogService Dialog
 @inject ISnackbar Snackbar
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">צפייה בקבוצות - כלל המאמנים</MudText>
@@ -22,14 +24,60 @@
         <MudTd>@context.GroupName</MudTd>
         <MudTd>@GetCoachName(context.CoachId)</MudTd>
         <MudTd>
-            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">צפה במשתתפים</MudButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary"
+                           OnClick="@(() => ViewStudents(context))" Title="צפה במשתתפים" />
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                           OnClick="@(() => EditGroupName(context))" Title="ערוך שם" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                           OnClick="@(() => DeleteGroup(context))" Title="מחק קבוצה" />
         </MudTd>
     </RowTemplate>
 </MudTable>
 
+@if (selectedGroup != null && studentsByGroup.TryGetValue(selectedGroup.GroupId, out var students))
+{
+    <MudPaper Elevation="1" Class="pa-4 mt-4 rounded-lg">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+            <MudText Typo="Typo.h6">משתתפי קבוצת "@selectedGroup.GroupName"</MudText>
+            <MudChip T="string" Size="Size.Small" Color="Color.Info">@students.Count משתתפים</MudChip>
+        </MudStack>
+        @if (!students.Any())
+        {
+            <MudText Color="Color.Default">אין משתתפים בקבוצה זו</MudText>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Hover="true">
+                <thead>
+                    <tr>
+                        <th>שם</th>
+                        <th>הערות</th>
+                        <th>פעולות</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in students)
+                    {
+                        <tr>
+                            <td>@s.FirstName @s.LastName</td>
+                            <td>@(s.GeneralNotes ?? "—")</td>
+                            <td>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                               OnClick="@(() => EditStudent(s))" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </MudPaper>
+}
+
 @code {
     private List<Coach> coaches = new();
     private List<TrainingGroup> groups = new();
+    private Dictionary<string, List<Student>> studentsByGroup = new();
+    private TrainingGroup? selectedGroup;
     private string selectedCoachId = "";
 
     protected override async Task OnInitializedAsync()
@@ -40,6 +88,8 @@
     private async Task LoadGroups(string coachId)
     {
         selectedCoachId = coachId;
+        selectedGroup = null;
+        studentsByGroup.Clear();
         try
         {
             groups = string.IsNullOrEmpty(coachId)
@@ -49,9 +99,96 @@
         catch { }
     }
 
+    private async Task ViewStudents(TrainingGroup group)
+    {
+        selectedGroup = group;
+        if (!studentsByGroup.ContainsKey(group.GroupId))
+        {
+            try
+            {
+                studentsByGroup[group.GroupId] = await Data.GetStudentsByGroupAsync(group.GroupId);
+            }
+            catch { studentsByGroup[group.GroupId] = new(); }
+        }
+    }
+
+    private async Task EditStudent(Student student)
+    {
+        var parameters = new DialogParameters<StudentDialog> { { x => x.Student, student }, { x => x.IsEdit, true } };
+        var dialog = await Dialog.ShowAsync<StudentDialog>("עריכת משתתף", parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Student updated })
+        {
+            try
+            {
+                await Data.UpdateStudentAsync(updated);
+                Snackbar.Add("משתתף עודכן", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
     private string GetCoachName(string id)
     {
         var c = coaches.FirstOrDefault(x => x.CoachId == id);
         return c != null ? $"{c.FirstName} {c.LastName}" : id;
+    }
+
+    private async Task EditGroupName(TrainingGroup group)
+    {
+        var parameters = new DialogParameters<InlineEditDialog>
+        {
+            { x => x.Value, group.GroupName },
+            { x => x.Label, "שם קבוצה" }
+        };
+        var dialog = await Dialog.ShowAsync<InlineEditDialog>("עריכת שם קבוצה", parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: string newName } && !string.IsNullOrWhiteSpace(newName))
+        {
+            try
+            {
+                group.GroupName = newName;
+                await Data.UpdateGroupAsync(group);
+                Snackbar.Add("שם הקבוצה עודכן", Severity.Success);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
+    }
+
+    private async Task DeleteGroup(TrainingGroup group)
+    {
+        var parameters = new DialogParameters<InlineEditDialog>();
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall };
+        var confirm = await Dialog.ShowAsync<ConfirmDeleteDialog>(
+            "מחיקת קבוצה",
+            new DialogParameters<ConfirmDeleteDialog> { { x => x.Message, $"האם למחוק את הקבוצה \"{group.GroupName}\"? כל המשתתפים בקבוצה יימחקו גם כן." } },
+            new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await confirm.Result;
+
+        if (result is { Canceled: false })
+        {
+            try
+            {
+                // Delete all students in the group first
+                if (studentsByGroup.TryGetValue(group.GroupId, out var students))
+                {
+                    foreach (var s in students)
+                        await Data.DeleteStudentAsync(s.StudentId);
+                }
+                else
+                {
+                    var groupStudents = await Data.GetStudentsByGroupAsync(group.GroupId);
+                    foreach (var s in groupStudents)
+                        await Data.DeleteStudentAsync(s.StudentId);
+                }
+
+                await Data.DeleteGroupAsync(group.GroupId);
+                groups.Remove(group);
+                studentsByGroup.Remove(group.GroupId);
+                if (selectedGroup?.GroupId == group.GroupId) selectedGroup = null;
+                Snackbar.Add("הקבוצה נמחקה", Severity.Warning);
+            }
+            catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        }
     }
 }

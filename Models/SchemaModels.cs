@@ -290,6 +290,9 @@ public class ClientContract : BaseModel
     [Column("preferred_schedule")]
     public string? PreferredSchedule { get; set; }
 
+    [Column("payment_method")]
+    public string? PaymentMethod { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

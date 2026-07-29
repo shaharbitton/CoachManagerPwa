@@ -26,6 +26,7 @@
             <MudTh>תעריף חיוב (₪/שעה)</MudTh>
             <MudTh>היקף שעות</MudTh>
             <MudTh>תנאי תשלום</MudTh>
+            <MudTh>אמצעי תשלום</MudTh>
             <MudTh>תקופה</MudTh>
             <MudTh>לו"ז</MudTh>
             <MudTh>פעולות</MudTh>
@@ -35,6 +36,7 @@
             <MudTd>₪@context.BillingRatePerHour</MudTd>
             <MudTd>@context.WorkScopeHours</MudTd>
             <MudTd>@context.PaymentTerms</MudTd>
+            <MudTd>@GetPaymentMethodText(context.PaymentMethod)</MudTd>
             <MudTd>@context.StartDate.ToString("dd/MM/yyyy") - @(context.EndDate?.ToString("dd/MM/yyyy") ?? "פתוח")</MudTd>
             <MudTd>
                 <MudIcon Icon="@(string.IsNullOrWhiteSpace(context.PreferredSchedule) ? Icons.Material.Outlined.EventBusy : Icons.Material.Filled.EventAvailable)"
@@ -111,4 +113,13 @@
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
+
+    private string GetPaymentMethodText(string? method) => method switch
+    {
+        "BankTransfer" => "העברה בנקאית",
+        "Check" => "צ'ק",
+        "Cash" => "מזומן",
+        "CreditCard" => "כרטיס אשראי",
+        _ => "—"
+    };
 }
