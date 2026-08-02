@@ -1,3 +1,4 @@
+@using System.Text.Json
 @inject IDataService Data
 @inject ISnackbar Snackbar
 @inject ILocalityService LocalityService
@@ -93,6 +94,40 @@
                     </MudText>
                 </MudItem>
             }
+
+            <MudItem xs="12">
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.subtitle1" Class="mb-2" Style="font-weight: bold;">לו"ז שיבוץ</MudText>
+            </MudItem>
+            @foreach (var day in DayNames)
+            {
+                <MudItem xs="12">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-1" Spacing="2">
+                        <MudCheckBox T="bool" Value="@IsDaySelected(day.Key)" ValueChanged="@((bool v) => ToggleDay(day.Key, v))"
+                                     Label="@day.Value" Style="min-width: 90px;" Dense="true" />
+                        @if (IsDaySelected(day.Key))
+                        {
+                            <MudStack Row="true" Spacing="1" Style="flex-wrap: wrap; direction: ltr;">
+                                @foreach (var hour in GetVisibleHours(day.Key))
+                                {
+                                    var h = hour;
+                                    var selected = IsHourSelected(day.Key, h);
+                                    <MudChip T="string" Size="Size.Small"
+                                             Color="@(selected ? Color.Primary : Color.Default)"
+                                             Variant="@(selected ? Variant.Filled : Variant.Outlined)"
+                                             OnClick="@(() => ToggleHour(day.Key, h))"
+                                             Style="min-width: 52px; cursor: pointer; direction: ltr;">
+                                        @($"{h:00}:00")
+                                    </MudChip>
+                                }
+                                <MudLink OnClick="@(() => ToggleExpandDay(day.Key))" Underline="Underline.Always" Typo="Typo.caption" Style="cursor: pointer;">
+                                    @(expandedDays.Contains(day.Key) ? "הצג פחות" : "כל השעות")
+                                </MudLink>
+                            </MudStack>
+                        }
+                    </MudStack>
+                </MudItem>
+            }
         </MudGrid>
     </DialogContent>
     <DialogActions>
@@ -114,10 +149,30 @@
     private string rateMode = "default";
     private decimal newRateAmount;
     private List<Coach> recommendedCoaches = new();
+    private Dictionary<string, List<int>> schedule = new();
+    private HashSet<string> expandedDays = new();
+
+    private static readonly Dictionary<string, string> DayNames = new()
+    {
+        ["Sunday"] = "ראשון",
+        ["Monday"] = "שני",
+        ["Tuesday"] = "שלישי",
+        ["Wednesday"] = "רביעי",
+        ["Thursday"] = "חמישי",
+        ["Friday"] = "שישי",
+        ["Saturday"] = "שבת"
+    };
 
     protected override async Task OnParametersSetAsync()
     {
         await LocalityService.InitializeAsync();
+
+        // Parse existing schedule
+        if (!string.IsNullOrWhiteSpace(Assignment.Schedule))
+        {
+            try { schedule = JsonSerializer.Deserialize<Dictionary<string, List<int>>>(Assignment.Schedule) ?? new(); }
+            catch { schedule = new(); }
+        }
 
         // Determine initial rate mode based on existing assignment data
         if (!IsNew && !string.IsNullOrEmpty(Assignment.CoachRateId))
@@ -223,10 +278,39 @@
             };
         }
 
+        // Serialize schedule
+        Assignment.Schedule = schedule.Count > 0 ? JsonSerializer.Serialize(schedule) : null;
+
         MudDialog.Close(DialogResult.Ok(new AssignmentDialogResult { Assignment = Assignment, NewRate = newRateForCreation }));
     }
 
     private CoachRate? newRateForCreation;
+
+    private bool IsDaySelected(string day) => schedule.TryGetValue(day, out var hours) && hours.Count > 0;
+    private bool IsHourSelected(string day, int hour) => schedule.TryGetValue(day, out var hours) && hours.Contains(hour);
+
+    private IEnumerable<int> GetVisibleHours(string day) =>
+        expandedDays.Contains(day) ? Enumerable.Range(0, 24) : Enumerable.Range(8, 9);
+
+    private void ToggleExpandDay(string day)
+    {
+        if (!expandedDays.Add(day)) expandedDays.Remove(day);
+    }
+
+    private void ToggleDay(string day, bool selected)
+    {
+        if (selected)
+            schedule[day] = new List<int> { 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+        else
+            schedule.Remove(day);
+    }
+
+    private void ToggleHour(string day, int hour)
+    {
+        if (!schedule.ContainsKey(day)) schedule[day] = new();
+        if (!schedule[day].Remove(hour)) schedule[day].Add(hour);
+        if (schedule[day].Count == 0) schedule.Remove(day);
+    }
 
     private void Cancel() => MudDialog.Cancel();
 }

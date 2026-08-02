@@ -11,15 +11,19 @@
 <MudCard Elevation="3" Class="rounded-lg pa-4 mb-4">
     <MudText Typo="Typo.h6" Class="mb-3">דיווח חדש</MudText>
 
-    @if (string.IsNullOrEmpty(AssignId))
-    {
-        <MudSelect T="string" @bind-Value="newEntry.AssignId" Label="שיבוץ" Variant="Variant.Outlined" Class="mb-3">
-            @foreach (var a in assignments)
-            {
-                <MudSelectItem Value="@a.AssignId">שיבוץ - @a.AssignId[..8]</MudSelectItem>
-            }
-        </MudSelect>
-    }
+    <MudSelect T="string" Value="selectedAssignId" ValueChanged="OnAssignmentChanged" Label="סנן לפי שיבוץ" Variant="Variant.Outlined" Class="mb-3" Clearable="true">
+        @foreach (var a in assignments)
+        {
+            <MudSelectItem Value="@a.AssignId">@GetAssignmentLabel(a)</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudSelect T="string" @bind-Value="newEntry.GroupId" Label="קבוצה (כיתה)" Variant="Variant.Outlined" Class="mb-3" Clearable="true" Disabled="@(!FilteredGroups.Any())">
+        @foreach (var g in FilteredGroups)
+        {
+            <MudSelectItem Value="@g.GroupId">@g.GroupName</MudSelectItem>
+        }
+    </MudSelect>
 
     <MudDatePicker @bind-Date="workDate" Label="תאריך עבודה" Variant="Variant.Outlined" Class="mb-3" />
 
@@ -86,24 +90,54 @@
     private DateTime? workDate = DateTime.Today;
     private List<Assignment> assignments = new();
     private List<TE> recentEntries = new();
+    private List<TrainingGroup> groups = new();
+    private List<ClientOrg> clients = new();
+    private List<ClientContract> contracts = new();
+    private string? selectedAssignId;
     private bool submitting;
     private bool signatureError;
     private string? gpsStatus;
     private bool signatureInitialized;
+
+    private IEnumerable<TrainingGroup> FilteredGroups => string.IsNullOrEmpty(selectedAssignId)
+        ? groups
+        : groups.Where(g => g.AssignId == selectedAssignId);
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             assignments = await Data.GetAssignmentsByCoachAsync(AppState.CurrentUserId);
+            clients = await Data.GetClientsAsync();
+            contracts = await Data.GetAllContractsAsync();
+            groups = await Data.GetGroupsByCoachAsync(AppState.CurrentUserId);
             recentEntries = await Data.GetTimeEntriesAsync();
 
             if (!string.IsNullOrEmpty(AssignId))
+            {
+                selectedAssignId = AssignId;
                 newEntry.AssignId = AssignId;
+            }
         }
         catch { }
 
         await TryGetGps();
+    }
+
+    private void OnAssignmentChanged(string? value)
+    {
+        selectedAssignId = value;
+        newEntry.AssignId = value ?? string.Empty;
+        newEntry.GroupId = null; // reset group when assignment changes
+    }
+
+    private string GetAssignmentLabel(Assignment a)
+    {
+        var client = clients.FirstOrDefault(c => c.ClientId == a.ClientId);
+        var clientName = client?.ClientName ?? "לקוח";
+        var contract = contracts.FirstOrDefault(c => c.ContractId == a.ContractId);
+        var engName = contract?.EngagementName;
+        return string.IsNullOrEmpty(engName) ? clientName : $"{engName} — {clientName}";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

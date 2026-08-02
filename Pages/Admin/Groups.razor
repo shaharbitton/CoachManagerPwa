@@ -6,22 +6,38 @@
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">צפייה בקבוצות - כלל המאמנים</MudText>
 
-<MudSelect T="string" Value="selectedCoachId" ValueChanged="LoadGroups" Label="סנן לפי מאמן" Variant="Variant.Outlined" Class="mb-4">
-    <MudSelectItem Value="@("")">כל המאמנים</MudSelectItem>
-    @foreach (var c in coaches)
-    {
-        <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
-    }
-</MudSelect>
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="6">
+        <MudSelect T="string" Value="selectedCoachId" ValueChanged="LoadGroups" Label="סנן לפי מאמן" Variant="Variant.Outlined">
+            <MudSelectItem Value="@("")">כל המאמנים</MudSelectItem>
+            @foreach (var c in coaches)
+            {
+                <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudSelect T="string" @bind-Value="selectedAssignId" Label="סנן לפי שיבוץ" Variant="Variant.Outlined" Clearable="true">
+            @foreach (var a in assignments.Where(a => string.IsNullOrEmpty(selectedCoachId) || a.CoachId == selectedCoachId))
+            {
+                <MudSelectItem Value="@a.AssignId">@GetAssignmentLabel(a)</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+</MudGrid>
 
-<MudTable Items="groups" Hover="true" Elevation="2" Dense="true">
+<MudTable Items="FilteredGroups" Hover="true" Elevation="2" Dense="true">
     <HeaderContent>
         <MudTh>שם קבוצה</MudTh>
+        <MudTh>לקוח</MudTh>
+        <MudTh>התקשרות</MudTh>
         <MudTh>מאמן</MudTh>
         <MudTh>פעולות</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd>@context.GroupName</MudTd>
+        <MudTd>@GetClientName(context.ClientId)</MudTd>
+        <MudTd>@GetEngagementName(context.AssignId)</MudTd>
         <MudTd>@GetCoachName(context.CoachId)</MudTd>
         <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary"
@@ -76,13 +92,28 @@
 @code {
     private List<Coach> coaches = new();
     private List<TrainingGroup> groups = new();
+    private List<Assignment> assignments = new();
+    private List<ClientContract> contracts = new();
+    private List<ClientOrg> clients = new();
     private Dictionary<string, List<Student>> studentsByGroup = new();
     private TrainingGroup? selectedGroup;
     private string selectedCoachId = "";
+    private string? selectedAssignId;
+
+    private IEnumerable<TrainingGroup> FilteredGroups => string.IsNullOrEmpty(selectedAssignId)
+        ? groups
+        : groups.Where(g => g.AssignId == selectedAssignId);
 
     protected override async Task OnInitializedAsync()
     {
-        try { coaches = await Data.GetCoachesAsync(); } catch { }
+        try
+        {
+            coaches = await Data.GetCoachesAsync();
+            assignments = await Data.GetAssignmentsAsync();
+            contracts = await Data.GetAllContractsAsync();
+            clients = await Data.GetClientsAsync();
+        }
+        catch { }
     }
 
     private async Task LoadGroups(string coachId)
@@ -132,6 +163,31 @@
     {
         var c = coaches.FirstOrDefault(x => x.CoachId == id);
         return c != null ? $"{c.FirstName} {c.LastName}" : id;
+    }
+
+    private string GetClientName(string? clientId)
+    {
+        if (string.IsNullOrEmpty(clientId)) return "—";
+        var client = clients.FirstOrDefault(c => c.ClientId == clientId);
+        return client?.ClientName ?? "—";
+    }
+
+    private string GetEngagementName(string? assignId)
+    {
+        if (string.IsNullOrEmpty(assignId)) return "—";
+        var assignment = assignments.FirstOrDefault(a => a.AssignId == assignId);
+        if (assignment == null) return "—";
+        var contract = contracts.FirstOrDefault(c => c.ContractId == assignment.ContractId);
+        return contract?.EngagementName ?? "—";
+    }
+
+    private string GetAssignmentLabel(Assignment a)
+    {
+        var client = clients.FirstOrDefault(c => c.ClientId == a.ClientId);
+        var clientName = client?.ClientName ?? "לקוח";
+        var contract = contracts.FirstOrDefault(c => c.ContractId == a.ContractId);
+        var engName = contract?.EngagementName;
+        return string.IsNullOrEmpty(engName) ? clientName : $"{engName} — {clientName}";
     }
 
     private async Task EditGroupName(TrainingGroup group)

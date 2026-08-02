@@ -42,7 +42,8 @@
     <HeaderContent>
         <MudTh>מאמן</MudTh>
         <MudTh>לקוח</MudTh>
-        <MudTh>תאריך</MudTh>
+        <MudTh>תאריך ביצוע</MudTh>
+        <MudTh>תאריך הזנה</MudTh>
         <MudTh>שעות</MudTh>
         <MudTh>סטטוס</MudTh>
         <MudTh>חתימה</MudTh>
@@ -53,6 +54,7 @@
         <MudTd>@GetCoachName(context)</MudTd>
         <MudTd>@GetClientName(context)</MudTd>
         <MudTd>@context.WorkDate.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd>@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
         <MudTd>@context.HoursReported</MudTd>
         <MudTd><MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@GetStatusText(context.Status)</MudChip></MudTd>
         <MudTd>
@@ -78,7 +80,7 @@
         @if (context.EntryId == expandedEntryId)
         {
             <MudTr>
-                <td colspan="8">
+                <td colspan="9">
                     <MudCard Elevation="0" Class="ma-2 pa-3" Style="background: var(--mud-palette-background-gray);">
                         <MudGrid>
                             <MudItem xs="12" sm="6" md="3">

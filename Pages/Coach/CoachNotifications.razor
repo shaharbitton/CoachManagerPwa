@@ -14,7 +14,7 @@
 }
 else
 {
-    @if (!expiringDocs.Any() && !rejectedDocs.Any() && !nearLimitAssignments.Any())
+    @if (!expiringDocs.Any() && !rejectedDocs.Any() && !nearLimitAssignments.Any() && !pendingContracts.Any())
     {
         <MudCard Elevation="2" Class="pa-6 rounded-lg">
             <MudStack AlignItems="AlignItems.Center" Spacing="3">
@@ -93,6 +93,27 @@ else
                 </MudList>
             </MudCard>
         }
+
+        @if (pendingContracts.Any())
+        {
+            <MudCard Elevation="2" Class="pa-4 rounded-lg mb-4">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Primary" />
+                    <MudText Typo="Typo.h6" Class="ms-2">חוזים ממתינים לחתימה (@pendingContracts.Count)</MudText>
+                </MudStack>
+                <MudList T="CoachAssignmentContract" Dense="true">
+                    @foreach (var c in pendingContracts)
+                    {
+                        <MudListItem Icon="@Icons.Material.Filled.Draw">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText>חוזה מ-@c.CreatedAt.ToString("dd/MM/yyyy")</MudText>
+                                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Href="@($"coach/sign-contract/{c.Id}")">חתום</MudButton>
+                            </MudStack>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudCard>
+        }
     }
 }
 
@@ -101,6 +122,7 @@ else
     private List<CoachDocument> expiringDocs = new();
     private List<CoachDocument> rejectedDocs = new();
     private List<AssignmentAlert> nearLimitAssignments = new();
+    private List<CoachAssignmentContract> pendingContracts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,6 +158,10 @@ else
             }
 
             await NotificationSvc.RefreshNotificationCountAsync();
+
+            // Load pending contracts
+            var coachContracts = await Data.GetContractsByCoachAsync(coachId);
+            pendingContracts = coachContracts.Where(c => c.Status == "Pending").ToList();
         }
         catch { }
         finally { loading = false; }

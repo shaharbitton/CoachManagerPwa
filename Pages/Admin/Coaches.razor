@@ -1,4 +1,5 @@
 @page "/admin/coaches"
+@using System.Text.Json
 @inject IDataService Data
 @inject IDialogService Dialog
 @inject ISnackbar Snackbar
@@ -15,7 +16,7 @@
               Immediate="true" Class="mb-4" />
 
 <MudTable Items="FilteredCoaches" Hover="true" Elevation="2" Dense="true" Loading="loading"
-          RowStyle="cursor: pointer;">
+          RowStyle="cursor: pointer;" T="Coach" OnRowClick="OnRowClicked">
     <HeaderContent>
         <MudTh>שם מלא</MudTh>
         <MudTh>טלפון</MudTh>
@@ -23,6 +24,7 @@
         <MudTh>מקצוע</MudTh>
         <MudTh>אזורים</MudTh>
         <MudTh>מעמד מיסויי</MudTh>
+        <MudTh>לו"ז</MudTh>
         <MudTh>פעולות</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -35,10 +37,34 @@
             <MudChip T="string" Size="Size.Small" Color="@GetTaxColor(context.TaxStatus)">@GetTaxText(context.TaxStatus)</MudChip>
         </MudTd>
         <MudTd>
+            <MudIcon Icon="@(string.IsNullOrWhiteSpace(context.PreferredSchedule) ? Icons.Material.Outlined.EventBusy : Icons.Material.Filled.EventAvailable)"
+                     Color="@(string.IsNullOrWhiteSpace(context.PreferredSchedule) ? Color.Default : Color.Success)"
+                     Size="Size.Small" />
+        </MudTd>
+        <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditCoach(context))" />
             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteCoach(context))" />
         </MudTd>
     </RowTemplate>
+    <ChildRowContent>
+        @if (context.CoachId == expandedCoachId)
+        {
+            <MudTr>
+                <td colspan="8" style="padding: 12px 24px; background-color: var(--mud-palette-background-gray);">
+                    @{ var sched = ParseSchedule(context.PreferredSchedule); }
+                    @if (sched.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Default">לא הוגדר לו"ז מועדף</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.subtitle2" Class="mb-2" Style="font-weight: bold;">לו"ז מועדף</MudText>
+                        @RenderWeeklyTable(sched)
+                    }
+                </td>
+            </MudTr>
+        }
+    </ChildRowContent>
     <NoRecordsContent>
         <MudText Align="Align.Center" Class="pa-4">לא נמצאו מאמנים</MudText>
     </NoRecordsContent>
@@ -48,6 +74,19 @@
     private List<Coach> coaches = new();
     private string searchText = "";
     private bool loading = true;
+    private string? expandedCoachId;
+
+    private static readonly string[] DayOrder = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    private static readonly Dictionary<string, string> DayNames = new()
+    {
+        ["Sunday"] = "ראשון",
+        ["Monday"] = "שני",
+        ["Tuesday"] = "שלישי",
+        ["Wednesday"] = "רביעי",
+        ["Thursday"] = "חמישי",
+        ["Friday"] = "שישי",
+        ["Saturday"] = "שבת"
+    };
 
     private IEnumerable<Coach> FilteredCoaches => string.IsNullOrWhiteSpace(searchText)
         ? coaches
@@ -156,4 +195,51 @@
             return string.Join(", ", coach.AvailabilityArea);
         return "—";
     }
+
+    private void OnRowClicked(TableRowClickEventArgs<Coach> args)
+    {
+        expandedCoachId = expandedCoachId == args.Item.CoachId ? null : args.Item.CoachId;
+    }
+
+    private Dictionary<string, List<int>> ParseSchedule(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return new();
+        try { return JsonSerializer.Deserialize<Dictionary<string, List<int>>>(json) ?? new(); }
+        catch { return new(); }
+    }
+
+    private RenderFragment RenderWeeklyTable(Dictionary<string, List<int>> sched) => __builder =>
+    {
+        var allHours = DayOrder.Where(d => sched.ContainsKey(d)).SelectMany(d => sched[d]).Distinct().OrderBy(h => h).ToList();
+
+        <MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="max-width: 600px; direction: rtl;">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">שעה</th>
+                    @foreach (var day in DayOrder)
+                    {
+                        <th style="text-align: center;">@DayNames[day]</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var hour in allHours)
+                {
+                    <tr>
+                        <td style="text-align: center; font-weight: 600; direction: ltr;">@($"{hour:00}:00")</td>
+                        @foreach (var day in DayOrder)
+                        {
+                            var active = sched.TryGetValue(day, out var hours) && hours.Contains(hour);
+                            <td style="text-align: center;">
+                                @if (active)
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Color="Color.Primary" />
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    };
 }

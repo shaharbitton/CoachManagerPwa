@@ -90,6 +90,7 @@ else
     private Dictionary<string, List<Student>> studentsByGroup = new();
     private List<Assignment> assignments = new();
     private List<ClientOrg> clients = new();
+    private List<ClientContract> contracts = new();
     private string? selectedAssignId;
     private bool loading = true;
 
@@ -104,6 +105,7 @@ else
         {
             assignments = await Data.GetAssignmentsByCoachAsync(AppState.CurrentUserId);
             clients = await Data.GetClientsAsync();
+            contracts = await Data.GetAllContractsAsync();
             groups = await Data.GetGroupsByCoachAsync(AppState.CurrentUserId);
             foreach (var g in groups)
             {
@@ -124,8 +126,9 @@ else
     {
         var client = clients.FirstOrDefault(c => c.ClientId == a.ClientId);
         var clientName = client?.ClientName ?? "לקוח";
-        var hours = a.AllocatedHours?.ToString("0") ?? "-";
-        return $"{clientName} ({hours} שעות)";
+        var contract = contracts.FirstOrDefault(c => c.ContractId == a.ContractId);
+        var engName = contract?.EngagementName;
+        return string.IsNullOrEmpty(engName) ? clientName : $"{engName} — {clientName}";
     }
 
     private int GetStudentCount(string groupId) =>

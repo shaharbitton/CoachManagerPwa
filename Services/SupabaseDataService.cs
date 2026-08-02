@@ -488,4 +488,38 @@ public class SupabaseDataService : IDataService
             .Where(n => n.NoteId == noteId)
             .Delete();
     }
+
+    // ===== Coach Assignment Contracts =====
+
+    public async Task<List<CoachAssignmentContract>> GetContractsByAssignmentAsync(string assignId)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachAssignmentContract>()
+            .Where(c => c.AssignId == assignId)
+            .Get();
+        return response.Models;
+    }
+
+    public async Task<List<CoachAssignmentContract>> GetContractsByCoachAsync(string coachId)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachAssignmentContract>()
+            .Where(c => c.CoachId == coachId)
+            .Get();
+        return response.Models;
+    }
+
+    public async Task<CoachAssignmentContract> CreateCoachContractAsync(CoachAssignmentContract contract)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachAssignmentContract>().Insert(contract);
+        return response.Models.First();
+    }
+
+    public async Task<CoachAssignmentContract> UpdateCoachContractAsync(CoachAssignmentContract contract)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachAssignmentContract>().Update(contract);
+        return response.Models.First();
+    }
 }

@@ -27,4 +27,8 @@
     <None Include=".github\workflows\deploy-ghpages.yml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\business_stamp.jpeg" />
+  </ItemGroup>
+
 </Project>

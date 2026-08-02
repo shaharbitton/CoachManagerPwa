@@ -1,0 +1,164 @@
+@page "/coach/sign-contract/{ContractId}"
+@inject IDataService Data
+@inject AppState AppState
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+@inject ContractGeneratorService ContractGenerator
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">
+    <MudIcon Icon="@Icons.Material.Filled.Description" Class="me-2" />
+    חתימה על חוזה התקשרות
+</MudText>
+
+@if (loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (contract == null)
+{
+    <MudAlert Severity="Severity.Error">חוזה לא נמצא</MudAlert>
+}
+else if (contract.Status == "Signed")
+{
+    <MudAlert Severity="Severity.Success" Class="mb-4">חוזה זה כבר נחתם בתאריך @contract.SignedAt?.ToString("dd/MM/yyyy HH:mm")</MudAlert>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="PreviewContract" StartIcon="@Icons.Material.Filled.Visibility">צפה בחוזה</MudButton>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="ms-2" OnClick="DownloadContract" StartIcon="@Icons.Material.Filled.Download">הורד חוזה</MudButton>
+}
+else
+{
+    <MudCard Elevation="2" Class="pa-4 mb-4">
+        <MudText Typo="Typo.subtitle1" Class="mb-2" Style="font-weight: bold;">תצוגה מקדימה של החוזה</MudText>
+        <MudDivider Class="mb-3" />
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-height: 500px; overflow-y: auto; background: #fafafa;">
+            @((MarkupString)contract.HtmlContent)
+        </div>
+    </MudCard>
+
+    <MudCard Elevation="2" Class="pa-4 mb-4">
+        <MudText Typo="Typo.subtitle1" Class="mb-3" Style="font-weight: bold;">חתימה</MudText>
+        <MudText Typo="Typo.body2" Class="mb-2">חתום באצבע או בעכבר בתוך המסגרת:</MudText>
+        <div style="border: 2px solid #1a365d; border-radius: 8px; overflow: hidden; max-width: 500px;">
+            <canvas id="signature-canvas" style="width: 100%; height: 150px; touch-action: none; cursor: crosshair;"></canvas>
+        </div>
+        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ClearSignature" Class="mt-2" StartIcon="@Icons.Material.Filled.Clear">נקה חתימה</MudButton>
+
+        <MudCheckBox T="bool" @bind-Value="agreed" Label="קראתי את החוזה ואני מסכים/ה לתנאיו" Class="mt-3" />
+
+        <MudStack Row="true" Class="mt-4" Spacing="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitSignature"
+                       Disabled="@(!agreed || signing)" StartIcon="@Icons.Material.Filled.Draw">
+                @(signing ? "חותם..." : "חתום על החוזה")
+            </MudButton>
+        </MudStack>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public string ContractId { get; set; } = "";
+
+    private CoachAssignmentContract? contract;
+    private bool loading = true;
+    private bool agreed;
+    private bool signing;
+    private bool canvasInitialized;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var coachId = AppState.CurrentUserId;
+            if (string.IsNullOrEmpty(coachId)) return;
+
+            var contracts = await Data.GetContractsByCoachAsync(coachId);
+            contract = contracts.FirstOrDefault(c => c.Id == ContractId);
+        }
+        catch { }
+        finally { loading = false; }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!canvasInitialized && contract != null && contract.Status != "Signed")
+        {
+            await Task.Delay(300);
+            await JS.InvokeVoidAsync("signaturePad.init", "signature-canvas");
+            canvasInitialized = true;
+        }
+    }
+
+    private async Task ClearSignature()
+    {
+        await JS.InvokeVoidAsync("signaturePad.clear");
+    }
+
+    private async Task SubmitSignature()
+    {
+        if (contract == null || !agreed) return;
+
+        var isEmpty = await JS.InvokeAsync<bool>("signaturePad.isEmpty");
+        if (isEmpty)
+        {
+            Snackbar.Add("יש לחתום לפני האישור", Severity.Warning);
+            return;
+        }
+
+        signing = true;
+        try
+        {
+            // Get signature as data URL
+            var signatureDataUrl = await JS.InvokeAsync<string>("signaturePad.toDataUrl");
+
+            // Embed signature into HTML
+            var signedHtml = ContractGenerator.EmbedSignature(contract.HtmlContent, signatureDataUrl);
+
+            // Update contract
+            contract.HtmlContent = signedHtml;
+            contract.Status = "Signed";
+            contract.SignedAt = DateTime.UtcNow;
+
+            await Data.UpdateCoachContractAsync(contract);
+
+            // Save signed contract as coach document
+            try
+            {
+                var supabaseClient = ((SupabaseDataService)Data).GetClient();
+                var htmlBytes = System.Text.Encoding.UTF8.GetBytes(signedHtml);
+                var fileName = $"contracts/{AppState.CurrentUserId}/{DateTime.UtcNow:yyyyMMdd_HHmmss}_{contract.Id}.html";
+                await supabaseClient.Storage.From("coach-documents").Upload(htmlBytes, fileName, new Supabase.Storage.FileOptions
+                {
+                    ContentType = "text/html"
+                });
+                var publicUrl = supabaseClient.Storage.From("coach-documents").GetPublicUrl(fileName);
+
+                var doc = new CoachDocument
+                {
+                    CoachId = AppState.CurrentUserId!,
+                    DocType = "חוזה חתום",
+                    FileUrl = publicUrl,
+                    Status = "Approved"
+                };
+                await Data.CreateDocumentAsync(doc);
+            }
+            catch { /* Document save is best-effort */ }
+
+            Snackbar.Add("החוזה נחתם בהצלחה!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאה בחתימה: {ex.Message}", Severity.Error);
+        }
+        finally { signing = false; }
+    }
+
+    private async Task PreviewContract()
+    {
+        if (contract != null)
+            await JS.InvokeVoidAsync("contractPdf.preview", contract.HtmlContent);
+    }
+
+    private async Task DownloadContract()
+    {
+        if (contract != null)
+            await JS.InvokeVoidAsync("contractPdf.downloadHtml", contract.HtmlContent, $"contract_{contract.Id}.html");
+    }
+}

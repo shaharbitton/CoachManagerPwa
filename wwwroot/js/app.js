@@ -6,27 +6,38 @@ window.signaturePad = {
     _ctx: null,
     _drawing: false,
     _hasContent: false,
+    _listeners: [],
 
     init: function (canvasId) {
+        const self = this;
         const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-        this._canvas = canvas;
-        this._ctx = canvas.getContext('2d');
-        this._hasContent = false;
+        if (!canvas) {
+            console.warn('signaturePad.init: canvas not found:', canvasId);
+            return;
+        }
+
+        // Remove old listeners if re-initializing
+        self._listeners.forEach(([el, ev, fn, opts]) => el.removeEventListener(ev, fn, opts));
+        self._listeners = [];
+
+        self._canvas = canvas;
+        self._ctx = canvas.getContext('2d');
+        self._hasContent = false;
+        self._drawing = false;
 
         // Set canvas resolution to match display size
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
 
-        this._ctx.strokeStyle = '#1a365d';
-        this._ctx.lineWidth = 2.5;
-        this._ctx.lineCap = 'round';
-        this._ctx.lineJoin = 'round';
+        self._ctx.strokeStyle = '#1a365d';
+        self._ctx.lineWidth = 2.5;
+        self._ctx.lineCap = 'round';
+        self._ctx.lineJoin = 'round';
 
-        // Clear
-        this._ctx.fillStyle = '#ffffff';
-        this._ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Clear with white
+        self._ctx.fillStyle = '#ffffff';
+        self._ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const getPos = (e) => {
             const r = canvas.getBoundingClientRect();
@@ -36,33 +47,40 @@ window.signaturePad = {
 
         const start = (e) => {
             e.preventDefault();
-            this._drawing = true;
+            e.stopPropagation();
+            self._drawing = true;
             const p = getPos(e);
-            this._ctx.beginPath();
-            this._ctx.moveTo(p.x, p.y);
+            self._ctx.beginPath();
+            self._ctx.moveTo(p.x, p.y);
         };
 
         const move = (e) => {
-            if (!this._drawing) return;
+            if (!self._drawing) return;
             e.preventDefault();
-            this._hasContent = true;
+            e.stopPropagation();
+            self._hasContent = true;
             const p = getPos(e);
-            this._ctx.lineTo(p.x, p.y);
-            this._ctx.stroke();
+            self._ctx.lineTo(p.x, p.y);
+            self._ctx.stroke();
         };
 
         const end = (e) => {
-            if (e) e.preventDefault();
-            this._drawing = false;
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            self._drawing = false;
         };
 
-        canvas.addEventListener('mousedown', start);
-        canvas.addEventListener('mousemove', move);
-        canvas.addEventListener('mouseup', end);
-        canvas.addEventListener('mouseleave', end);
-        canvas.addEventListener('touchstart', start, { passive: false });
-        canvas.addEventListener('touchmove', move, { passive: false });
-        canvas.addEventListener('touchend', end);
+        const add = (el, ev, fn, opts) => {
+            el.addEventListener(ev, fn, opts);
+            self._listeners.push([el, ev, fn, opts]);
+        };
+
+        add(canvas, 'mousedown', start, false);
+        add(canvas, 'mousemove', move, false);
+        add(canvas, 'mouseup', end, false);
+        add(canvas, 'mouseleave', end, false);
+        add(canvas, 'touchstart', start, { passive: false });
+        add(canvas, 'touchmove', move, { passive: false });
+        add(canvas, 'touchend', end, false);
     },
 
     clear: function () {
@@ -107,4 +125,48 @@ window.getGeoLocation = function () {
             { enableHighAccuracy: true, timeout: 10000 }
         );
     });
+};
+
+// ===== Contract PDF =====
+window.contractPdf = {
+    // Render HTML string into a hidden iframe and trigger print (Save as PDF)
+    printHtml: function (htmlContent) {
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '-9999px';
+        iframe.style.top = '-9999px';
+        iframe.style.width = '210mm';
+        iframe.style.height = '297mm';
+        document.body.appendChild(iframe);
+
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+
+        iframe.onload = function () {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            setTimeout(() => document.body.removeChild(iframe), 1000);
+        };
+    },
+
+    // Download HTML as a file (fallback - saves .html which user can print to PDF)
+    downloadHtml: function (htmlContent, fileName) {
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName || 'contract.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    // Open HTML in new window for preview
+    preview: function (htmlContent) {
+        const win = window.open('', '_blank');
+        win.document.write(htmlContent);
+        win.document.close();
+    }
 };

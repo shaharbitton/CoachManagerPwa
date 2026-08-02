@@ -22,6 +22,9 @@
                         <MudTextField @bind-Value="coach.Phone" Label="טלפון" Variant="Variant.Outlined" InputType="InputType.Telephone" />
                     </MudItem>
                     <MudItem xs="12">
+                        <MudTextField @bind-Value="coach.Address" Label="כתובת" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12">
                         <MudTextField Value="@coach.NationalId" Label="תעודת זהות" Variant="Variant.Outlined" ReadOnly="true" />
                     </MudItem>
                     <MudItem xs="6">

@@ -86,4 +86,10 @@ public interface IDataService
     Task<StudentNote> CreateNoteAsync(StudentNote note);
     Task<StudentNote> UpdateNoteAsync(StudentNote note);
     Task DeleteNoteAsync(string noteId);
+
+    // Coach Assignment Contracts
+    Task<List<CoachAssignmentContract>> GetContractsByAssignmentAsync(string assignId);
+    Task<List<CoachAssignmentContract>> GetContractsByCoachAsync(string coachId);
+    Task<CoachAssignmentContract> CreateCoachContractAsync(CoachAssignmentContract contract);
+    Task<CoachAssignmentContract> UpdateCoachContractAsync(CoachAssignmentContract contract);
 }
