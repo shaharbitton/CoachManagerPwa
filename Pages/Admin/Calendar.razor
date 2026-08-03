@@ -1,0 +1,189 @@
+@page "/admin/calendar"
+@using System.Text.Json
+@inject IDataService Data
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5" Style="font-weight: bold;">לו"ז שבועי כללי</MudText>
+</MudStack>
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="6">
+        <MudSelect T="string" Label="סינון מאמנים" MultiSelection="true" @bind-SelectedValues="selectedCoachIds"
+                   Variant="Variant.Outlined" Dense="true" Clearable="true" AdornmentIcon="@Icons.Material.Filled.FilterList"
+                   MultiSelectionTextFunc="@(vals => $"{vals.Count()} מאמנים נבחרו")">
+            @foreach (var c in coaches)
+            {
+                <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+</MudGrid>
+
+@if (loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (!GetFilteredSlots().Any())
+{
+    <MudCard Elevation="2" Class="pa-6 rounded-lg">
+        <MudStack AlignItems="AlignItems.Center" Spacing="3">
+            <MudIcon Icon="@Icons.Material.Filled.EventBusy" Style="font-size: 4rem;" Color="Color.Default" />
+            <MudText Typo="Typo.h6" Color="Color.Default">לא נמצא לו"ז לשיבוצים</MudText>
+        </MudStack>
+    </MudCard>
+}
+else
+{
+    var filtered = GetFilteredSlots();
+    var hours = filtered.Keys.Select(k => k.Hour).Distinct().OrderBy(h => h).ToList();
+
+    <MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="direction: rtl;">
+        <thead>
+            <tr>
+                <th style="text-align: center; min-width: 60px;">שעה</th>
+                @foreach (var day in DayOrder)
+                {
+                    <th style="text-align: center;">@DayNames[day]</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var hour in hours)
+            {
+                <tr>
+                    <td style="text-align: center; font-weight: 600; direction: ltr;">@($"{hour:00}:00")</td>
+                    @foreach (var day in DayOrder)
+                    {
+                        var key = (day, hour);
+                        var slots = filtered.ContainsKey(key) ? filtered[key] : [];
+                        <td style="text-align: center; vertical-align: top; padding: 4px;">
+                            @foreach (var slot in slots)
+                            {
+                                <MudPaper Elevation="0" Class="pa-1 mb-1 rounded" Style="@($"background-color: {slot.Color}20; border-right: 3px solid {slot.Color};")">
+                                    <MudText Typo="Typo.caption" Style="font-weight: 600;">@slot.CoachName</MudText>
+                                    <MudText Typo="Typo.caption" Style="font-size: 0.7rem;">@slot.ClientName</MudText>
+                                    @if (!string.IsNullOrWhiteSpace(slot.Address))
+                                    {
+                                        <MudText Typo="Typo.caption" Style="font-size: 0.65rem; color: #666;">@slot.Address</MudText>
+                                    }
+                                </MudPaper>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+
+    <MudStack Row="true" Justify="Justify.FlexStart" Class="mt-3 flex-wrap" Spacing="2">
+        @foreach (var legend in coachColors.Where(kv => selectedCoachIds.Contains(kv.Key)))
+        {
+            var coach = coaches.FirstOrDefault(c => c.CoachId == legend.Key);
+            <MudChip T="string" Size="Size.Small" Style="@($"background-color: {legend.Value}20; border: 1px solid {legend.Value};")">
+                @(coach != null ? $"{coach.FirstName} {coach.LastName}" : "מאמן")
+            </MudChip>
+        }
+    </MudStack>
+}
+
+@code {
+    private List<Assignment> assignments = new();
+    private List<Coach> coaches = new();
+    private List<ClientOrg> clients = new();
+    private Dictionary<(string Day, int Hour), List<AdminSlotInfo>> allSlots = new();
+    private Dictionary<string, string> coachColors = new();
+    private IReadOnlyCollection<string> selectedCoachIds = [];
+    private bool loading = true;
+
+    private static readonly string[] DayOrder = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    private static readonly Dictionary<string, string> DayNames = new()
+    {
+        ["Sunday"] = "ראשון",
+        ["Monday"] = "שני",
+        ["Tuesday"] = "שלישי",
+        ["Wednesday"] = "רביעי",
+        ["Thursday"] = "חמישי",
+        ["Friday"] = "שישי",
+        ["Saturday"] = "שבת"
+    };
+
+    private static readonly string[] Palette =
+    [
+        "#1976D2", "#388E3C", "#F57C00", "#7B1FA2", "#D32F2F",
+        "#0097A7", "#AFB42B", "#5D4037", "#455A64", "#C2185B",
+        "#00838F", "#E64A19", "#1565C0", "#2E7D32", "#AD1457"
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            assignments = (await Data.GetAssignmentsAsync()).Where(a => a.Status == "Active").ToList();
+            coaches = await Data.GetCoachesAsync();
+            clients = await Data.GetClientsAsync();
+            BuildSchedule();
+            selectedCoachIds = coachColors.Keys.ToList();
+        }
+        catch { }
+        finally { loading = false; }
+    }
+
+    private void BuildSchedule()
+    {
+        var colorIndex = 0;
+
+        foreach (var assignment in assignments)
+        {
+            var sched = ParseSchedule(assignment.Schedule);
+            if (sched.Count == 0) continue;
+
+            if (!coachColors.ContainsKey(assignment.CoachId))
+                coachColors[assignment.CoachId] = Palette[colorIndex++ % Palette.Length];
+
+            var coach = coaches.FirstOrDefault(c => c.CoachId == assignment.CoachId);
+            var client = clients.FirstOrDefault(c => c.ClientId == assignment.ClientId);
+            var color = coachColors[assignment.CoachId];
+            var coachName = coach != null ? $"{coach.FirstName} {coach.LastName}" : "מאמן";
+            var clientName = client?.ClientName ?? "לקוח";
+            var address = BuildAddress(client);
+
+            foreach (var (day, hours) in sched)
+            {
+                foreach (var hour in hours)
+                {
+                    var key = (day, hour);
+                    if (!allSlots.ContainsKey(key))
+                        allSlots[key] = new();
+                    allSlots[key].Add(new AdminSlotInfo(assignment.CoachId, coachName, clientName, address, color));
+                }
+            }
+        }
+    }
+
+    private Dictionary<(string Day, int Hour), List<AdminSlotInfo>> GetFilteredSlots()
+    {
+        var selected = selectedCoachIds.ToHashSet();
+        return allSlots
+            .Select(kv => (kv.Key, Slots: kv.Value.Where(s => selected.Contains(s.CoachId)).ToList()))
+            .Where(x => x.Slots.Count > 0)
+            .ToDictionary(x => x.Key, x => x.Slots);
+    }
+
+    private static string BuildAddress(ClientOrg? client)
+    {
+        if (client is null) return "";
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(client.Address)) parts.Add(client.Address);
+        if (!string.IsNullOrWhiteSpace(client.City)) parts.Add(client.City);
+        return string.Join(", ", parts);
+    }
+
+    private static Dictionary<string, List<int>> ParseSchedule(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return new();
+        try { return JsonSerializer.Deserialize<Dictionary<string, List<int>>>(json) ?? new(); }
+        catch { return new(); }
+    }
+
+    private record AdminSlotInfo(string CoachId, string CoachName, string ClientName, string Address, string Color);
+}
