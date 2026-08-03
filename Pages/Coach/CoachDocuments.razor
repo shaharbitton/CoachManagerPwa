@@ -4,6 +4,7 @@
 @inject ISnackbar Snackbar
 @inject Supabase.Client SupabaseClient
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">המסמכים שלי</MudText>
@@ -16,12 +17,85 @@
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
-else if (!documents.Any())
-{
-    <MudAlert Severity="Severity.Info">אין מסמכים להצגה</MudAlert>
-}
 else
 {
+    @* ===== Contracts Section ===== *@
+    @if (contracts.Any())
+    {
+        <MudText Typo="Typo.h6" Style="font-weight: bold;" Class="mb-3">
+            <MudIcon Icon="@Icons.Material.Filled.Description" Class="me-1" Size="Size.Small" /> חוזי התקשרות
+        </MudText>
+
+        <MudTable Items="contracts" Hover="true" Elevation="2" Dense="true" Class="mb-6" T="CoachAssignmentContract"
+                  OnRowClick="OnContractRowClicked" RowStyle="cursor:pointer;">
+            <HeaderContent>
+                <MudTh>לקוח</MudTh>
+                <MudTh>שיבוץ</MudTh>
+                <MudTh>סטטוס</MudTh>
+                <MudTh>נוצר</MudTh>
+                <MudTh>נחתם</MudTh>
+                <MudTh>פעולות</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@GetContractClientName(context)</MudTd>
+                <MudTd>@GetEngagementName(context)</MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Color="@GetContractStatusColor(context.Status)">@GetContractStatusText(context.Status)</MudChip>
+                </MudTd>
+                <MudTd>@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd>@(context.SignedAt?.ToString("dd/MM/yyyy") ?? "—")</MudTd>
+                <MudTd>
+                    @if (context.Status == "Pending")
+                    {
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
+                                   Href="@($"coach/sign-contract/{context.Id}")">
+                            חתום עכשיו
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Default" />
+                    }
+                </MudTd>
+            </RowTemplate>
+            <ChildRowContent>
+                @if (context.Id == expandedContractId)
+                {
+                    <MudTr>
+                        <td colspan="6" style="padding: 16px;">
+                            @if (context.Status == "Pending")
+                            {
+                                <MudStack Row="true" Justify="Justify.FlexEnd" Class="mb-2">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Draw"
+                                               Href="@($"coach/sign-contract/{context.Id}")">
+                                        חתום על החוזה
+                                    </MudButton>
+                                </MudStack>
+                            }
+                            <MudPaper Elevation="0" Class="pa-4 rounded" Style="background: var(--mud-palette-background-gray); max-height: 500px; overflow-y: auto;">
+                                @((MarkupString)context.HtmlContent)
+                            </MudPaper>
+                        </td>
+                    </MudTr>
+                }
+            </ChildRowContent>
+        </MudTable>
+
+        <MudDivider Class="mb-4" />
+    }
+
+    @* ===== Documents Section ===== *@
+    <MudText Typo="Typo.h6" Style="font-weight: bold;" Class="mb-3">
+        <MudIcon Icon="@Icons.Material.Filled.Folder" Class="me-1" Size="Size.Small" /> מסמכים
+    </MudText>
+
+    @if (!documents.Any())
+    {
+        <MudAlert Severity="Severity.Info">אין מסמכים להצגה</MudAlert>
+    }
+    else
+    {
     <MudTable Items="documents" Hover="true" Elevation="2" Dense="true" OnRowClick="OnRowClicked" T="CoachDocument" RowStyle="cursor:pointer;">
         <HeaderContent>
             <MudTh>סוג מסמך</MudTh>
@@ -120,6 +194,7 @@ else
             }
         </ChildRowContent>
     </MudTable>
+    }
 }
 
 <!-- Upload Dialog -->
@@ -159,7 +234,12 @@ else
 
 @code {
     private List<CoachDocument> documents = new();
+    private List<CoachAssignmentContract> contracts = new();
+    private List<ClientOrg> clients = new();
+    private List<Assignment> assignments = new();
+    private List<ClientContract> allContracts = new();
     private string? expandedDocId;
+    private string? expandedContractId;
     private bool loading = true;
     private Dictionary<string, string> signedUrls = new();
 
@@ -175,6 +255,10 @@ else
         try
         {
             documents = await Data.GetDocumentsByCoachAsync(AppState.CurrentUserId);
+            contracts = await Data.GetContractsByCoachAsync(AppState.CurrentUserId);
+            clients = await Data.GetClientsAsync();
+            assignments = await Data.GetAssignmentsByCoachAsync(AppState.CurrentUserId);
+            allContracts = await Data.GetAllContractsAsync();
         }
         catch { }
         finally { loading = false; }
@@ -261,6 +345,45 @@ else
         path is not null && (path.Contains(".png", StringComparison.OrdinalIgnoreCase)
         || path.Contains(".jpg", StringComparison.OrdinalIgnoreCase)
         || path.Contains(".jpeg", StringComparison.OrdinalIgnoreCase));
+
+    private void OnContractRowClicked(TableRowClickEventArgs<CoachAssignmentContract> args)
+    {
+        if (args.Item is null) return;
+        expandedContractId = expandedContractId == args.Item.Id ? null : args.Item.Id;
+    }
+
+    private string GetContractClientName(CoachAssignmentContract c)
+    {
+        var client = clients.FirstOrDefault(cl => cl.ClientId == c.ClientId);
+        return client?.ClientName ?? "לקוח";
+    }
+
+    private string GetEngagementName(CoachAssignmentContract c)
+    {
+        var assignment = assignments.FirstOrDefault(a => a.AssignId == c.AssignId);
+        if (assignment != null && !string.IsNullOrEmpty(assignment.ContractId))
+        {
+            var contract = allContracts.FirstOrDefault(ct => ct.ContractId == assignment.ContractId);
+            if (!string.IsNullOrWhiteSpace(contract?.EngagementName)) return contract.EngagementName;
+        }
+        return "כללי";
+    }
+
+    private static Color GetContractStatusColor(string s) => s switch
+    {
+        "Pending" => Color.Warning,
+        "Signed" => Color.Success,
+        "Cancelled" => Color.Error,
+        _ => Color.Default
+    };
+
+    private static string GetContractStatusText(string s) => s switch
+    {
+        "Pending" => "ממתין לחתימה",
+        "Signed" => "נחתם",
+        "Cancelled" => "בוטל",
+        _ => s
+    };
 
     private string GetDocTypeText(string t) => t switch
     {
