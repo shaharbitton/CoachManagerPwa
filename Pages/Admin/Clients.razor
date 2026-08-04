@@ -22,15 +22,15 @@
         <MudTh>פעולות</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context.ClientName</MudTd>
-        <MudTd><MudChip T="string" Size="Size.Small" Color="Color.Info">@GetTypeText(context.ClientType)</MudChip></MudTd>
-        <MudTd>@context.City</MudTd>
-        <MudTd>
+        <MudTd DataLabel="שם הלקוח">@context.ClientName</MudTd>
+        <MudTd DataLabel="סוג"><MudChip T="string" Size="Size.Small" Color="Color.Info">@GetTypeText(context.ClientType)</MudChip></MudTd>
+        <MudTd DataLabel="עיר">@context.City</MudTd>
+        <MudTd DataLabel="סטטוס">
             <MudChip T="string" Size="Size.Small" Color="@(context.IsActive ? Color.Success : Color.Default)">
                 @(context.IsActive ? "פעיל" : "לא פעיל")
             </MudChip>
         </MudTd>
-        <MudTd>
+        <MudTd DataLabel="פעולות">
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditClient(context))" />
             <MudTooltip Text="מאמנים מומלצים לפי אזור">
                 <MudIconButton Icon="@Icons.Material.Filled.TipsAndUpdates" Size="Size.Small" Color="Color.Secondary" OnClick="@(() => ShowRecommendedCoaches(context))" />

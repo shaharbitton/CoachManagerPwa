@@ -50,10 +50,10 @@
         <MudTh>פעולות</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@GetCoachName(context.CoachId)</MudTd>
-        <MudTd>@GetClientName(context.ClientId)</MudTd>
-        <MudTd>@GetEngagementName(context)</MudTd>
-        <MudTd>
+        <MudTd DataLabel="מאמן">@GetCoachName(context.CoachId)</MudTd>
+        <MudTd DataLabel="לקוח">@GetClientName(context.ClientId)</MudTd>
+        <MudTd DataLabel="שם התקשרות">@GetEngagementName(context)</MudTd>
+        <MudTd DataLabel="תעריף מאמן (₪)">
             @{ var rateDisplay = GetCoachRate(context); var isDefaultRate = string.IsNullOrEmpty(context.CoachRateId); }
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                 <MudText>@rateDisplay</MudText>
@@ -65,8 +65,8 @@
                 }
             </MudStack>
         </MudTd>
-        <MudTd>@context.AllocatedHours</MudTd>
-        <MudTd>
+        <MudTd DataLabel="שעות מוקצות">@context.AllocatedHours</MudTd>
+        <MudTd DataLabel="שעות מנוצלות">
             @{ var usedHrs = GetUsedHours(context.AssignId); var allocHrs = context.AllocatedHours ?? 0; }
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                 <MudText>@usedHrs.ToString("0.#")</MudText>
@@ -78,15 +78,15 @@
                 }
             </MudStack>
         </MudTd>
-        <MudTd>
+        <MudTd DataLabel="סטטוס">
             <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@GetStatusText(context.Status)</MudChip>
         </MudTd>
-        <MudTd>
+        <MudTd DataLabel="לו&quot;ז">
             <MudIcon Icon="@(string.IsNullOrWhiteSpace(context.Schedule) ? Icons.Material.Outlined.EventBusy : Icons.Material.Filled.EventAvailable)"
                      Color="@(string.IsNullOrWhiteSpace(context.Schedule) ? Color.Default : Color.Success)"
                      Size="Size.Small" />
         </MudTd>
-        <MudTd>
+        <MudTd DataLabel="פעולות">
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditAssignment(context))" />
             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteAssignment(context))" />
             <MudTooltip Text="@GetContractTooltip(context.AssignId)">

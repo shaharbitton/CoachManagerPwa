@@ -28,20 +28,20 @@
         <MudTh>פעולות</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context.FirstName @context.LastName</MudTd>
-        <MudTd Style="direction: ltr;">@context.Phone</MudTd>
-        <MudTd>@context.NationalId</MudTd>
-        <MudTd>@context.Occupation</MudTd>
-        <MudTd>@GetAreasText(context)</MudTd>
-        <MudTd>
+        <MudTd DataLabel="שם מלא">@context.FirstName @context.LastName</MudTd>
+        <MudTd DataLabel="טלפון" Style="direction: ltr;">@context.Phone</MudTd>
+        <MudTd DataLabel="תעודת זהות">@context.NationalId</MudTd>
+        <MudTd DataLabel="מקצוע">@context.Occupation</MudTd>
+        <MudTd DataLabel="אזורים">@GetAreasText(context)</MudTd>
+        <MudTd DataLabel="מעמד מיסויי">
             <MudChip T="string" Size="Size.Small" Color="@GetTaxColor(context.TaxStatus)">@GetTaxText(context.TaxStatus)</MudChip>
         </MudTd>
-        <MudTd>
+        <MudTd DataLabel="לו&quot;ז">
             <MudIcon Icon="@(string.IsNullOrWhiteSpace(context.PreferredSchedule) ? Icons.Material.Outlined.EventBusy : Icons.Material.Filled.EventAvailable)"
                      Color="@(string.IsNullOrWhiteSpace(context.PreferredSchedule) ? Color.Default : Color.Success)"
                      Size="Size.Small" />
         </MudTd>
-        <MudTd>
+        <MudTd DataLabel="פעולות">
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditCoach(context))" />
             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteCoach(context))" />
         </MudTd>

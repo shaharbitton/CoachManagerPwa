@@ -122,3 +122,12 @@ body {
     background-color: #f4f6f8;
     direction: rtl; /* תמיכה מלאה בעברית ומיקום נכון */
 }
+
+/* MudTable mobile card view — RTL fix */
+.mud-table-cell[data-label]::before {
+    text-align: right !important;
+    direction: rtl !important;
+}
+.mud-table-cell {
+    text-align: right !important;
+}

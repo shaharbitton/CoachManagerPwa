@@ -33,18 +33,18 @@
             <MudTh>פעולות</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd Style="font-weight: bold;">@(string.IsNullOrWhiteSpace(context.EngagementName) ? "כללי" : context.EngagementName)</MudTd>
-            <MudTd>₪@context.BillingRatePerHour</MudTd>
-            <MudTd>@context.WorkScopeHours</MudTd>
-            <MudTd>@context.PaymentTerms</MudTd>
-            <MudTd>@GetPaymentMethodText(context.PaymentMethod)</MudTd>
-            <MudTd>@context.StartDate.ToString("dd/MM/yyyy") - @(context.EndDate?.ToString("dd/MM/yyyy") ?? "פתוח")</MudTd>
-            <MudTd>
+            <MudTd DataLabel="שם התקשרות" Style="font-weight: bold;">@(string.IsNullOrWhiteSpace(context.EngagementName) ? "כללי" : context.EngagementName)</MudTd>
+            <MudTd DataLabel="תעריף חיוב (₪/שעה)">₪@context.BillingRatePerHour</MudTd>
+            <MudTd DataLabel="היקף שעות">@context.WorkScopeHours</MudTd>
+            <MudTd DataLabel="תנאי תשלום">@context.PaymentTerms</MudTd>
+            <MudTd DataLabel="אמצעי תשלום">@GetPaymentMethodText(context.PaymentMethod)</MudTd>
+            <MudTd DataLabel="תקופה">@context.StartDate.ToString("dd/MM/yyyy") - @(context.EndDate?.ToString("dd/MM/yyyy") ?? "פתוח")</MudTd>
+            <MudTd DataLabel="לו&quot;ז">
                 <MudIcon Icon="@(string.IsNullOrWhiteSpace(context.PreferredSchedule) ? Icons.Material.Outlined.EventBusy : Icons.Material.Filled.EventAvailable)"
                          Color="@(string.IsNullOrWhiteSpace(context.PreferredSchedule) ? Color.Default : Color.Success)"
                          Size="Size.Small" />
             </MudTd>
-            <MudTd>
+            <MudTd DataLabel="פעולות">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditContract(context))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteContract(context))" />
             </MudTd>

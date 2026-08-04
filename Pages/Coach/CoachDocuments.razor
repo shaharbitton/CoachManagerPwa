@@ -37,14 +37,14 @@ else
                 <MudTh>פעולות</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd>@GetContractClientName(context)</MudTd>
-                <MudTd>@GetEngagementName(context)</MudTd>
-                <MudTd>
+                <MudTd DataLabel="לקוח">@GetContractClientName(context)</MudTd>
+                <MudTd DataLabel="שיבוץ">@GetEngagementName(context)</MudTd>
+                <MudTd DataLabel="סטטוס">
                     <MudChip T="string" Size="Size.Small" Color="@GetContractStatusColor(context.Status)">@GetContractStatusText(context.Status)</MudChip>
                 </MudTd>
-                <MudTd>@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
-                <MudTd>@(context.SignedAt?.ToString("dd/MM/yyyy") ?? "—")</MudTd>
-                <MudTd>
+                <MudTd DataLabel="נוצר">@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd DataLabel="נחתם">@(context.SignedAt?.ToString("dd/MM/yyyy") ?? "—")</MudTd>
+                <MudTd DataLabel="פעולות">
                     @if (context.Status == "Pending")
                     {
                         <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
@@ -104,11 +104,11 @@ else
             <MudTh>נוצר</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd>@GetDocTypeText(context.DocType)</MudTd>
-            <MudTd>
+            <MudTd DataLabel="סוג מסמך">@GetDocTypeText(context.DocType)</MudTd>
+            <MudTd DataLabel="סטטוס">
                 <MudChip T="string" Size="Size.Small" Color="@GetDocStatusColor(context.Status)">@GetDocStatusText(context.Status)</MudChip>
             </MudTd>
-            <MudTd>
+            <MudTd DataLabel="תפוגה">
                 @if (context.ExpirationDate.HasValue)
                 {
                     <MudText Color="@(context.ExpirationDate < DateTime.Today ? Color.Error : Color.Default)">
@@ -120,7 +120,7 @@ else
                     <MudText>ללא תפוגה</MudText>
                 }
             </MudTd>
-            <MudTd>@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="נוצר">@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
         </RowTemplate>
         <ChildRowContent>
             @if (context.DocId == expandedDocId)

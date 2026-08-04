@@ -56,11 +56,11 @@
 | 9 | **Allocation model: weekly + annual allocation** | Rethink allocated_hours to support both weekly and annual caps. Schema change + business logic. | 🔴 Large (8–12h) | ⬜ טרם בוצע |
 | 10 | **Allocation: exceptional allocation without contract** | Allow ad-hoc allocations not tied to a contract. New flag/logic. | 🟡 Medium (3–5h) | ⬜ טרם בוצע |
 | 11 | **Allocation: cancelled session rescheduling** | If a session is cancelled, hours return to the pool for reuse on another date. Business logic change. | 🟡 Medium (4–6h) | ⬜ טרם בוצע |
-| 12 | **Schedule/Calendar system** | New feature: weekly/monthly calendar for coaches and admin. New table(s) + full UI. Major feature. | 🔴 Large (20–30h) | ⬜ טרם בוצע |
+| 12 | **Schedule/Calendar system** | New feature: weekly/monthly calendar for coaches and admin. New table(s) + full UI. Major feature. | 🔴 Large (20–30h) | ✅ **בוצע** — תצוגת לו"ז שבועי read-only מבוססת שיבוצים: `CoachCalendar.razor` (מאמן) + `Calendar.razor` (אדמין עם סינון מאמנים), צביעה לפי לקוח/מאמן, כתובת לקוח |
 | 13 | **Contract PDF generation from template** | After filling contract details, generate a standard contract document. Requires PDF library + template engine. | 🔴 Large (8–12h) | ✅ **בוצע** — מיושם כ-HTML template עם חתימה דיגיטלית: `ContractGeneratorService`, `SignContract.razor`, חותמת עסקית embedded resource, שמירה אוטומטית למסמכי מאמן |
 | 14 | **Document type enum: add "Recommendations"** | Extend document category enum/list in schema. | 🟢 Small (1h) | ✅ **בוצע** — נוסף לכל דיאלוגי העלאה ולפונקציות `GetDocTypeText` |
 
-**Architecture Total Estimate (remaining):** ~38–61 hours (מתוך ~60–90 מקורי)
+**Architecture Total Estimate (remaining):** ~18–33 hours (מתוך ~60–90 מקורי)
 
 ---
 
@@ -69,8 +69,8 @@
 | Category | Items Total | Completed | Partial | Remaining | Est. Remaining Hours |
 |----------|-------------|-----------|---------|-----------|----------------------|
 | UI-only changes | 26 | 24 | 1 | 1 | ~2–3h |
-| Architecture/Backend changes | 14 | 9 | 1 | 4 | ~38–61h |
-| **Total** | **40** | **33** | **2** | **5** | **~40–64h** |
+| Architecture/Backend changes | 14 | 10 | 1 | 3 | ~18–33h |
+| **Total** | **40** | **34** | **2** | **4** | **~20–36h** |
 
 ### ✅ Completed Items
 - UI #1: תפריט המבורגר — סגירה בלחיצה מחוץ + כפתור Pin/Unpin ב-`MainLayout.razor`
@@ -100,6 +100,7 @@
 - Backend #7: טבלת `student_notes` — מודל קיים עם `StudentNote` ו-`Student.GeneralNotes`
 - Backend #14: סוג מסמך "המלצות" — נוסף לכל הממשקים
 - Backend #13: יצירת חוזה מתבנית — `ContractGeneratorService` מייצר HTML מ-template, חתימה דיגיטלית ב-`SignContract.razor`, חותמת עסקית embedded, שמירת חוזה חתום למסמכי מאמן
+- Backend #12: לו"ז שבועי — `CoachCalendar.razor` (מאמן: שם לקוח + כתובת) + `Calendar.razor` (אדמין: סינון מאמנים, צביעה לפי מאמן)
 
 ### 🔧 Additional Improvements (not in original spec)
 - **שירות יישובים (LocalityService)**: קובץ סטטי `localities.json` עם 1,272 יישובים מ-data.gov.il, חיפוש autocomplete, מיפוי נפות
@@ -120,6 +121,9 @@
 - **שמירת חוזה חתום למסמכי מאמן**: לאחר חתימה, החוזה נשמר אוטומטית ל-Supabase Storage ונוצר רשומת `CoachDocument` (סוג: "חוזה חתום")
 - **התראות מאמן**: דף `CoachNotifications.razor` עם `NotificationService` — שליחת התראות על חוזים חדשים לחתימה
 - **Onboarding מאמן**: דף `Onboarding.razor` לתהליך קליטה ראשוני
+- **לו"ז שבועי מאמן**: `CoachCalendar.razor` — טבלה שבועית עם שם לקוח + כתובת, צביעה לפי לקוח/מאמן, טאב בסרגל תחתון
+- **לו"ז שבועי אדמין**: `Calendar.razor` — טבלה שבועית לכל המאמנים עם `MudSelect MultiSelection` לסינון, שם מאמן + לקוח + כתובת
+- **חוזים במסמכי מאמן**: `CoachDocuments.razor` מציג חוזי התקשרות (חתומים + ממתינים) עם שם שיבוץ, אפשרות חתימה מתוך הדף, תצוגת read-only לחוזים חתומים
 
 ### 🟡 Partially Completed
 - Backend #6: שדות חוזים — `preferred_schedule`, `engagement_name`, `payment_method` קיימים; שדה `weekly_hours` חסר
@@ -147,7 +151,7 @@
 - ~~לו"ז שיבוץ — `schedule` JSON ב-`Assignment` + עורך + expand row~~ ✅
 
 ### Phase 3 — Major features
-- Schedule/Calendar system (Backend #12 — biggest effort)
+- ~~Schedule/Calendar system (Backend #12)~~ ✅ (תצוגת read-only מבוססת שיבוצים)
 - Weekly + annual allocation model (Backend #9)
 - Cancelled session hour reuse logic (Backend #11)
 - Exceptional allocation (Backend #10)

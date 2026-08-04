@@ -13,8 +13,8 @@
 | מודלים (Schema) | כל 18 הטבלאות ממומשות כ-C# Models עם Postgrest attributes |
 | RBAC | user_roles (M:N), login עם זיהוי תפקיד, Admin/Operations_Lead/Coach |
 | RLS | 9 סעיפים מלאים (טבלאות + 3 Storage buckets) |
-| Admin UI | Dashboard, Coaches, Clients, Assignments, TimeReports, Documents, Rates, Contracts, Evaluations, Groups, TrainingHub, Notifications |
-| Coach UI | Assignments (עם מכסה), TimeReport + חתימה + GPS, Documents, Groups + Students + Notes, TrainingHub, Onboarding |
+| Admin UI | Dashboard, Coaches, Clients, Assignments, Calendar (לו"ז שבועי + סינון מאמנים), TimeReports, Documents, Rates, Contracts, Evaluations, Groups, TrainingHub, Notifications |
+| Coach UI | Assignments (עם מכסה), TimeReport + חתימה + GPS, Documents (כולל חוזי התקשרות + חתימה), Calendar (לו"ז שבועי), Groups + Students + Notes, TrainingHub, Onboarding |
 | פרופיל אישי | עמוד Profile עם טאבים (פרטים אישיים + פרטי בנק) |
 | Storage | 3 buckets (signatures=public, documents=private, resources=public) עם RLS |
 | חתימה דיגיטלית | Canvas JS interop, PNG upload ל-Storage, חובה לאישור |
@@ -37,7 +37,7 @@
 | 2 | **הפקת דוחות PDF/Excel** | פרק 8, 11 | אין יכולת ייצוא דוח שעות חודשי, חשבונית ללקוח, או דוח שכר למאמן |
 | 3 | **חסימת שיבוץ/דיווח כשמסמך חובה פג** ✅ | פרק 10 | **הוחלט: חוסם אוטומטית.** |
 | 4 | **חתימה מרחוק (Remote Signature)** ✅ | פרק 8 | **הוחלט: לממש.** שליחת קישור חתימה ב-SMS/מייל |
-| 5 | **E-Sign חוזה מאמן בשיבוץ** ✅ | פרק 10 | **הוחלט:** בעת יצירת שיבוץ (Assignment) המערכת יוצרת אוטומטית חוזה מלא מתבנית HTML סטטית (Contract_template.html) עם כל הפרטים (מאמן+לקוח+תקופה). החוזה מופיע בטאב מסמכים של המאמן וממתין לחתימה. לאחר חתימה → PDF סגור → נעילה מוחלטת. תבנית אחת לכולם. |
+| 5 | **E-Sign חוזה מאמן בשיבוץ** ✅ | פרק 10 | **ממומש מלא.** יצירה אוטומטית בשיבוץ, חתימה מדף מסמכים, תאריך דינמי, שמירה ל-Storage + `CoachDocument` |
 
 ### 🟡 חומרה בינונית (פונקציונליות חסרה)
 
@@ -87,7 +87,7 @@
 ## 🎯 המלצה לסדר עדיפויות מימוש
 
 ### שלב א׳ (קריטי לתפעול יומיומי)
-1. **E-Sign חוזה מאמן בשיבוץ** ✅ (נוצר אוטומטית ביצירת Assignment, תבנית סטטית, PDF סגור)
+1. **E-Sign חוזה מאמן בשיבוץ** ✅ (ממומש מלא: יצירה, חתימה, שמירה, תצוגה במסמכים)
 2. **Offline Sync** — שמירת טיוטות דיווח + חתימה + סנכרון
 3. **הפקת דוחות PDF** — דוח שעות חודשי, דוח שכר
 4. **נעילת דיווחים** — אכיפת immutability לפי סטטוס
@@ -113,8 +113,8 @@
 | מדד | ערך |
 |------|------|
 | סה"כ דרישות מזוהות | ~45 |
-| ממומש ועובד | ~30 (67%) |
-| פערים קריטיים (🔴) | 5 |
+| ממומש ועובד | ~34 (76%) |
+| פערים קריטיים (🔴) | 3 |
 | פערים בינוניים (🟡) | 5 |
 | פערים נמוכים (🟢) | 9 |
 | שאלות פתוחות | 5 |

@@ -48,11 +48,11 @@
                 <MudTh>פעולות</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd>@GetDocTypeText(context.DocType)</MudTd>
-                <MudTd>
+                <MudTd DataLabel="סוג מסמך">@GetDocTypeText(context.DocType)</MudTd>
+                <MudTd DataLabel="סטטוס">
                     <MudChip T="string" Size="Size.Small" Color="@GetDocStatusColor(context.Status)">@GetDocStatusText(context.Status)</MudChip>
                 </MudTd>
-                <MudTd>
+                <MudTd DataLabel="תפוגה">
                     @if (context.ExpirationDate.HasValue)
                     {
                         <MudText Color="@(context.ExpirationDate < DateTime.Today ? Color.Error : Color.Default)">
@@ -64,8 +64,8 @@
                         <MudText>ללא תפוגה</MudText>
                     }
                 </MudTd>
-                <MudTd>@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
-                <MudTd>
+                <MudTd DataLabel="נוצר">@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd DataLabel="פעולות">
                     @if (context.Status == "Pending_Review")
                     {
                         <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => ApproveDoc(context))" OnClickStopPropagation>אשר</MudButton>

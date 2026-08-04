@@ -51,21 +51,21 @@
         <MudTh>פעולות</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@GetCoachName(context)</MudTd>
-        <MudTd>@GetClientName(context)</MudTd>
-        <MudTd>@context.WorkDate.ToString("dd/MM/yyyy")</MudTd>
-        <MudTd>@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
-        <MudTd>@context.HoursReported</MudTd>
-        <MudTd><MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@GetStatusText(context.Status)</MudChip></MudTd>
-        <MudTd>
+        <MudTd DataLabel="מאמן">@GetCoachName(context)</MudTd>
+        <MudTd DataLabel="לקוח">@GetClientName(context)</MudTd>
+        <MudTd DataLabel="תאריך ביצוע">@context.WorkDate.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="תאריך הזנה">@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="שעות">@context.HoursReported</MudTd>
+        <MudTd DataLabel="סטטוס"><MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@GetStatusText(context.Status)</MudChip></MudTd>
+        <MudTd DataLabel="חתימה">
             <MudIcon Icon="@(HasValidSignature(context) ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
                      Color="@(HasValidSignature(context) ? Color.Success : Color.Error)" Size="Size.Small" />
         </MudTd>
-        <MudTd>
+        <MudTd DataLabel="GPS">
             <MudIcon Icon="@(context.GpsVerified ? Icons.Material.Filled.GpsFixed : Icons.Material.Filled.GpsOff)"
                      Color="@(context.GpsVerified ? Color.Success : Color.Default)" Size="Size.Small" />
         </MudTd>
-        <MudTd>
+        <MudTd DataLabel="פעולות">
             @if (context.Status == "Client_Approved")
             {
                 <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Approve(context))" OnClickStopPropagation>אשר לתשלום</MudButton>
