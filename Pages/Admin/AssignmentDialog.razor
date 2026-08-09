@@ -32,15 +32,27 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12">
-                <MudSelect T="string" Value="Assignment.ContractId" ValueChanged="OnContractChanged" Label="חוזה לקוח" Variant="Variant.Outlined" Clearable="true">
+                <MudSelect T="string" Value="Assignment.ContractId" ValueChanged="OnContractChanged" Label="חוזה לקוח" Variant="Variant.Outlined" Required="true">
                     @foreach (var ct in clientContracts)
                     {
                         <MudSelectItem Value="@ct.ContractId">@(string.IsNullOrWhiteSpace(ct.EngagementName) ? "כללי" : ct.EngagementName) — ₪@ct.BillingRatePerHour/שעה</MudSelectItem>
                     }
                 </MudSelect>
                 </MudItem>
+                @if (selectedContract != null && selectedContract.WorkScopeHours.HasValue)
+                {
+                    <MudItem xs="12">
+                        <MudAlert Severity="@(availableHours <= 0 ? Severity.Error : Severity.Info)" Dense="true" Icon="@Icons.Material.Filled.Timer">
+                            <MudText Typo="Typo.caption">
+                                חוזה: @selectedContract.WorkScopeHours שעות | מוקצה בשיבוצים: @usedHoursInContract | פנוי: @availableHours
+                            </MudText>
+                        </MudAlert>
+                    </MudItem>
+                }
                 <MudItem xs="6">
-                    <MudNumericField T="decimal?" @bind-Value="Assignment.AllocatedHours" Label="שעות מוקצות" Variant="Variant.Outlined" />
+                    <MudNumericField T="decimal?" @bind-Value="Assignment.AllocatedHours" Label="שעות מוקצות" Variant="Variant.Outlined"
+                                     Max="@(selectedContract?.WorkScopeHours.HasValue == true ? availableHours + (IsNew ? 0 : (Assignment.AllocatedHours ?? 0)) : decimal.MaxValue)"
+                                     Min="0.5m" />
             </MudItem>
             <MudItem xs="6">
                 <MudSelect T="string" @bind-Value="Assignment.Status" Label="סטטוס" Variant="Variant.Outlined">
@@ -141,7 +153,14 @@
     [Parameter] public Assignment Assignment { get; set; } = new();
     [Parameter] public List<Coach> Coaches { get; set; } = new();
     [Parameter] public List<ClientOrg> Clients { get; set; } = new();
+    [Parameter] public List<Assignment> AllAssignments { get; set; } = new();
     [Parameter] public bool IsNew { get; set; }
+
+    private decimal usedHoursInContract => AllAssignments
+        .Where(a => a.ContractId == Assignment.ContractId && a.AssignId != Assignment.AssignId)
+        .Sum(a => a.AllocatedHours ?? 0);
+
+    private decimal availableHours => (selectedContract?.WorkScopeHours ?? 0) - usedHoursInContract;
 
     private List<CoachRate> coachRates = new();
     private List<ClientContract> clientContracts = new();
@@ -233,16 +252,38 @@
     {
         Assignment.ContractId = contractId;
         selectedContract = clientContracts.FirstOrDefault(c => c.ContractId == contractId);
+        // Default to all available hours
+        if (selectedContract?.WorkScopeHours.HasValue == true)
+        {
+            var available = availableHours;
+            Assignment.AllocatedHours = available > 0 ? available : 0;
+        }
     }
 
     private async Task Submit()
     {
         if (string.IsNullOrWhiteSpace(Assignment.CoachId) || string.IsNullOrWhiteSpace(Assignment.ClientId)) return;
 
-        if (IsNew && string.IsNullOrWhiteSpace(Assignment.ContractId))
+        if (string.IsNullOrWhiteSpace(Assignment.ContractId))
         {
             Snackbar.Add("יש לבחור חוזה לקוח", Severity.Warning);
             return;
+        }
+
+        // Validate allocated hours against contract
+        if (selectedContract?.WorkScopeHours.HasValue == true)
+        {
+            var maxAllowed = availableHours + (IsNew ? 0 : (Assignment.AllocatedHours ?? 0));
+            if ((Assignment.AllocatedHours ?? 0) > maxAllowed)
+            {
+                Snackbar.Add($"שעות מוקצות ({Assignment.AllocatedHours}) חורגות מהשעות הפנויות בחוזה ({maxAllowed})", Severity.Error);
+                return;
+            }
+            if ((Assignment.AllocatedHours ?? 0) <= 0)
+            {
+                Snackbar.Add("יש להזין שעות מוקצות", Severity.Warning);
+                return;
+            }
         }
 
         if (rateMode == "existing" && string.IsNullOrWhiteSpace(Assignment.CoachRateId))

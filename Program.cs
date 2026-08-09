@@ -8,9 +8,14 @@ builder.RootComponents.Add<CoachManagerPwa.App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddMudServices();
+//Dev
+//var supabaseUrl = "https://spyalzbjcfdrkbyqkopa.supabase.co";
+//var supabaseAnonKey = "sb_publishable_TTHrQfMHDtcJfKWNu9SG-w_eaSeIiyR";
 
-var supabaseUrl = "https://spyalzbjcfdrkbyqkopa.supabase.co";
-var supabaseAnonKey = "sb_publishable_TTHrQfMHDtcJfKWNu9SG-w_eaSeIiyR";
+//Prod
+var supabaseUrl = "https://wwzrsibzpjlckjocjfpn.supabase.co";
+var supabaseAnonKey = "sb_publishable_tlMLmxvltr6IeipkwS0Tdg_X6QqpJLq";
+
 
 builder.Services.AddScoped(sp =>
     new Supabase.Client(supabaseUrl, supabaseAnonKey, new Supabase.SupabaseOptions

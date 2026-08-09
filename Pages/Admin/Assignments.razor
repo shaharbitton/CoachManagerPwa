@@ -232,6 +232,7 @@
             { x => x.Assignment, new Assignment() },
             { x => x.Coaches, coaches },
             { x => x.Clients, clients },
+            { x => x.AllAssignments, assignments },
             { x => x.IsNew, true }
         };
         var dialog = await Dialog.ShowAsync<AssignmentDialog>("שיבוץ חדש", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
@@ -270,6 +271,7 @@
             { x => x.Assignment, assignment },
             { x => x.Coaches, coaches },
             { x => x.Clients, clients },
+            { x => x.AllAssignments, assignments },
             { x => x.IsNew, false }
         };
         var dialog = await Dialog.ShowAsync<AssignmentDialog>("עריכת שיבוץ", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
