@@ -1,0 +1,35 @@
+@using CoachManagerPwa.Services
+@inject IFeatureService FeatureService
+
+@if (FeatureService.IsAvailable(RequiredTier))
+{
+    @ChildContent
+}
+else if (FallbackContent != null)
+{
+    @FallbackContent
+}
+else if (ShowLock)
+{
+    <MudTooltip Text="@($"פיצ'ר זה זמין החל מדרגת {GetTierName(RequiredTier)}")">
+        <MudChip T="string" Size="Size.Small" Color="Color.Default" Icon="@Icons.Material.Filled.Lock">
+            @GetTierName(RequiredTier)
+        </MudChip>
+    </MudTooltip>
+}
+
+@code {
+    [Parameter] public FeatureTier RequiredTier { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? FallbackContent { get; set; }
+    /// <summary>When false, the locked feature is completely hidden. When true, a lock chip is shown.</summary>
+    [Parameter] public bool ShowLock { get; set; }
+
+    private static string GetTierName(FeatureTier tier) => tier switch
+    {
+        FeatureTier.Basic => "Basic",
+        FeatureTier.Pro => "Pro",
+        FeatureTier.Enterprise => "Enterprise",
+        _ => tier.ToString()
+    };
+}

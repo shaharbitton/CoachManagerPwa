@@ -8,7 +8,9 @@
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול לקוחות ומוסדות</MudText>
     <MudStack Row="true" Spacing="2">
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Download" OnClick="ExportBackupScript">ייצוא סקריפט גיבוי</MudButton>
+        <FeatureGate RequiredTier="FeatureTier.Pro" ShowLock="true">
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Download" OnClick="ExportBackupScript">ייצוא סקריפט גיבוי</MudButton>
+        </FeatureGate>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddBusiness" OnClick="OpenAddDialog">הוסף לקוח</MudButton>
     </MudStack>
 </MudStack>

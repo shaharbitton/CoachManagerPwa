@@ -4,6 +4,7 @@
 @inject AppState AppState
 @inject NavigationManager Nav
 @inject IDataService DataService
+@inject IFeatureService FeatureService
 
 <MudStack AlignItems="AlignItems.Center" Class="mt-8">
     <MudImage Src="images/arcan-logo.png" Alt="Arcan Israel" Width="120" Height="120" ObjectFit="ObjectFit.Contain" Class="mb-2" />
@@ -72,6 +73,9 @@
                 catch { /* fallback to Coach */ }
 
                 AppState.SetUser(session.User!.Id, session.User.Email ?? "משתמש", role);
+
+                // Load feature tier for the tenant
+                await FeatureService.LoadAsync(session.User!.Id);
 
                 // Check if coach needs onboarding (first login)
                 if (AppState.IsCoach)
