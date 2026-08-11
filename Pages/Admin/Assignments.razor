@@ -381,12 +381,16 @@
             foreach (var entry in linkedEntries)
                 await Data.DeleteTimeEntryAsync(entry.EntryId);
 
+            // Unlink coach_rate_id on the assignment before deleting rates
+            if (!string.IsNullOrEmpty(assignment.CoachRateId))
+            {
+                assignment.CoachRateId = null;
+                await Data.UpdateAssignmentAsync(assignment);
+            }
+
             // Delete linked rates
             foreach (var rate in linkedRates)
                 await Data.DeleteRateAsync(rate.RateId);
-
-            // Unlink coach_rate_id references pointing to this assignment's rates
-            // (already deleted above, but other assignments may reference them)
 
             await Data.DeleteAssignmentAsync(assignment.AssignId);
 

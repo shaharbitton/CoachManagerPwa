@@ -170,7 +170,22 @@
             coaches.Remove(coach);
             Snackbar.Add("מאמן נמחק", Severity.Warning);
         }
-        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        catch (Exception ex)
+        {
+            var message = ex.Message switch
+            {
+                var m when m.Contains("23503") && m.Contains("assignments") =>
+                    $"לא ניתן למחוק את {coach.FirstName} {coach.LastName} — קיימים שיבוצים המשויכים למאמן זה. יש להסיר את השיבוצים לפני המחיקה.",
+                var m when m.Contains("23503") && m.Contains("time_entries") =>
+                    $"לא ניתן למחוק את {coach.FirstName} {coach.LastName} — קיימים דיווחי שעות המשויכים למאמן זה.",
+                var m when m.Contains("23503") && m.Contains("coach_documents") =>
+                    $"לא ניתן למחוק את {coach.FirstName} {coach.LastName} — קיימים מסמכים המשויכים למאמן זה.",
+                var m when m.Contains("23503") =>
+                    $"לא ניתן למחוק את {coach.FirstName} {coach.LastName} — קיימים רשומות המקושרות למאמן זה במערכת.",
+                _ => $"שגיאה: {ex.Message}"
+            };
+            Snackbar.Add(message, Severity.Error);
+        }
     }
 
     private Color GetTaxColor(string status) => status switch
