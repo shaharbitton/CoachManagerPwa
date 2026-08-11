@@ -3,10 +3,14 @@
 @inject IDialogService Dialog
 @inject ISnackbar Snackbar
 @inject ILocalityService LocalityService
+@inject IJSRuntime JS
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול לקוחות ומוסדות</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddBusiness" OnClick="OpenAddDialog">הוסף לקוח</MudButton>
+    <MudStack Row="true" Spacing="2">
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Download" OnClick="ExportBackupScript">ייצוא סקריפט גיבוי</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddBusiness" OnClick="OpenAddDialog">הוסף לקוח</MudButton>
+    </MudStack>
 </MudStack>
 
 <MudTextField @bind-Value="searchText" Placeholder="חיפוש לפי שם, עיר או סוג..."
@@ -130,4 +134,57 @@
         "Private_Client" => "פרטי",
         _ => type
     };
+
+    private async Task ExportBackupScript()
+    {
+        if (clients.Count == 0)
+        {
+            Snackbar.Add("אין לקוחות לייצוא", Severity.Warning);
+            return;
+        }
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("-- ========================================");
+        sb.AppendLine($"-- סקריפט גיבוי לקוחות — Coach Manager");
+        sb.AppendLine($"-- תאריך ייצוא: {DateTime.Now:yyyy-MM-dd HH:mm}");
+        sb.AppendLine($"-- מספר לקוחות: {clients.Count}");
+        sb.AppendLine("-- ========================================");
+        sb.AppendLine();
+        sb.AppendLine("-- מחיקת לקוחות קיימים (אופציונלי — הסר הערה אם רוצים לאפס)");
+        sb.AppendLine("-- DELETE FROM clients;");
+        sb.AppendLine();
+        sb.AppendLine("INSERT INTO clients (client_id, client_name, tax_id, client_type, address, city, management_email, management_phone, accounting_email, accounting_phone, secretariat_email, secretariat_phone, is_active, created_at)");
+        sb.AppendLine("VALUES");
+
+        for (int i = 0; i < clients.Count; i++)
+        {
+            var c = clients[i];
+            var comma = i < clients.Count - 1 ? "," : ";";
+            sb.AppendLine($"  ('{Esc(c.ClientId)}', '{Esc(c.ClientName)}', {NullOrStr(c.TaxId)}, '{Esc(c.ClientType)}', {NullOrStr(c.Address)}, {NullOrStr(c.City)}, {NullOrStr(c.ManagementEmail)}, {NullOrStr(c.ManagementPhone)}, {NullOrStr(c.AccountingEmail)}, {NullOrStr(c.AccountingPhone)}, {NullOrStr(c.SecretariatEmail)}, {NullOrStr(c.SecretariatPhone)}, {(c.IsActive ? "true" : "false")}, '{c.CreatedAt:yyyy-MM-dd HH:mm:ss}'){comma}");
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("-- ON CONFLICT — אם רוצים upsert במקום insert:");
+        sb.AppendLine("-- הוסף בסוף כל INSERT:");
+        sb.AppendLine("-- ON CONFLICT (client_id) DO UPDATE SET");
+        sb.AppendLine("--   client_name = EXCLUDED.client_name,");
+        sb.AppendLine("--   tax_id = EXCLUDED.tax_id,");
+        sb.AppendLine("--   client_type = EXCLUDED.client_type,");
+        sb.AppendLine("--   address = EXCLUDED.address,");
+        sb.AppendLine("--   city = EXCLUDED.city,");
+        sb.AppendLine("--   management_email = EXCLUDED.management_email,");
+        sb.AppendLine("--   management_phone = EXCLUDED.management_phone,");
+        sb.AppendLine("--   accounting_email = EXCLUDED.accounting_email,");
+        sb.AppendLine("--   accounting_phone = EXCLUDED.accounting_phone,");
+        sb.AppendLine("--   secretariat_email = EXCLUDED.secretariat_email,");
+        sb.AppendLine("--   secretariat_phone = EXCLUDED.secretariat_phone,");
+        sb.AppendLine("--   is_active = EXCLUDED.is_active;");
+
+        var fileName = $"clients_backup_{DateTime.Now:yyyyMMdd_HHmm}.sql";
+        await JS.InvokeVoidAsync("downloadFile", fileName, sb.ToString(), "text/sql;charset=utf-8");
+        Snackbar.Add($"סקריפט גיבוי הורד — {clients.Count} לקוחות", Severity.Success);
+    }
+
+    private static string Esc(string s) => (s ?? "").Replace("'", "''");
+    private static string NullOrStr(string? s) => s == null ? "NULL" : $"'{Esc(s)}'";
 }
