@@ -5,20 +5,12 @@
 @inject NavigationManager Nav
 @inject IDataService DataService
 @inject IFeatureService FeatureService
-@inject IJSRuntime JS
 
 <MudStack AlignItems="AlignItems.Center" Class="mt-8">
     <MudImage Src="images/arcan-logo.png" Alt="Arcan Israel" Width="120" Height="120" ObjectFit="ObjectFit.Contain" Class="mb-2" />
     <MudText Typo="Typo.h4" Style="font-weight: bold; color: #1a365d;">Arcan Israel</MudText>
     <MudText Typo="Typo.subtitle1" Color="Color.Default">מערכת ניהול מאמנים ושטח</MudText>
 </MudStack>
-
-@if (emailConfirmed)
-{
-    <MudAlert Severity="Severity.Success" Class="mt-4" Variant="Variant.Filled">
-        כתובת האימייל אומתה בהצלחה! כעת ניתן להתחבר למערכת.
-    </MudAlert>
-}
 
 <MudCard Elevation="4" Class="rounded-lg pa-6 mt-6">
     <MudTextField @bind-Value="email" Label="אימייל" Variant="Variant.Outlined" Class="mb-3"
@@ -42,30 +34,7 @@
     private string email = "";
     private string password = "";
     private bool loading;
-    private bool emailConfirmed;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender) return;
-
-        // Detect email confirmation redirect from Supabase
-        // Can arrive via hash fragment (#access_token=...&type=signup)
-        // or via query params (?type=signup) depending on Supabase flow
-        try
-        {
-            var hash = await JS.InvokeAsync<string>("eval", "window.location.hash");
-            var search = await JS.InvokeAsync<string>("eval", "window.location.search");
-            var combined = (hash ?? "") + (search ?? "");
-
-            if (combined.Contains("type=signup") || combined.Contains("type=email"))
-            {
-                emailConfirmed = true;
-                await JS.InvokeVoidAsync("eval", "history.replaceState(null, '', window.location.pathname)");
-                StateHasChanged();
-            }
-        }
-        catch { }
-    }
+    
 
     private async Task Login()
     {

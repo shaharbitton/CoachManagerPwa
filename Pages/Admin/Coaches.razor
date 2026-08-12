@@ -6,6 +6,8 @@
 @inject Supabase.Client SupabaseClient
 @inject ILocalityService LocalityService
 
+@inject BrevoEmailService EmailService
+
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול מאמנים</MudText>
     <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddDialog">הוסף מאמן</MudButton>
@@ -115,7 +117,7 @@
         {
             try
             {
-                // 1. Create auth user with default password
+                // 1. Create auth user with default password (email confirmation disabled in Supabase)
                 var session = await SupabaseClient.Auth.SignUp(dialogResult.Email, "Coach123!");
 
                 if (session?.User is null)
@@ -136,7 +138,17 @@
                 await Data.CreateCoachAsync(dialogResult.Coach);
                 coaches.Add(dialogResult.Coach);
 
-                Snackbar.Add($"מאמן נוצר בהצלחה! אימייל: {dialogResult.Email}, סיסמה: Coach123!", Severity.Success);
+                // 4. Send welcome email via Brevo
+                try
+                {
+                    await EmailService.SendWelcomeEmailAsync(dialogResult.Email, dialogResult.Coach.FirstName);
+                    Snackbar.Add($"מאמן נוצר בהצלחה! מייל עם פרטי כניסה נשלח ל-{dialogResult.Email}", Severity.Success);
+                }
+                catch (Exception emailEx)
+                {
+                    Console.WriteLine($"Brevo email error: {emailEx.Message}");
+                    Snackbar.Add($"מאמן נוצר בהצלחה! שליחת המייל נכשלה ({emailEx.Message}) — פרטי כניסה: {dialogResult.Email} / Coach123!", Severity.Warning);
+                }
             }
             catch (Exception ex)
             {
