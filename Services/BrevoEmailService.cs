@@ -6,14 +6,17 @@ namespace CoachManagerPwa.Services;
 public class BrevoEmailService
 {
     private readonly HttpClient _http;
+    private readonly string _apiKey;
+    private readonly string _fromEmail;
+    private readonly string _fromName;
     private const string ApiUrl = "https://api.brevo.com/v3/smtp/email";
-    private const string ApiKey = "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";
-    private const string FromEmail = "donot_replay_arcan@mop.co.il";
-    private const string FromName = "Arcan Israel";
 
-    public BrevoEmailService(HttpClient http)
+    public BrevoEmailService(HttpClient http, string apiKey, string fromEmail, string fromName)
     {
         _http = http;
+        _apiKey = apiKey;
+        _fromEmail = fromEmail;
+        _fromName = fromName;
     }
 
     public async Task SendWelcomeEmailAsync(string toEmail, string coachFirstName)
@@ -42,14 +45,14 @@ public class BrevoEmailService
 
         var payload = new BrevoEmailPayload
         {
-            Sender = new BrevoContact { Email = FromEmail, Name = FromName },
+            Sender = new BrevoContact { Email = _fromEmail, Name = _fromName },
             To = [new BrevoContact { Email = toEmail, Name = coachFirstName }],
             Subject = "ברוך הבא למערכת Arcan Israel",
             HtmlContent = htmlBody
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
-        request.Headers.Add("api-key", ApiKey);
+        request.Headers.Add("api-key", _apiKey);
         request.Content = JsonContent.Create(payload);
 
         var response = await _http.SendAsync(request);
