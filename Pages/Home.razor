@@ -48,14 +48,18 @@
     {
         if (!firstRender) return;
 
-        // Detect email confirmation redirect: Supabase appends #access_token=...&type=signup to the URL
+        // Detect email confirmation redirect from Supabase
+        // Can arrive via hash fragment (#access_token=...&type=signup)
+        // or via query params (?type=signup) depending on Supabase flow
         try
         {
-            var fragment = await JS.InvokeAsync<string>("eval", "window.location.hash");
-            if (!string.IsNullOrEmpty(fragment) && fragment.Contains("type=signup"))
+            var hash = await JS.InvokeAsync<string>("eval", "window.location.hash");
+            var search = await JS.InvokeAsync<string>("eval", "window.location.search");
+            var combined = (hash ?? "") + (search ?? "");
+
+            if (combined.Contains("type=signup") || combined.Contains("type=email"))
             {
                 emailConfirmed = true;
-                // Clean the URL fragment
                 await JS.InvokeVoidAsync("eval", "history.replaceState(null, '', window.location.pathname)");
                 StateHasChanged();
             }
