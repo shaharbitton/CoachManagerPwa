@@ -32,6 +32,18 @@ jobs:
       - name: Publish
         run: dotnet publish -c Release -o output
 
+      - name: Create appsettings.json with secrets
+        run: |
+          cat > output/wwwroot/appsettings.json << 'EOF'
+          {
+            "Brevo": {
+              "ApiKey": "${{ secrets.BREVO_API_KEY }}",
+              "FromEmail": "${{ secrets.BREVO_FROM_EMAIL }}",
+              "FromName": "${{ secrets.BREVO_FROM_NAME }}"
+            }
+          }
+          EOF
+
       - name: Set repo base path
         run: |
           REPO_NAME="${{ github.event.repository.name }}"
