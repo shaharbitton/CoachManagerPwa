@@ -34,6 +34,7 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<IFeatureService, FeatureService>();
 builder.Services.AddScoped(sp =>
 {
+
     var config = sp.GetRequiredService<IConfiguration>();
     var apiKey = config["Brevo:ApiKey"] ?? "";
     var fromEmail = config["Brevo:FromEmail"] ?? "";
