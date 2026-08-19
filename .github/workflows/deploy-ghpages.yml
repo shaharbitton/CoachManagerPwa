@@ -34,10 +34,7 @@ jobs:
 
       - name: Create appsettings.json with secrets
         run: |
-          echo "BREVO_API_KEY length: ${#BREVO_KEY}"
-          echo "BREVO_FROM_EMAIL length: ${#BREVO_EMAIL}"
-          echo "BREVO_FROM_NAME length: ${#BREVO_NAME}"
-          cat > output/wwwroot/appsettings.json <<EOF
+          cat > output/wwwroot/appsettings.json <<APPSETTINGS
           {
             "Brevo": {
               "ApiKey": "${BREVO_KEY}",
@@ -45,9 +42,14 @@ jobs:
               "FromName": "${BREVO_NAME}"
             }
           }
-          EOF
-          echo "--- appsettings.json created ---"
-          cat output/wwwroot/appsettings.json | head -c 80
+          APPSETTINGS
+
+          # Update the hash in service-worker-assets.js so the SW picks up the new file
+          if [ -f output/wwwroot/service-worker-assets.js ]; then
+            NEW_HASH=$(sha256sum output/wwwroot/appsettings.json | awk '{print $1}' | xxd -r -p | base64 | tr -d '\n')
+            sed -i "s|\"hash\":\"sha256-[^\"]*\",\"url\":\"appsettings.json\"|\"hash\":\"sha256-${NEW_HASH}\",\"url\":\"appsettings.json\"|g" output/wwwroot/service-worker-assets.js
+            echo "Updated appsettings.json hash in service-worker-assets.js"
+          fi
         env:
           BREVO_KEY: ${{ secrets.BREVO_API_KEY }}
           BREVO_EMAIL: ${{ secrets.BREVO_FROM_EMAIL }}
