@@ -34,15 +34,24 @@ jobs:
 
       - name: Create appsettings.json with secrets
         run: |
-          cat > output/wwwroot/appsettings.json << 'EOF'
+          echo "BREVO_API_KEY length: ${#BREVO_KEY}"
+          echo "BREVO_FROM_EMAIL length: ${#BREVO_EMAIL}"
+          echo "BREVO_FROM_NAME length: ${#BREVO_NAME}"
+          cat > output/wwwroot/appsettings.json <<EOF
           {
             "Brevo": {
-              "ApiKey": "${{ secrets.BREVO_API_KEY }}",
-              "FromEmail": "${{ secrets.BREVO_FROM_EMAIL }}",
-              "FromName": "${{ secrets.BREVO_FROM_NAME }}"
+              "ApiKey": "${BREVO_KEY}",
+              "FromEmail": "${BREVO_EMAIL}",
+              "FromName": "${BREVO_NAME}"
             }
           }
           EOF
+          echo "--- appsettings.json created ---"
+          cat output/wwwroot/appsettings.json | head -c 80
+        env:
+          BREVO_KEY: ${{ secrets.BREVO_API_KEY }}
+          BREVO_EMAIL: ${{ secrets.BREVO_FROM_EMAIL }}
+          BREVO_NAME: ${{ secrets.BREVO_FROM_NAME }}
 
       - name: Set repo base path
         run: |
