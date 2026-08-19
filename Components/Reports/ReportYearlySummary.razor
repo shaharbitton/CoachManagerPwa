@@ -1,0 +1,66 @@
+@code {
+    [Parameter] public List<Coach> Coaches { get; set; } = new();
+    [Parameter] public List<Assignment> Assignments { get; set; } = new();
+    [Parameter] public List<TimeEntry> TimeEntries { get; set; } = new();
+    [Parameter] public List<CoachRate> AllRates { get; set; } = new();
+
+    private string? coachFilter;
+    private int year = DateTime.Now.Year;
+    private static readonly string[] Months = ["", "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
+    private static readonly string[] Approved = ["Admin_Approved", "Billed_Paid"];
+
+    private decimal RateFor(Assignment a)
+    {
+        if (!string.IsNullOrEmpty(a.CoachRateId)) { var r = AllRates.FirstOrDefault(x => x.RateId == a.CoachRateId); if (r != null) return r.HourlyRate; }
+        var rate = AllRates.Where(r => r.CoachId == a.CoachId && r.AssignId == a.AssignId).OrderByDescending(r => r.EffectiveFrom).FirstOrDefault()
+            ?? AllRates.Where(r => r.CoachId == a.CoachId && r.AssignId == null).OrderByDescending(r => r.EffectiveFrom).FirstOrDefault();
+        return rate?.HourlyRate ?? 0;
+    }
+}
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudSelect T="string" @bind-Value="coachFilter" Label="מאמן" Variant="Variant.Outlined" Dense="true">
+            @foreach (var c in Coaches) { <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem> }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudNumericField T="int" @bind-Value="year" Label="שנה" Variant="Variant.Outlined" Min="2020" Max="2030" />
+    </MudItem>
+</MudGrid>
+
+@if (string.IsNullOrEmpty(coachFilter))
+{
+    <MudAlert Severity="Severity.Info">יש לבחור מאמן</MudAlert>
+}
+else
+{
+    var coach = Coaches.FirstOrDefault(c => c.CoachId == coachFilter);
+    var coachAssigns = Assignments.Where(a => a.CoachId == coachFilter).ToList();
+    var yearEntries = TimeEntries.Where(e => Approved.Contains(e.Status) && e.WorkDate.Year == year && coachAssigns.Any(a => a.AssignId == e.AssignId)).ToList();
+    decimal yearTotal = 0; decimal yearHours = 0;
+
+    <MudText Typo="Typo.h6" Class="mb-2">@coach?.FirstName @coach?.LastName — @year</MudText>
+    <MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="direction: rtl;">
+        <thead><tr><th>חודש</th><th>שעות</th><th>סה"כ ברוטו (₪)</th></tr></thead>
+        <tbody>
+            @for (int m = 1; m <= 12; m++)
+            {
+                var monthEntries = yearEntries.Where(e => e.WorkDate.Month == m).ToList();
+                var hours = monthEntries.Sum(e => e.HoursReported);
+                var pay = monthEntries.Sum(e => e.HoursReported * RateFor(coachAssigns.First(a => a.AssignId == e.AssignId)));
+                yearTotal += pay; yearHours += hours;
+                <tr style="@(hours == 0 ? "color: #999;" : "")">
+                    <td>@Months[m]</td>
+                    <td>@hours.ToString("0.#")</td>
+                    <td>₪@pay.ToString("N0")</td>
+                </tr>
+            }
+            <tr style="font-weight: bold; background-color: var(--mud-palette-background-gray);">
+                <td>סה"כ שנתי</td>
+                <td>@yearHours.ToString("0.#")</td>
+                <td>₪@yearTotal.ToString("N0")</td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+}

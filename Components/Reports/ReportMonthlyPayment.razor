@@ -1,0 +1,85 @@
+@code {
+    [Parameter] public List<Coach> Coaches { get; set; } = new();
+    [Parameter] public List<ClientOrg> Clients { get; set; } = new();
+    [Parameter] public List<Assignment> Assignments { get; set; } = new();
+    [Parameter] public List<TimeEntry> TimeEntries { get; set; } = new();
+    [Parameter] public List<CoachRate> AllRates { get; set; } = new();
+    [Parameter] public List<ClientContract> AllContracts { get; set; } = new();
+
+    private string? coachFilter;
+    private int month = DateTime.Now.Month;
+    private int year = DateTime.Now.Year;
+    private static readonly string[] Months = ["", "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
+    private static readonly string[] Approved = ["Admin_Approved", "Billed_Paid"];
+
+    private string ClientName(string id) => Clients.FirstOrDefault(c => c.ClientId == id)?.ClientName ?? "—";
+    private string TaxText(string s) => s switch { "Employee" => "שכיר", "Exempt_Dealer" => "עוסק פטור", "Licensed_Dealer" => "עוסק מורשה", _ => s };
+
+    private decimal RateFor(Assignment a)
+    {
+        if (!string.IsNullOrEmpty(a.CoachRateId))
+        {
+            var r = AllRates.FirstOrDefault(x => x.RateId == a.CoachRateId);
+            if (r != null) return r.HourlyRate;
+        }
+        var rate = AllRates.Where(r => r.CoachId == a.CoachId && r.AssignId == a.AssignId).OrderByDescending(r => r.EffectiveFrom).FirstOrDefault()
+            ?? AllRates.Where(r => r.CoachId == a.CoachId && r.AssignId == null).OrderByDescending(r => r.EffectiveFrom).FirstOrDefault();
+        return rate?.HourlyRate ?? 0;
+    }
+}
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudSelect T="string" @bind-Value="coachFilter" Label="מאמן" Variant="Variant.Outlined" Clearable="true" Dense="true">
+            @foreach (var c in Coaches) { <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem> }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudSelect T="int" @bind-Value="month" Label="חודש" Variant="Variant.Outlined" Dense="true">
+            @for (int m = 1; m <= 12; m++) { var mm = m; <MudSelectItem Value="mm">@Months[mm]</MudSelectItem> }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudNumericField T="int" @bind-Value="year" Label="שנה" Variant="Variant.Outlined" Min="2020" Max="2030" />
+    </MudItem>
+</MudGrid>
+
+@foreach (var coach in (string.IsNullOrEmpty(coachFilter) ? Coaches : Coaches.Where(c => c.CoachId == coachFilter)))
+{
+    var coachAssigns = Assignments.Where(a => a.CoachId == coach.CoachId).ToList();
+    var entries = TimeEntries
+        .Where(e => Approved.Contains(e.Status) && e.WorkDate.Month == month && e.WorkDate.Year == year)
+        .Where(e => coachAssigns.Any(a => a.AssignId == e.AssignId))
+        .OrderBy(e => e.WorkDate).ToList();
+
+    if (entries.Count == 0) { continue; }
+
+    var totalHours = entries.Sum(e => e.HoursReported);
+    var totalPay = entries.Sum(e => e.HoursReported * RateFor(coachAssigns.First(a => a.AssignId == e.AssignId)));
+
+    <MudText Typo="Typo.h6" Class="mt-4 mb-2">@coach.FirstName @coach.LastName</MudText>
+    <MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="direction: rtl;">
+        <thead><tr><th>תאריך</th><th>לקוח</th><th>התקשרות</th><th>שעות</th><th>תעריף (₪)</th><th>סה"כ (₪)</th></tr></thead>
+        <tbody>
+            @foreach (var entry in entries)
+            {
+                var assign = coachAssigns.First(a => a.AssignId == entry.AssignId);
+                var rate = RateFor(assign);
+                var contract = !string.IsNullOrEmpty(assign.ContractId) ? AllContracts.FirstOrDefault(c => c.ContractId == assign.ContractId) : null;
+                <tr>
+                    <td>@entry.WorkDate.ToString("dd/MM")</td>
+                    <td>@ClientName(assign.ClientId)</td>
+                    <td>@(contract?.EngagementName ?? "כללי")</td>
+                    <td>@entry.HoursReported.ToString("0.#")</td>
+                    <td>@rate.ToString("N0")</td>
+                    <td>@((entry.HoursReported * rate).ToString("N0"))</td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+    <MudStack Row="true" Spacing="4" Class="mt-2 mb-4">
+        <MudChip T="string" Color="Color.Info">סה"כ שעות: @totalHours.ToString("0.#")</MudChip>
+        <MudChip T="string" Color="Color.Success">סה"כ לתשלום: ₪@totalPay.ToString("N0")</MudChip>
+        <MudChip T="string" Color="Color.Default">מעמד: @TaxText(coach.TaxStatus)</MudChip>
+    </MudStack>
+}

@@ -1,0 +1,74 @@
+@page "/admin/reports"
+@inject IDataService Data
+@inject ISnackbar Snackbar
+@inject IFeatureService FeatureService
+
+@if (!FeatureService.IsAvailable(FeatureTier.Pro))
+{
+    <MudAlert Severity="Severity.Info" Class="mt-4">
+        <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudIcon Icon="@Icons.Material.Filled.Lock" />
+            <MudText>מערכת הדוחות זמינה בדרגת Pro ומעלה.</MudText>
+        </MudStack>
+    </MudAlert>
+    return;
+}
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">📊 דוחות</MudText>
+
+@if (loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    return;
+}
+
+<MudTabs @bind-ActivePanelIndex="activeTab" Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+    <MudTabPanel Text="תשלום חודשי" Icon="@Icons.Material.Filled.Payments">
+        <ReportMonthlyPayment Coaches="coaches" Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" AllContracts="allContracts" />
+    </MudTabPanel>
+    <MudTabPanel Text="סיכום שנתי" Icon="@Icons.Material.Filled.CalendarMonth">
+        <ReportYearlySummary Coaches="coaches" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" />
+    </MudTabPanel>
+    <MudTabPanel Text="רווחיות" Icon="@Icons.Material.Filled.TrendingUp">
+        <ReportProfitability Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" AllContracts="allContracts" />
+    </MudTabPanel>
+    <MudTabPanel Text="ניצול שעות" Icon="@Icons.Material.Filled.PieChart">
+        <ReportHoursUtilization Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
+    </MudTabPanel>
+    <MudTabPanel Text="פעילות מאמנים" Icon="@Icons.Material.Filled.People">
+        <ReportCoachActivity Coaches="coaches" Assignments="assignments" TimeEntries="timeEntries" />
+    </MudTabPanel>
+    <MudTabPanel Text="חיוב ללקוח" Icon="@Icons.Material.Filled.Receipt">
+        <ReportClientBilling Coaches="coaches" Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
+    </MudTabPanel>
+    <MudTabPanel Text="השוואה תקופתית" Icon="@Icons.Material.Filled.CompareArrows">
+        <ReportPeriodComparison Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private bool loading = true;
+    private int activeTab;
+    private List<Coach> coaches = new();
+    private List<ClientOrg> clients = new();
+    private List<Assignment> assignments = new();
+    private List<TimeEntry> timeEntries = new();
+    private List<CoachRate> allRates = new();
+    private List<ClientContract> allContracts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            coaches = await Data.GetCoachesAsync();
+            clients = await Data.GetClientsAsync();
+            assignments = await Data.GetAssignmentsAsync();
+            timeEntries = await Data.GetTimeEntriesAsync();
+            allContracts = await Data.GetAllContractsAsync();
+            foreach (var coach in coaches)
+                allRates.AddRange(await Data.GetRatesByCoachAsync(coach.CoachId));
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+        finally { loading = false; }
+    }
+}

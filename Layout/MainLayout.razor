@@ -70,6 +70,9 @@ else
                     <MudNavLink Href="admin/contracts" Icon="@Icons.Material.Filled.Description" Match="NavLinkMatch.Prefix">חוזי לקוחות</MudNavLink>
                     <MudNavLink Href="admin/evaluations" Icon="@Icons.Material.Filled.Star" Match="NavLinkMatch.Prefix">הערכות מאמנים</MudNavLink>
                     <MudNavLink Href="admin/documents" Icon="@Icons.Material.Filled.Folder" Match="NavLinkMatch.Prefix">מסמכים</MudNavLink>
+                    <FeatureGate RequiredTier="FeatureTier.Pro">
+                        <MudNavLink Href="admin/reports" Icon="@Icons.Material.Filled.Assessment" Match="NavLinkMatch.Prefix">דוחות</MudNavLink>
+                    </FeatureGate>
 
                     <MudDivider Class="my-2" />
                     <MudText Typo="Typo.subtitle2" Class="pa-3" Style="color: #666;">תוכן ולמידה</MudText>

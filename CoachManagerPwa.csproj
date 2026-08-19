@@ -31,4 +31,8 @@
     <EmbeddedResource Include="Resources\business_stamp.jpeg" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Pages\Admin\Reports\" />
+  </ItemGroup>
+
 </Project>

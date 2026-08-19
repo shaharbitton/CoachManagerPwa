@@ -1,0 +1,32 @@
+@code {
+    [Parameter] public List<Coach> Coaches { get; set; } = new();
+    [Parameter] public List<Assignment> Assignments { get; set; } = new();
+    [Parameter] public List<TimeEntry> TimeEntries { get; set; } = new();
+}
+
+<MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="direction: rtl;">
+    <thead><tr><th>מאמן</th><th>שיבוצים פעילים</th><th>שעות החודש</th><th>שעות מוקצות</th><th>% ניצול</th><th>ימים מאז דיווח אחרון</th></tr></thead>
+    <tbody>
+        @foreach (var coach in Coaches)
+        {
+            var active = Assignments.Where(a => a.CoachId == coach.CoachId && a.Status == "Active").ToList();
+            var thisMonth = TimeEntries.Where(e => active.Any(a => a.AssignId == e.AssignId) && e.WorkDate.Month == DateTime.Now.Month && e.WorkDate.Year == DateTime.Now.Year).Sum(e => e.HoursReported);
+            var allocated = active.Sum(a => a.AllocatedHours ?? 0);
+            var pct = allocated > 0 ? thisMonth / allocated * 100 : 0;
+            var last = TimeEntries.Where(e => active.Any(a => a.AssignId == e.AssignId)).OrderByDescending(e => e.WorkDate).FirstOrDefault();
+            var days = last != null ? (DateTime.Today - last.WorkDate).Days : -1;
+            <tr>
+                <td>@coach.FirstName @coach.LastName</td>
+                <td>@active.Count</td>
+                <td>@thisMonth.ToString("0.#")</td>
+                <td>@allocated.ToString("0.#")</td>
+                <td><MudChip T="string" Size="Size.Small" Color="@(pct >= 75 ? Color.Success : pct >= 40 ? Color.Warning : Color.Error)">@pct.ToString("0")%</MudChip></td>
+                <td>
+                    @if (days < 0) { <span style="color: #999;">אין דיווחים</span> }
+                    else if (days > 7) { <span style="color: red;">@days ימים ⚠️</span> }
+                    else { <span>@days ימים</span> }
+                </td>
+            </tr>
+        }
+    </tbody>
+</MudSimpleTable>

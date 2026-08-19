@@ -1,0 +1,43 @@
+@code {
+    [Parameter] public List<ClientOrg> Clients { get; set; } = new();
+    [Parameter] public List<Assignment> Assignments { get; set; } = new();
+    [Parameter] public List<TimeEntry> TimeEntries { get; set; } = new();
+    [Parameter] public List<ClientContract> AllContracts { get; set; } = new();
+
+    private string? clientFilter;
+    private string ClientName(string id) => Clients.FirstOrDefault(c => c.ClientId == id)?.ClientName ?? "—";
+}
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudSelect T="string" @bind-Value="clientFilter" Label="לקוח" Variant="Variant.Outlined" Clearable="true" Dense="true">
+            @foreach (var cl in Clients) { <MudSelectItem Value="@cl.ClientId">@cl.ClientName</MudSelectItem> }
+        </MudSelect>
+    </MudItem>
+</MudGrid>
+
+@{ var activeContracts = AllContracts.Where(c => c.WorkScopeHours > 0).Where(c => string.IsNullOrEmpty(clientFilter) || c.ClientId == clientFilter).ToList(); }
+
+<MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="direction: rtl;">
+    <thead><tr><th>לקוח</th><th>התקשרות</th><th>שעות בחוזה</th><th>מנוצלות</th><th>% ניצול</th><th>נותר</th><th>סטטוס</th></tr></thead>
+    <tbody>
+        @foreach (var contract in activeContracts)
+        {
+            var ca = Assignments.Where(a => a.ContractId == contract.ContractId).ToList();
+            var used = TimeEntries.Where(e => ca.Any(a => a.AssignId == e.AssignId) && e.Status is "Admin_Approved" or "Billed_Paid" or "Submitted").Sum(e => e.HoursReported);
+            var total = contract.WorkScopeHours ?? 0;
+            var pct = total > 0 ? used / total * 100 : 0;
+            var remaining = total - used;
+            var color = pct > 90 ? Color.Error : pct > 75 ? Color.Warning : Color.Success;
+            <tr>
+                <td>@ClientName(contract.ClientId)</td>
+                <td>@(contract.EngagementName ?? "כללי")</td>
+                <td>@total.ToString("0.#")</td>
+                <td>@used.ToString("0.#")</td>
+                <td><MudChip T="string" Size="Size.Small" Color="@color">@pct.ToString("0")%</MudChip></td>
+                <td>@remaining.ToString("0.#")</td>
+                <td>@(pct > 90 ? "🔴 חריגה" : pct > 75 ? "🟡 קרוב למכסה" : "🟢 תקין")</td>
+            </tr>
+        }
+    </tbody>
+</MudSimpleTable>
