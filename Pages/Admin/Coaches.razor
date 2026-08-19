@@ -10,7 +10,11 @@
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול מאמנים</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddDialog">הוסף מאמן</MudButton>
+    <MudStack Row="true" Spacing="2">
+        <MudIconButton Icon="@Icons.Material.Filled.BugReport" Size="Size.Small" Color="Color.Default"
+                       OnClick="@(() => Snackbar.Add($"Brevo Key: {EmailService.GetMaskedApiKey()}", Severity.Info))" Title="בדיקת API Key" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddDialog">הוסף מאמן</MudButton>
+    </MudStack>
 </MudStack>
 
 <MudTextField @bind-Value="searchText" Placeholder="חיפוש לפי שם, מקצוע או תעודת זהות..."
@@ -176,9 +180,25 @@
 
     private async Task DeleteCoach(Coach coach)
     {
+        var parameters = new DialogParameters<ConfirmDeleteDialog>
+        {
+            { x => x.Message, $"האם אתה בטוח שברצונך למחוק את המאמן {coach.FirstName} {coach.LastName}? פעולה זו תמחק גם את המשתמש המקושר ואינה ניתנת לביטול." }
+        };
+        var dialog = await Dialog.ShowAsync<ConfirmDeleteDialog>("אישור מחיקה", parameters);
+        var result = await dialog.Result;
+        if (result is null or { Canceled: true }) return;
+
         try
         {
             await Data.DeleteCoachAsync(coach.CoachId);
+
+            // Delete the public users record and the linked auth user
+            try { await Data.DeleteUserAsync(coach.CoachId); }
+            catch (Exception ex2) { Console.WriteLine($"Failed to delete user record: {ex2.Message}"); }
+
+            try { await Data.DeleteAuthUserAsync(coach.CoachId); }
+            catch (Exception authEx) { Console.WriteLine($"Failed to delete auth user: {authEx.Message}"); }
+
             coaches.Remove(coach);
             Snackbar.Add("מאמן נמחק", Severity.Warning);
         }

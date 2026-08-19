@@ -38,6 +38,12 @@ public class SupabaseDataService : IDataService
 
     public SupabaseClient GetClient() => _client;
 
+    public async Task DeleteAuthUserAsync(string userId)
+    {
+        await EnsureInitializedAsync();
+        await _client.Rpc("delete_auth_user", new Dictionary<string, object> { { "target_user_id", userId } });
+    }
+
     // ===== Users =====
 
     public async Task<List<AppUser>> GetUsersAsync()
@@ -45,6 +51,14 @@ public class SupabaseDataService : IDataService
         await EnsureInitializedAsync();
         var response = await _client.From<AppUser>().Get();
         return response.Models;
+    }
+
+    public async Task DeleteUserAsync(string userId)
+    {
+        await EnsureInitializedAsync();
+        await _client.From<AppUser>()
+            .Where(u => u.UserId == userId)
+            .Delete();
     }
 
     // ===== Coaches =====

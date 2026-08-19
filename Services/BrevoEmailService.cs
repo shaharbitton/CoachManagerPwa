@@ -19,6 +19,14 @@ public class BrevoEmailService
         _fromName = fromName;
     }
 
+    /// <summary>Returns masked API key for diagnostics (first 10 + last 4 chars).</summary>
+    public string GetMaskedApiKey()
+    {
+        if (string.IsNullOrEmpty(_apiKey)) return "(empty)";
+        if (_apiKey.Length <= 14) return "***";
+        return $"{_apiKey[..10]}...{_apiKey[^4..]} (len={_apiKey.Length})";
+    }
+
     public async Task SendWelcomeEmailAsync(string toEmail, string coachFirstName)
     {
         var htmlBody = $"""

@@ -135,10 +135,46 @@ else
         }
     };
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AppState.OnChange += StateHasChanged;
         Nav.LocationChanged += OnLocationChanged;
+
+        // Try to restore session from Supabase (persisted in localStorage)
+        if (!AppState.IsAuthenticated)
+        {
+            try
+            {
+                await SupabaseClient.InitializeAsync();
+                var session = SupabaseClient.Auth.CurrentSession;
+                if (session?.User != null && session.ExpiresAt() > DateTime.UtcNow)
+                {
+                    var role = "Coach";
+                    try
+                    {
+                        var urResponse = await SupabaseClient.From<UserRole>()
+                            .Where(ur => ur.UserId == session.User.Id)
+                            .Get();
+                        if (urResponse.Models.Count > 0)
+                        {
+                            var roleIds = urResponse.Models.Select(ur => ur.RoleId).ToList();
+                            var rolesResponse = await SupabaseClient.From<Role>().Get();
+                            var roleNames = rolesResponse.Models
+                                .Where(r => roleIds.Contains(r.RoleId))
+                                .Select(r => r.RoleName).ToList();
+                            if (roleNames.Contains("Admin")) role = "Admin";
+                            else if (roleNames.Contains("Operations_Lead")) role = "Operations_Lead";
+                            else if (roleNames.Count > 0) role = roleNames.First();
+                        }
+                    }
+                    catch { /* fallback to Coach */ }
+
+                    AppState.SetUser(session.User.Id, session.User.Email ?? "משתמש", role);
+                    await FeatureService.LoadAsync(session.User.Id);
+                }
+            }
+            catch { /* no saved session */ }
+        }
 
         // Check token validity every 60 seconds
         _tokenTimer = new Timer(async _ => await CheckTokenValidity(), null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
@@ -192,7 +228,7 @@ else
         try
         {
             var session = SupabaseClient.Auth.CurrentSession;
-            if (session is null || session.ExpiresAt() < DateTime.UtcNow)
+            if (session is null)
             {
                 await InvokeAsync(() =>
                 {
@@ -200,16 +236,34 @@ else
                     Nav.NavigateTo("");
                     StateHasChanged();
                 });
+                return;
+            }
+
+            // If token expires within the next 2 minutes, try to refresh it
+            if (session.ExpiresAt() < DateTime.UtcNow.AddMinutes(2))
+            {
+                try
+                {
+                    await SupabaseClient.Auth.RefreshSession();
+                }
+                catch
+                {
+                    // Refresh failed — only logout if token is actually expired
+                    if (session.ExpiresAt() < DateTime.UtcNow)
+                    {
+                        await InvokeAsync(() =>
+                        {
+                            AppState.Logout();
+                            Nav.NavigateTo("");
+                            StateHasChanged();
+                        });
+                    }
+                }
             }
         }
         catch
         {
-            await InvokeAsync(() =>
-            {
-                AppState.Logout();
-                Nav.NavigateTo("");
-                StateHasChanged();
-            });
+            // Network error — don't logout, just skip this check
         }
     }
 

@@ -6,9 +6,11 @@ public interface IDataService
 {
     // Auth
     Task RefreshAuthAsync();
+    Task DeleteAuthUserAsync(string userId);
 
     // Users
     Task<List<AppUser>> GetUsersAsync();
+    Task DeleteUserAsync(string userId);
 
     // Coaches
     Task<List<Coach>> GetCoachesAsync();
