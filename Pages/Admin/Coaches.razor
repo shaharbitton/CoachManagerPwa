@@ -10,11 +10,7 @@
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול מאמנים</MudText>
-    <MudStack Row="true" Spacing="2">
-        <MudIconButton Icon="@Icons.Material.Filled.BugReport" Size="Size.Small" Color="Color.Default"
-                       OnClick="@(() => Snackbar.Add($"Brevo Key: {EmailService.GetMaskedApiKey()}", Severity.Info))" Title="בדיקת API Key" />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddDialog">הוסף מאמן</MudButton>
-    </MudStack>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddDialog">הוסף מאמן</MudButton>
 </MudStack>
 
 <MudTextField @bind-Value="searchText" Placeholder="חיפוש לפי שם, מקצוע או תעודת זהות..."
@@ -190,12 +186,10 @@
 
         try
         {
-            await Data.DeleteCoachAsync(coach.CoachId);
+            // 1. Delete the public users record (cascades to coaches via FK)
+            await Data.DeleteUserAsync(coach.CoachId);
 
-            // Delete the public users record and the linked auth user
-            try { await Data.DeleteUserAsync(coach.CoachId); }
-            catch (Exception ex2) { Console.WriteLine($"Failed to delete user record: {ex2.Message}"); }
-
+            // 2. Delete the auth user via DB function
             try { await Data.DeleteAuthUserAsync(coach.CoachId); }
             catch (Exception authEx) { Console.WriteLine($"Failed to delete auth user: {authEx.Message}"); }
 

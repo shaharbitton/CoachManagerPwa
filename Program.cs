@@ -32,15 +32,7 @@ builder.Services.AddScoped<IDataService, SupabaseDataService>();
 builder.Services.AddSingleton<AppState>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<IFeatureService, FeatureService>();
-builder.Services.AddScoped(sp =>
-{
-
-    var config = sp.GetRequiredService<IConfiguration>();
-    var apiKey = config["Brevo:ApiKey"] ?? "";
-    var fromEmail = config["Brevo:FromEmail"] ?? "";
-    var fromName = config["Brevo:FromName"] ?? "";
-    return new BrevoEmailService(new HttpClient(), apiKey, fromEmail, fromName);
-});
+builder.Services.AddScoped(sp => new BrevoEmailService(new HttpClient(), supabaseUrl, supabaseAnonKey));
 builder.Services.AddSingleton<ILocalityService>(sp =>
     new LocalityService(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) }));
 builder.Services.AddSingleton(sp =>
