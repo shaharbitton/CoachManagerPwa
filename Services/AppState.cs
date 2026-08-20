@@ -24,12 +24,18 @@ public class AppState
         OnChange?.Invoke();
     }
 
-    public void SetUser(string userId, string name, string role)
+    // Stored credentials for re-authentication after SignUp
+    public string? AdminEmail { get; private set; }
+    public string? AdminPassword { get; private set; }
+
+    public void SetUser(string userId, string name, string role, string? email = null, string? password = null)
     {
         CurrentUserId = userId;
         CurrentUserName = name;
         CurrentRole = role;
         IsAuthenticated = true;
+        if (email != null) AdminEmail = email;
+        if (password != null) AdminPassword = password;
         OnChange?.Invoke();
     }
 

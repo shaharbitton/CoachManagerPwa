@@ -5,7 +5,7 @@
 @inject ISnackbar Snackbar
 @inject Supabase.Client SupabaseClient
 @inject ILocalityService LocalityService
-
+@inject AppState AppState
 @inject BrevoEmailService EmailService
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
@@ -132,6 +132,8 @@
                 var userId = session.User.Id;
 
                 // Re-authenticate as admin (SignUp switches the session to the new user)
+                if (!string.IsNullOrEmpty(AppState.AdminEmail) && !string.IsNullOrEmpty(AppState.AdminPassword))
+                    await SupabaseClient.Auth.SignIn(AppState.AdminEmail, AppState.AdminPassword);
                 await Data.RefreshAuthAsync();
 
                 // 2. Set coach_id to the new auth user id

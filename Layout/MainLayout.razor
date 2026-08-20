@@ -3,8 +3,10 @@
 @inject AppState AppState
 @inject NavigationManager Nav
 @inject Supabase.Client SupabaseClient
+@inject IDataService DataService
 @inject NotificationService NotificationSvc
 @inject IFeatureService FeatureService
+@inject IJSRuntime JS
 @implements IDisposable
 
 <MudRTLProvider RightToLeft="true">
@@ -118,6 +120,7 @@ else
     private bool _drawerPinned = true;
     private Timer? _tokenTimer;
     private Timer? _notificationTimer;
+    private bool _sessionRestoreComplete;
 
     private MudTheme _theme = new()
     {
@@ -140,41 +143,59 @@ else
         AppState.OnChange += StateHasChanged;
         Nav.LocationChanged += OnLocationChanged;
 
-        // Try to restore session from Supabase (persisted in localStorage)
+        // Try to restore session from localStorage
         if (!AppState.IsAuthenticated)
         {
             try
             {
-                await SupabaseClient.InitializeAsync();
-                var session = SupabaseClient.Auth.CurrentSession;
-                if (session?.User != null && session.ExpiresAt() > DateTime.UtcNow)
+                var savedJson = await JS.InvokeAsync<string?>("sessionStore.load", "arcan_session");
+                if (!string.IsNullOrEmpty(savedJson))
                 {
-                    var role = "Coach";
-                    try
+                    var saved = System.Text.Json.JsonDocument.Parse(savedJson);
+                    var savedEmail = saved.RootElement.GetProperty("email").GetString();
+                    var savedPassword = saved.RootElement.GetProperty("password").GetString();
+
+                    if (!string.IsNullOrEmpty(savedEmail) && !string.IsNullOrEmpty(savedPassword))
                     {
-                        var urResponse = await SupabaseClient.From<UserRole>()
-                            .Where(ur => ur.UserId == session.User.Id)
-                            .Get();
-                        if (urResponse.Models.Count > 0)
+                        var session = await SupabaseClient.Auth.SignIn(savedEmail, savedPassword);
+                        if (session?.User != null)
                         {
-                            var roleIds = urResponse.Models.Select(ur => ur.RoleId).ToList();
-                            var rolesResponse = await SupabaseClient.From<Role>().Get();
-                            var roleNames = rolesResponse.Models
-                                .Where(r => roleIds.Contains(r.RoleId))
-                                .Select(r => r.RoleName).ToList();
-                            if (roleNames.Contains("Admin")) role = "Admin";
-                            else if (roleNames.Contains("Operations_Lead")) role = "Operations_Lead";
-                            else if (roleNames.Count > 0) role = roleNames.First();
+                            await DataService.RefreshAuthAsync();
+
+                            var role = "Coach";
+                            try
+                            {
+                                var urResponse = await SupabaseClient.From<UserRole>()
+                                    .Where(ur => ur.UserId == session.User.Id)
+                                    .Get();
+                                if (urResponse.Models.Count > 0)
+                                {
+                                    var roleIds = urResponse.Models.Select(ur => ur.RoleId).ToList();
+                                    var rolesResponse = await SupabaseClient.From<Role>().Get();
+                                    var roleNames = rolesResponse.Models
+                                        .Where(r => roleIds.Contains(r.RoleId))
+                                        .Select(r => r.RoleName).ToList();
+                                    if (roleNames.Contains("Admin")) role = "Admin";
+                                    else if (roleNames.Contains("Operations_Lead")) role = "Operations_Lead";
+                                    else if (roleNames.Count > 0) role = roleNames.First();
+                                }
+                            }
+                            catch { /* fallback to Coach */ }
+
+                            AppState.SetUser(session.User.Id, session.User.Email ?? "משתמש", role, savedEmail, savedPassword);
+                            await FeatureService.LoadAsync(session.User.Id);
+
+                            // Navigate to the appropriate page after session restore
+                            var targetPage = AppState.IsAdmin ? "admin/dashboard" : "coach/assignments";
+                            Nav.NavigateTo(targetPage);
                         }
                     }
-                    catch { /* fallback to Coach */ }
-
-                    AppState.SetUser(session.User.Id, session.User.Email ?? "משתמש", role);
-                    await FeatureService.LoadAsync(session.User.Id);
                 }
             }
             catch { /* no saved session */ }
         }
+
+        _sessionRestoreComplete = true;
 
         // Check token validity every 60 seconds
         _tokenTimer = new Timer(async _ => await CheckTokenValidity(), null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
@@ -196,6 +217,8 @@ else
 
     private void RedirectIfNotAuthenticated()
     {
+        if (!_sessionRestoreComplete) return;
+
         if (!AppState.IsAuthenticated && !IsOnLoginPage())
         {
             Nav.NavigateTo("");
@@ -288,8 +311,9 @@ else
         Nav.NavigateTo(AppState.IsAdmin ? "admin/dashboard" : "coach/assignments");
     }
 
-    private void Logout()
+    private async Task Logout()
     {
+        await JS.InvokeVoidAsync("sessionStore.remove", "arcan_session");
         AppState.Logout();
         Nav.NavigateTo("");
     }

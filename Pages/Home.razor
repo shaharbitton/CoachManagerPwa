@@ -5,6 +5,7 @@
 @inject NavigationManager Nav
 @inject IDataService DataService
 @inject IFeatureService FeatureService
+@inject IJSRuntime JS
 
 <MudStack AlignItems="AlignItems.Center" Class="mt-8">
     <MudImage Src="images/arcan-logo.png" Alt="Arcan Israel" Width="120" Height="120" ObjectFit="ObjectFit.Contain" Class="mb-2" />
@@ -73,7 +74,11 @@
                 }
                 catch { /* fallback to Coach */ }
 
-                AppState.SetUser(session.User!.Id, session.User.Email ?? "משתמש", role);
+                AppState.SetUser(session.User!.Id, session.User.Email ?? "משתמש", role, email, password);
+
+                // Save session to localStorage for F5 persistence
+                var sessionJson = System.Text.Json.JsonSerializer.Serialize(new { email, password, accessToken = session.AccessToken, refreshToken = session.RefreshToken });
+                await JS.InvokeVoidAsync("sessionStore.save", "arcan_session", sessionJson);
 
                 // Load feature tier for the tenant
                 await FeatureService.LoadAsync(session.User!.Id);
