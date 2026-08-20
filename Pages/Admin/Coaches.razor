@@ -117,6 +117,9 @@
         {
             try
             {
+                // Save admin JWT before SignUp switches the session
+                var adminToken = SupabaseClient.Auth.CurrentSession?.AccessToken;
+
                 // 1. Create auth user with default password (email confirmation disabled in Supabase)
                 var session = await SupabaseClient.Auth.SignUp(dialogResult.Email, "Coach123!");
 
@@ -138,10 +141,10 @@
                 await Data.CreateCoachAsync(dialogResult.Coach);
                 coaches.Add(dialogResult.Coach);
 
-                // 4. Send welcome email via Brevo
+                // 4. Send welcome email via Edge Function (using saved admin token)
                 try
                 {
-                    await EmailService.SendWelcomeEmailAsync(dialogResult.Email, dialogResult.Coach.FirstName);
+                    await EmailService.SendWelcomeEmailAsync(dialogResult.Email, dialogResult.Coach.FirstName, adminToken);
                     Snackbar.Add($"מאמן נוצר בהצלחה! מייל עם פרטי כניסה נשלח ל-{dialogResult.Email}", Severity.Success);
                 }
                 catch (Exception emailEx)
