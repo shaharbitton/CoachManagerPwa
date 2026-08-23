@@ -15,11 +15,26 @@
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
-@if (!AppState.IsAuthenticated)
+@if (!_sessionRestoreComplete)
 {
-    <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-        @Body
+    <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 d-flex justify-center">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
     </MudContainer>
+}
+else if (!AppState.IsAuthenticated)
+{
+    @if (IsOnLoginPage())
+    {
+        <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+            @Body
+        </MudContainer>
+    }
+    else
+    {
+        <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+            <MudAlert Severity="Severity.Warning" Class="mt-4">יש להתחבר תחילה.</MudAlert>
+        </MudContainer>
+    }
 }
 else
 {
@@ -214,6 +229,7 @@ else
         }
 
         _sessionRestoreComplete = true;
+        RedirectIfNotAuthenticated();
 
         // Check token validity every 60 seconds
         _tokenTimer = new Timer(async _ => await CheckTokenValidity(), null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
@@ -239,7 +255,7 @@ else
 
         if (!AppState.IsAuthenticated && !IsOnLoginPage())
         {
-            Nav.NavigateTo("");
+            Nav.NavigateTo("", replace: true);
             return;
         }
 
