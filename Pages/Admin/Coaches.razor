@@ -45,6 +45,9 @@
         </MudTd>
         <MudTd DataLabel="פעולות">
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditCoach(context))" />
+            <MudTooltip Text="איפוס סיסמה">
+                <MudIconButton Icon="@Icons.Material.Filled.LockReset" Size="Size.Small" Color="Color.Warning" OnClick="@(() => ResetPassword(context))" />
+            </MudTooltip>
             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteCoach(context))" />
         </MudTd>
     </RowTemplate>
@@ -216,6 +219,38 @@
                 _ => $"שגיאה: {ex.Message}"
             };
             Snackbar.Add(message, Severity.Error);
+        }
+    }
+
+    private async Task ResetPassword(Coach coach)
+    {
+        var parameters = new DialogParameters<ConfirmDeleteDialog>
+        {
+            { x => x.Message, $"האם אתה בטוח שברצונך לאפס את הסיסמה של {coach.FirstName} {coach.LastName}? הסיסמה תאופס ל-Coach123! ותישלח הודעה למאמן במייל." },
+            { x => x.ButtonText, "אפס סיסמה" },
+            { x => x.ButtonColor, Color.Warning }
+        };
+        var dialog = await Dialog.ShowAsync<ConfirmDeleteDialog>("איפוס סיסמה", parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall });
+        var result = await dialog.Result;
+        if (result is null or { Canceled: true }) return;
+
+        try
+        {
+            // Get the coach's email from users table
+            var users = await Data.GetUsersAsync();
+            var user = users.FirstOrDefault(u => u.UserId == coach.CoachId);
+            if (user is null)
+            {
+                Snackbar.Add("לא נמצא משתמש מקושר למאמן זה", Severity.Error);
+                return;
+            }
+
+            await EmailService.ResetPasswordAsync(coach.CoachId, user.Email, coach.FirstName);
+            Snackbar.Add($"הסיסמה של {coach.FirstName} {coach.LastName} אופסה בהצלחה. הודעה נשלחה ל-{user.Email}", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאה באיפוס סיסמה: {ex.Message}", Severity.Error);
         }
     }
 

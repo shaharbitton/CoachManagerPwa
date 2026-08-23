@@ -4,13 +4,15 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">ביטול</MudButton>
-        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="Confirm">מחק</MudButton>
+        <MudButton Color="@ButtonColor" Variant="Variant.Filled" OnClick="Confirm">@ButtonText</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public string Message { get; set; } = "";
+    [Parameter] public string ButtonText { get; set; } = "מחק";
+    [Parameter] public Color ButtonColor { get; set; } = Color.Error;
 
     private void Confirm() => MudDialog.Close(DialogResult.Ok(true));
     private void Cancel() => MudDialog.Cancel();
