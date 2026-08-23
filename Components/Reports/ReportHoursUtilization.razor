@@ -28,7 +28,7 @@
             var total = contract.WorkScopeHours ?? 0;
             var pct = total > 0 ? used / total * 100 : 0;
             var remaining = total - used;
-            var color = pct > 90 ? Color.Error : pct > 75 ? Color.Warning : Color.Success;
+            var color = pct > 100 ? Color.Error : pct >= 90 && pct < 100 ? Color.Warning : Color.Success;
             <tr>
                 <td>@ClientName(contract.ClientId)</td>
                 <td>@(contract.EngagementName ?? "כללי")</td>
@@ -36,7 +36,7 @@
                 <td>@used.ToString("0.#")</td>
                 <td><MudChip T="string" Size="Size.Small" Color="@color">@pct.ToString("0")%</MudChip></td>
                 <td>@remaining.ToString("0.#")</td>
-                <td>@(pct > 90 ? "🔴 חריגה" : pct > 75 ? "🟡 קרוב למכסה" : "🟢 תקין")</td>
+                @(pct > 100 ? "🔴 חריגה" : pct == 100 ? "🟢 הושלם" : pct >= 90 ? "🟡 קרוב למכסה" : "🟢 תקין")
             </tr>
         }
     </tbody>
