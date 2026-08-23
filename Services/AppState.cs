@@ -5,7 +5,9 @@ public class AppState
     public string CurrentRole { get; private set; } = "Coach";
     public string CurrentUserId { get; private set; } = string.Empty;
     public string CurrentUserName { get; private set; } = string.Empty;
+    public string CurrentUserEmail { get; private set; } = string.Empty;
     public bool IsAuthenticated { get; private set; }
+    public bool IsRealAdmin { get; private set; }
     public bool RequiresOnboarding { get; set; }
     public bool UsedDefaultPassword { get; set; }
     public int NotificationCount { get; private set; }
@@ -32,8 +34,10 @@ public class AppState
     {
         CurrentUserId = userId;
         CurrentUserName = name;
+        CurrentUserEmail = email ?? string.Empty;
         CurrentRole = role;
         IsAuthenticated = true;
+        IsRealAdmin = role is "Admin" or "Operations_Lead";
         if (email != null) AdminEmail = email;
         if (password != null) AdminPassword = password;
         OnChange?.Invoke();
@@ -43,8 +47,10 @@ public class AppState
     {
         CurrentUserId = string.Empty;
         CurrentUserName = string.Empty;
+        CurrentUserEmail = string.Empty;
         CurrentRole = "Coach";
         IsAuthenticated = false;
+        IsRealAdmin = false;
         OnChange?.Invoke();
     }
 

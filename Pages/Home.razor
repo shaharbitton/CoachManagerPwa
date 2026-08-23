@@ -76,6 +76,15 @@
 
                 AppState.SetUser(session.User!.Id, session.User.Email ?? "משתמש", role, email, password);
 
+                // Load coach name for display
+                try
+                {
+                    var coachInfo = await DataService.GetCoachByIdAsync(session.User!.Id);
+                    if (coachInfo != null && !string.IsNullOrWhiteSpace(coachInfo.FirstName))
+                        AppState.SetUser(session.User!.Id, $"{coachInfo.FirstName} {coachInfo.LastName}".Trim(), role, email, password);
+                }
+                catch { /* keep email as name */ }
+
                 // Save session to localStorage for F5 persistence
                 var sessionJson = System.Text.Json.JsonSerializer.Serialize(new { email, password, accessToken = session.AccessToken, refreshToken = session.RefreshToken });
                 await JS.InvokeVoidAsync("sessionStore.save", "arcan_session", sessionJson);

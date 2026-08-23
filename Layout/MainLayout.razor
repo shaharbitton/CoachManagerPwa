@@ -35,13 +35,20 @@ else
                 @(AppState.IsAdmin ? "Arcan - ניהול" : "Arcan - מאמן")
             </MudText>
             <MudSpacer />
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="me-2">
+                <MudText Typo="Typo.body2" Style="color: white;">@AppState.CurrentUserName</MudText>
+                <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.7);">(@AppState.CurrentUserEmail)</MudText>
+            </MudStack>
             <MudChip T="string" Color="Color.Secondary" Size="Size.Small">@AppState.CurrentRole</MudChip>
             <MudBadge Content="@AppState.NotificationCount" Color="Color.Error" Visible="@(AppState.NotificationCount > 0)" Overlap="true">
                 <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Href="@(AppState.IsAdmin ? "admin/notifications" : "coach/notifications")" />
             </MudBadge>
             <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit">
                 <MudMenuItem Href="profile">פרופיל</MudMenuItem>
-                <MudMenuItem OnClick="SwitchRole">החלף תצוגה</MudMenuItem>
+                @if (AppState.IsRealAdmin)
+                {
+                    <MudMenuItem OnClick="SwitchRole">החלף תצוגה</MudMenuItem>
+                }
                 <MudMenuItem OnClick="Logout">התנתק</MudMenuItem>
             </MudMenu>
         </MudAppBar>
@@ -183,6 +190,16 @@ else
                             catch { /* fallback to Coach */ }
 
                             AppState.SetUser(session.User.Id, session.User.Email ?? "משתמש", role, savedEmail, savedPassword);
+
+                            // Load coach name for display
+                            try
+                            {
+                                var coachInfo = await DataService.GetCoachByIdAsync(session.User.Id);
+                                if (coachInfo != null && !string.IsNullOrWhiteSpace(coachInfo.FirstName))
+                                    AppState.SetUser(session.User.Id, $"{coachInfo.FirstName} {coachInfo.LastName}".Trim(), role, savedEmail, savedPassword);
+                            }
+                            catch { /* keep email as name */ }
+
                             await FeatureService.LoadAsync(session.User.Id);
 
                             // Navigate to the appropriate page after session restore

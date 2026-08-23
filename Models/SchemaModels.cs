@@ -1,8 +1,41 @@
-using System.Text.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Postgrest.Attributes;
 using Postgrest.Models;
 
 namespace CoachManagerPwa.Models;
+
+/// <summary>
+/// Handles PostgreSQL text[] that Supabase may return as {} (JSON object) instead of [] (JSON array).
+/// </summary>
+public class SafeStringListConverter : JsonConverter<List<string>?>
+{
+    public override List<string>? ReadJson(JsonReader reader, Type objectType, List<string>? existingValue, bool hasExistingValue, JsonSerializer serializer)
+    {
+        if (reader.TokenType == JsonToken.Null)
+            return null;
+
+        if (reader.TokenType == JsonToken.StartObject)
+        {
+            // Skip empty object {} returned for empty PostgreSQL arrays
+            JObject.Load(reader);
+            return new List<string>();
+        }
+
+        if (reader.TokenType == JsonToken.StartArray)
+        {
+            var arr = JArray.Load(reader);
+            return arr.ToObject<List<string>>() ?? new List<string>();
+        }
+
+        return null;
+    }
+
+    public override void WriteJson(JsonWriter writer, List<string>? value, JsonSerializer serializer)
+    {
+        serializer.Serialize(writer, value);
+    }
+}
 
 // ===== שכבת זהויות והרשאות =====
 
@@ -84,9 +117,11 @@ public class Coach : BaseModel
     public string TaxStatus { get; set; } = "Employee";
 
     [Column("hard_skills")]
+    [Newtonsoft.Json.JsonConverter(typeof(SafeStringListConverter))]
     public List<string>? HardSkills { get; set; } // text[] array in PostgreSQL
 
     [Column("availability_area")]
+    [Newtonsoft.Json.JsonConverter(typeof(SafeStringListConverter))]
     public List<string>? AvailabilityArea { get; set; }
 
     [Column("preferred_schedule")]
