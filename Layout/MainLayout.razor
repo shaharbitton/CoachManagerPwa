@@ -244,9 +244,20 @@ else
         RedirectIfNotAuthenticated();
     }
 
-    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         RedirectIfNotAuthenticated();
+
+        // Refresh notification count on every page navigation for authenticated users
+        if (AppState.IsAuthenticated)
+        {
+            try
+            {
+                await NotificationSvc.RefreshNotificationCountAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+            catch { }
+        }
     }
 
     private void RedirectIfNotAuthenticated()
