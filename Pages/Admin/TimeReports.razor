@@ -23,14 +23,14 @@
         </MudSelect>
     </MudItem>
     <MudItem xs="12" sm="3">
-        <MudDatePicker @bind-Date="dateFrom" Label="מתאריך" Variant="Variant.Outlined" />
+        <MudDatePicker @bind-Date="dateFrom" Label="מתאריך" Variant="Variant.Outlined" Clearable="true" />
     </MudItem>
     <MudItem xs="12" sm="3">
-        <MudDatePicker @bind-Date="dateTo" Label="עד תאריך" Variant="Variant.Outlined" />
+        <MudDatePicker @bind-Date="dateTo" Label="עד תאריך" Variant="Variant.Outlined" Clearable="true" />
     </MudItem>
 </MudGrid>
 
-<MudChipSet T="string" @bind-SelectedValue="statusFilter" SelectionMode="SelectionMode.SingleSelection" Class="mb-4">
+<MudChipSet T="string" @bind-SelectedValue="statusFilter" SelectionMode="SelectionMode.SingleSelection" CheckMark="true" Variant="Variant.Outlined" Class="mb-4">
     <MudChip Value="@("all")" Default="true">הכל</MudChip>
     <MudChip Value="@("Pending_Signature")" Color="Color.Warning">ממתין לחתימה</MudChip>
     <MudChip Value="@("Client_Approved")" Color="Color.Info">נחתם ע"י לקוח</MudChip>

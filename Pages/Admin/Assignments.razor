@@ -8,12 +8,20 @@
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול שיבוצים</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog">שיבוץ חדש</MudButton>
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+        @if (lastLoaded.HasValue)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Default">עודכן: @lastLoaded.Value.ToString("HH:mm:ss")</MudText>
+        }
+        <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Refresh"
+                   OnClick="LoadData" Disabled="loading">רענן נתונים</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog">שיבוץ חדש</MudButton>
+    </MudStack>
 </MudStack>
 
-<MudChipSet T="string" @bind-SelectedValue="statusFilter" SelectionMode="SelectionMode.SingleSelection" Class="mb-4">
-    <MudChip Value="@("all")" Default="true">הכל</MudChip>
-    <MudChip Value="@("Active")" Color="Color.Success">פעילים</MudChip>
+<MudChipSet T="string" @bind-SelectedValue="statusFilter" SelectionMode="SelectionMode.SingleSelection" CheckMark="true" Variant="Variant.Outlined" Class="mb-4">
+    <MudChip Value="@("all")">הכל</MudChip>
+    <MudChip Value="@("Active")" Color="Color.Success" Default="true">פעילים</MudChip>
     <MudChip Value="@("Completed")" Color="Color.Info">הושלמו</MudChip>
     <MudChip Value="@("Cancelled")" Color="Color.Error">בוטלו</MudChip>
 </MudChipSet>
@@ -125,11 +133,12 @@
     private List<CoachRate> allRates = new();
     private List<ClientContract> allContracts = new();
     private List<CoachAssignmentContract> coachContracts = new();
-    private string statusFilter = "all";
+    private string statusFilter = "Active";
     private string? coachFilter;
     private string? clientFilter;
     private bool loading = true;
     private string? expandedAssignId;
+    private DateTime? lastLoaded;
 
     private static readonly string[] DayOrder = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     private static readonly Dictionary<string, string> DayNames = new()
@@ -158,25 +167,33 @@
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
     {
+        loading = true;
         try
         {
-            assignments = await Data.GetAssignmentsAsync();
-            coaches = await Data.GetCoachesAsync();
-            clients = await Data.GetClientsAsync();
-            timeEntries = await Data.GetTimeEntriesAsync();
-            allContracts = await Data.GetAllContractsAsync();
-            foreach (var coach in coaches)
-            {
-                var coachRates = await Data.GetRatesByCoachAsync(coach.CoachId);
-                allRates.AddRange(coachRates);
-            }
-            foreach (var a in assignments)
-            {
-                var ac = await Data.GetContractsByAssignmentAsync(a.AssignId);
-                coachContracts.AddRange(ac);
-            }
+            var assignmentsTask = Data.GetAssignmentsAsync();
+            var coachesTask = Data.GetCoachesAsync();
+            var clientsTask = Data.GetClientsAsync();
+            var timeEntriesTask = Data.GetTimeEntriesAsync();
+            var contractsTask = Data.GetAllContractsAsync();
+            var ratesTask = Data.GetAllRatesAsync();
+            var coachContractsTask = Data.GetAllCoachContractsAsync();
+
+            await Task.WhenAll(assignmentsTask, coachesTask, clientsTask, timeEntriesTask,
+                contractsTask, ratesTask, coachContractsTask);
+
+            assignments = assignmentsTask.Result;
+            coaches = coachesTask.Result;
+            clients = clientsTask.Result;
+            timeEntries = timeEntriesTask.Result;
+            allContracts = contractsTask.Result;
+            allRates = ratesTask.Result;
+            coachContracts = coachContractsTask.Result;
+
+            lastLoaded = DateTime.Now;
         }
         catch { }
         finally { loading = false; }

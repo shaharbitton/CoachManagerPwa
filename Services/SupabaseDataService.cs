@@ -163,6 +163,13 @@ public class SupabaseDataService : IDataService
         return response.Models;
     }
 
+    public async Task<List<CoachRate>> GetAllRatesAsync()
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachRate>().Get();
+        return response.Models;
+    }
+
     public async Task<CoachRate?> GetActiveRateForAssignmentAsync(string coachId, string? assignId)
     {
         await EnsureInitializedAsync();
@@ -511,6 +518,13 @@ public class SupabaseDataService : IDataService
         var response = await _client.From<CoachAssignmentContract>()
             .Where(c => c.AssignId == assignId)
             .Get();
+        return response.Models;
+    }
+
+    public async Task<List<CoachAssignmentContract>> GetAllCoachContractsAsync()
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachAssignmentContract>().Get();
         return response.Models;
     }
 

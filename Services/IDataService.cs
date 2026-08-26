@@ -31,6 +31,7 @@ public interface IDataService
 
     // Coach Rates
     Task<List<CoachRate>> GetRatesByCoachAsync(string coachId);
+    Task<List<CoachRate>> GetAllRatesAsync();
     Task<CoachRate?> GetActiveRateForAssignmentAsync(string coachId, string? assignId);
     Task<CoachRate> CreateRateAsync(CoachRate rate);
     Task<CoachRate> UpdateRateAsync(CoachRate rate);
@@ -92,6 +93,7 @@ public interface IDataService
     // Coach Assignment Contracts
     Task<List<CoachAssignmentContract>> GetContractsByAssignmentAsync(string assignId);
     Task<List<CoachAssignmentContract>> GetContractsByCoachAsync(string coachId);
+    Task<List<CoachAssignmentContract>> GetAllCoachContractsAsync();
     Task<CoachAssignmentContract> CreateCoachContractAsync(CoachAssignmentContract contract);
     Task<CoachAssignmentContract> UpdateCoachContractAsync(CoachAssignmentContract contract);
 }
