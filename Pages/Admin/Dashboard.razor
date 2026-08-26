@@ -22,39 +22,48 @@
 }
 
 <MudGrid>
-    <MudItem xs="6" sm="3">
+    <MudItem xs="6" sm="4" md="2">
         <MudCard Elevation="2" Class="pa-4 rounded-lg cursor-pointer" Style="cursor:pointer;" @onclick="@(() => Nav.NavigateTo("admin/coaches"))">
             <MudStack AlignItems="AlignItems.Center">
-                <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Style="font-size: 2.5rem;" />
-                <MudText Typo="Typo.h4" Style="font-weight: bold;">@coachCount</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Style="font-size: 1.75rem;" />
+                <MudText Typo="Typo.h5" Style="font-weight: bold;">@coachCount</MudText>
                 <MudText Typo="Typo.caption">מאמנים פעילים</MudText>
             </MudStack>
         </MudCard>
     </MudItem>
-    <MudItem xs="6" sm="3">
+    <MudItem xs="6" sm="4" md="2">
         <MudCard Elevation="2" Class="pa-4 rounded-lg" Style="cursor:pointer;" @onclick="@(() => Nav.NavigateTo("admin/clients"))">
             <MudStack AlignItems="AlignItems.Center">
-                <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Secondary" Style="font-size: 2.5rem;" />
-                <MudText Typo="Typo.h4" Style="font-weight: bold;">@clientCount</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Secondary" Style="font-size: 1.75rem;" />
+                <MudText Typo="Typo.h5" Style="font-weight: bold;">@clientCount</MudText>
                 <MudText Typo="Typo.caption">לקוחות פעילים</MudText>
             </MudStack>
         </MudCard>
     </MudItem>
-    <MudItem xs="6" sm="3">
+    <MudItem xs="6" sm="4" md="2">
         <MudCard Elevation="2" Class="pa-4 rounded-lg" Style="cursor:pointer;" @onclick="@(() => Nav.NavigateTo("admin/assignments"))">
             <MudStack AlignItems="AlignItems.Center">
-                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Info" Style="font-size: 2.5rem;" />
-                <MudText Typo="Typo.h4" Style="font-weight: bold;">@assignmentCount</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Info" Style="font-size: 1.75rem;" />
+                <MudText Typo="Typo.h5" Style="font-weight: bold;">@assignmentCount</MudText>
                 <MudText Typo="Typo.caption">שיבוצים פעילים</MudText>
             </MudStack>
         </MudCard>
     </MudItem>
-    <MudItem xs="6" sm="3">
-        <MudCard Elevation="2" Class="pa-4 rounded-lg" Style="cursor:pointer;" @onclick="@(() => Nav.NavigateTo("admin/time-reports"))">
+    <MudItem xs="6" sm="4" md="2">
+        <MudCard Elevation="2" Class="pa-4 rounded-lg" Style="cursor:pointer;" @onclick="@(() => Nav.NavigateTo("admin/time-reports?status=Pending_Signature"))">
             <MudStack AlignItems="AlignItems.Center">
-                <MudIcon Icon="@Icons.Material.Filled.PendingActions" Color="Color.Warning" Style="font-size: 2.5rem;" />
-                <MudText Typo="Typo.h4" Style="font-weight: bold;">@pendingEntries</MudText>
-                <MudText Typo="Typo.caption">דיווחים ממתינים</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.PendingActions" Color="Color.Warning" Style="font-size: 1.75rem;" />
+                <MudText Typo="Typo.h5" Style="font-weight: bold;">@pendingSignatureCount</MudText>
+                <MudText Typo="Typo.caption">ממתין לחתימת מאמן</MudText>
+            </MudStack>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="6" sm="4" md="2">
+        <MudCard Elevation="2" Class="pa-4 rounded-lg" Style="cursor:pointer;" @onclick="@(() => Nav.NavigateTo("admin/time-reports?status=Client_Approved"))">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.FactCheck" Color="Color.Info" Style="font-size: 1.75rem;" />
+                <MudText Typo="Typo.h5" Style="font-weight: bold;">@clientApprovedCount</MudText>
+                <MudText Typo="Typo.caption">ממתין לאישור לתשלום</MudText>
             </MudStack>
         </MudCard>
     </MudItem>
@@ -93,24 +102,49 @@
     </MudItem>
     <MudItem xs="12" md="6">
         <MudCard Elevation="2" Class="pa-4 rounded-lg">
-            <MudText Typo="Typo.h6" Class="mb-3">דיווחי שעות אחרונים</MudText>
-            @if (recentEntries.Any())
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                <MudText Typo="Typo.h6">דיווחי שעות ממתינים לטיפול</MudText>
+                <MudChip T="string" Size="Size.Small" Color="Color.Warning">@actionableEntries.Count</MudChip>
+            </MudStack>
+            @if (actionableEntries.Any())
             {
                 <MudList T="TimeEntry" Dense="true">
-                    @foreach (var entry in recentEntries.Take(5))
+                    @foreach (var entry in actionableEntries.Take(5))
                     {
-                        <MudListItem Icon="@Icons.Material.Filled.Schedule">
+                        <MudListItem Icon="@Icons.Material.Filled.Schedule" @onclick="@(() => Nav.NavigateTo($"admin/time-reports?status={entry.Status}"))" Style="cursor: pointer;">
                             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText>@entry.WorkDate.ToString("dd/MM") - @entry.HoursReported שעות</MudText>
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.body2" Style="font-weight: 500;">@GetEntryCoachName(entry)</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Default">
+                                        @{
+                                            var clientName = GetEntryClientName(entry);
+                                        }
+                                        @if (!string.IsNullOrEmpty(clientName))
+                                        {
+                                            @($"{clientName} · {entry.WorkDate:dd/MM} · {entry.HoursReported} ש'")
+                                        }
+                                        else
+                                        {
+                                            @($"{entry.WorkDate:dd/MM} · {entry.HoursReported} ש'")
+                                        }
+                                    </MudText>
+                                </MudStack>
                                 <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(entry.Status)">@GetStatusText(entry.Status)</MudChip>
                             </MudStack>
                         </MudListItem>
                     }
                 </MudList>
+                @if (actionableEntries.Count > 5)
+                {
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="admin/time-reports">צפה בכל @actionableEntries.Count הדיווחים</MudButton>
+                }
             }
             else
             {
-                <MudText Color="Color.Default">אין דיווחים להצגה</MudText>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                    <MudText Color="Color.Success">כל הדיווחים טופלו</MudText>
+                </MudStack>
             }
         </MudCard>
     </MudItem>
@@ -128,10 +162,13 @@
 </MudGrid>
 
 @code {
-    private int coachCount, clientCount, assignmentCount, pendingEntries;
+    private int coachCount, clientCount, assignmentCount, pendingSignatureCount, clientApprovedCount;
     private List<TimeEntry> recentEntries = new();
+    private List<TimeEntry> actionableEntries = new();
     private List<CoachDocument> pendingDocs = new();
     private List<Coach> coaches = new();
+    private List<Assignment> assignments = new();
+    private List<ClientOrg> clients = new();
     private string? errorMessage;
     private bool _loading = true;
 
@@ -149,13 +186,21 @@
 
             coaches = coachesTask.Result;
             coachCount = coaches.Count;
-            clientCount = clientsTask.Result.Count;
+            clients = clientsTask.Result;
+            clientCount = clients.Count;
 
-            var assignments = assignmentsTask.Result;
+            assignments = assignmentsTask.Result;
             assignmentCount = assignments.Count(a => a.Status == "Active");
 
             recentEntries = entriesTask.Result;
-            pendingEntries = recentEntries.Count(e => e.Status is "Pending_Signature" or "Client_Approved");
+            pendingSignatureCount = recentEntries.Count(e => e.Status == "Pending_Signature");
+            clientApprovedCount = recentEntries.Count(e => e.Status == "Client_Approved");
+
+            // Entries that still require admin attention (exclude paid/closed), oldest first
+            actionableEntries = recentEntries
+                .Where(e => e.Status is not "Billed_Paid")
+                .OrderBy(e => e.WorkDate)
+                .ToList();
 
             // Show partial data immediately
             _loading = false;
@@ -186,6 +231,20 @@
         return c is not null ? $"{c.FirstName} {c.LastName}" : "מאמן";
     }
 
+    private string GetEntryCoachName(TimeEntry entry)
+    {
+        var a = assignments.FirstOrDefault(x => x.AssignId == entry.AssignId);
+        return a is not null ? GetCoachName(a.CoachId) : "מאמן";
+    }
+
+    private string GetEntryClientName(TimeEntry entry)
+    {
+        var a = assignments.FirstOrDefault(x => x.AssignId == entry.AssignId);
+        if (a is null) return "";
+        var client = clients.FirstOrDefault(x => x.ClientId == a.ClientId);
+        return client?.ClientName ?? "";
+    }
+
     private string GetDocTypeText(string t) => t switch
     {
         "National_ID_Card" => "תעודת זהות",
@@ -209,8 +268,8 @@
     private string GetStatusText(string status) => status switch
     {
         "Pending_Signature" => "ממתין לחתימה",
-        "Client_Approved" => "נחתם",
-        "Admin_Approved" => "אושר",
+        "Client_Approved" => "ממתין לאישור",
+        "Admin_Approved" => "ממתין לתשלום",
         "Billed_Paid" => "שולם",
         _ => status
     };

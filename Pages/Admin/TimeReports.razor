@@ -140,6 +140,16 @@
     private bool loading = true;
     private string? expandedEntryId;
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "status")]
+    public string? StatusQuery { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(StatusQuery))
+            statusFilter = StatusQuery;
+    }
+
     private IEnumerable<TimeEntry> FilteredEntries
     {
         get

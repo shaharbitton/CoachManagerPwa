@@ -22,6 +22,7 @@
     <HeaderContent>
         <MudTh>שם מלא</MudTh>
         <MudTh>טלפון</MudTh>
+        <MudTh>אימייל</MudTh>
         <MudTh>תעודת זהות</MudTh>
         <MudTh>מקצוע</MudTh>
         <MudTh>אזורים</MudTh>
@@ -32,6 +33,7 @@
     <RowTemplate>
         <MudTd DataLabel="שם מלא">@context.FirstName @context.LastName</MudTd>
         <MudTd DataLabel="טלפון" Style="direction: ltr;">@context.Phone</MudTd>
+        <MudTd DataLabel="אימייל" Style="direction: ltr;">@GetEmail(context)</MudTd>
         <MudTd DataLabel="תעודת זהות">@context.NationalId</MudTd>
         <MudTd DataLabel="מקצוע">@context.Occupation</MudTd>
         <MudTd DataLabel="אזורים">@GetAreasText(context)</MudTd>
@@ -55,7 +57,7 @@
         @if (context.CoachId == expandedCoachId)
         {
             <MudTr>
-                <td colspan="8" style="padding: 12px 24px; background-color: var(--mud-palette-background-gray);">
+                <td colspan="9" style="padding: 12px 24px; background-color: var(--mud-palette-background-gray);">
                     @{ var sched = ParseSchedule(context.PreferredSchedule); }
                     @if (sched.Count == 0)
                     {
@@ -77,6 +79,7 @@
 
 @code {
     private List<Coach> coaches = new();
+    private Dictionary<string, string> coachEmails = new();
     private string searchText = "";
     private bool loading = true;
     private string? expandedCoachId;
@@ -98,11 +101,25 @@
         : coaches.Where(c =>
             $"{c.FirstName} {c.LastName}".Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
             (c.Occupation ?? "").Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+            GetEmail(c).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
             c.NationalId.Contains(searchText));
+
+    private string GetEmail(Coach coach) =>
+        coachEmails.TryGetValue(coach.CoachId, out var email) ? email : "";
 
     protected override async Task OnInitializedAsync()
     {
-        try { coaches = await Data.GetCoachesAsync(); }
+        try
+        {
+            var coachesTask = Data.GetCoachesAsync();
+            var usersTask = Data.GetUsersAsync();
+            await Task.WhenAll(coachesTask, usersTask);
+            coaches = coachesTask.Result;
+            coachEmails = usersTask.Result
+                .Where(u => !string.IsNullOrEmpty(u.Email))
+                .GroupBy(u => u.UserId)
+                .ToDictionary(g => g.Key, g => g.First().Email);
+        }
         catch { }
         finally { loading = false; }
     }
