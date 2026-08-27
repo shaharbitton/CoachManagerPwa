@@ -52,8 +52,10 @@ WHERE name IN ('BREVO_API_KEY', 'BREVO_FROM_EMAIL', 'BREVO_FROM_NAME');
 --     supabase secrets set BREVO_FROM_EMAIL="donot_replay_arcan@mop.co.il"
 --     supabase secrets set BREVO_FROM_NAME="Arcan Israel"
 --
--- 3d. פריסת הפונקציה:
+-- 3d. פריסת הפונקציות:
 --     supabase functions deploy send-welcome-email --no-verify-jwt
+--     supabase functions deploy send-contract-notification --no-verify-jwt
+--     supabase functions deploy reset-coach-password --no-verify-jwt
 --
 -- ============================================================
 -- שלב 4: בדיקה (ב-CLI)
@@ -62,3 +64,8 @@ WHERE name IN ('BREVO_API_KEY', 'BREVO_FROM_EMAIL', 'BREVO_FROM_NAME');
 --   -H 'Authorization: Bearer sb_publishable_TTHrQfMHDtcJfKWNu9SG-w_eaSeIiyR' \
 --   -H 'Content-Type: application/json' \
 --   -d '{"toEmail": "test@example.com", "coachFirstName": "בדיקה"}'
+--
+-- curl -X POST 'https://spyalzbjcfdrkbyqkopa.supabase.co/functions/v1/send-contract-notification' \
+--   -H 'Authorization: Bearer sb_publishable_TTHrQfMHDtcJfKWNu9SG-w_eaSeIiyR' \
+--   -H 'Content-Type: application/json' \
+--   -d '{"toEmail": "test@example.com", "coachFirstName": "בדיקה", "isReminder": false}'

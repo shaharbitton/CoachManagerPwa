@@ -5,6 +5,7 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
 @inject ContractGeneratorService ContractGenerator
+@inject BrevoEmailService EmailService
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול שיבוצים</MudText>
@@ -133,6 +134,7 @@
     private List<CoachRate> allRates = new();
     private List<ClientContract> allContracts = new();
     private List<CoachAssignmentContract> coachContracts = new();
+    private Dictionary<string, string> coachEmails = new();
     private string statusFilter = "Active";
     private string? coachFilter;
     private string? clientFilter;
@@ -181,9 +183,10 @@
             var contractsTask = Data.GetAllContractsAsync();
             var ratesTask = Data.GetAllRatesAsync();
             var coachContractsTask = Data.GetAllCoachContractsAsync();
+            var usersTask = Data.GetUsersAsync();
 
             await Task.WhenAll(assignmentsTask, coachesTask, clientsTask, timeEntriesTask,
-                contractsTask, ratesTask, coachContractsTask);
+                contractsTask, ratesTask, coachContractsTask, usersTask);
 
             assignments = assignmentsTask.Result;
             coaches = coachesTask.Result;
@@ -192,6 +195,10 @@
             allContracts = contractsTask.Result;
             allRates = ratesTask.Result;
             coachContracts = coachContractsTask.Result;
+            coachEmails = usersTask.Result
+                .Where(u => !string.IsNullOrEmpty(u.Email))
+                .GroupBy(u => u.UserId)
+                .ToDictionary(g => g.Key, g => g.First().Email);
 
             lastLoaded = DateTime.Now;
         }
@@ -460,7 +467,28 @@
 
         if (existingStatus == "Pending")
         {
-            Snackbar.Add("חוזה כבר נשלח וממתין לחתימת המאמן", Severity.Info);
+            var coachForReminder = coaches.FirstOrDefault(c => c.CoachId == assignment.CoachId);
+            var coachName = coachForReminder != null ? $"{coachForReminder.FirstName} {coachForReminder.LastName}" : "המאמן";
+
+            // Three choices: send reminder email, view unsigned contract, or cancel
+            var parameters = new DialogParameters<ContractActionDialog>
+            {
+                { x => x.Message, $"החוזה של {coachName} עדיין לא נחתם. מה תרצה לעשות?" }
+            };
+            var dialog = await Dialog.ShowAsync<ContractActionDialog>("חוזה ממתין לחתימה", parameters);
+            var result = await dialog.Result;
+            if (result is { Canceled: false, Data: string action })
+            {
+                if (action == "remind")
+                {
+                    await SendContractReminderEmail(assignment);
+                }
+                else if (action == "view")
+                {
+                    var pending = coachContracts.First(x => x.AssignId == assignment.AssignId && x.Status == "Pending");
+                    await JS.InvokeVoidAsync("contractPdf.preview", pending.HtmlContent);
+                }
+            }
             return;
         }
 
@@ -511,10 +539,45 @@
             var created = await Data.CreateCoachContractAsync(coachContract);
             coachContracts.Add(created);
             Snackbar.Add($"חוזה נשלח לחתימת {coach.FirstName} {coach.LastName}", Severity.Success);
+
+            // Notify the coach by email that a contract awaits their signature
+            await SendContractNotification(assignment, coach, isReminder: false);
         }
         catch (Exception ex)
         {
             Snackbar.Add($"שגיאה ביצירת חוזה: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task SendContractReminderEmail(Assignment assignment)
+    {
+        var coach = coaches.FirstOrDefault(c => c.CoachId == assignment.CoachId);
+        if (coach == null)
+        {
+            Snackbar.Add("נתוני מאמן חסרים", Severity.Error);
+            return;
+        }
+        await SendContractNotification(assignment, coach, isReminder: true);
+    }
+
+    private async Task SendContractNotification(Assignment assignment, Coach coach, bool isReminder)
+    {
+        if (!coachEmails.TryGetValue(assignment.CoachId, out var email) || string.IsNullOrEmpty(email))
+        {
+            Snackbar.Add("לא נמצאה כתובת מייל למאמן — לא נשלחה הודעה", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            await EmailService.SendContractNotificationEmailAsync(email, coach.FirstName, isReminder);
+            Snackbar.Add(isReminder
+                ? $"תזכורת נשלחה למייל של {coach.FirstName} {coach.LastName}"
+                : $"הודעה על חוזה לחתימה נשלחה למייל של {coach.FirstName} {coach.LastName}", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאה בשליחת מייל: {ex.Message}", Severity.Error);
         }
     }
 }

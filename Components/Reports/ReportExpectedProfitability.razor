@@ -1,0 +1,93 @@
+@code {
+    [Parameter] public List<Coach> Coaches { get; set; } = new();
+    [Parameter] public List<ClientOrg> Clients { get; set; } = new();
+    [Parameter] public List<Assignment> Assignments { get; set; } = new();
+    [Parameter] public List<CoachRate> AllRates { get; set; } = new();
+    [Parameter] public List<ClientContract> AllContracts { get; set; } = new();
+
+    private string? clientFilter;
+    private string ClientName(string id) => Clients.FirstOrDefault(c => c.ClientId == id)?.ClientName ?? "—";
+    private string CoachName(string id) => Coaches.FirstOrDefault(c => c.CoachId == id) is { } c ? $"{c.FirstName} {c.LastName}" : "—";
+
+    private decimal RateFor(Assignment a)
+    {
+        if (!string.IsNullOrEmpty(a.CoachRateId)) { var r = AllRates.FirstOrDefault(x => x.RateId == a.CoachRateId); if (r != null) return r.HourlyRate; }
+        var rate = AllRates.Where(r => r.CoachId == a.CoachId && r.AssignId == a.AssignId).OrderByDescending(r => r.EffectiveFrom).FirstOrDefault()
+            ?? AllRates.Where(r => r.CoachId == a.CoachId && r.AssignId == null).OrderByDescending(r => r.EffectiveFrom).FirstOrDefault();
+        return rate?.HourlyRate ?? 0;
+    }
+
+    private decimal BillingRateFor(Assignment a)
+    {
+        var contract = !string.IsNullOrEmpty(a.ContractId) ? AllContracts.FirstOrDefault(c => c.ContractId == a.ContractId) : null;
+        return contract?.BillingRatePerHour ?? 0;
+    }
+
+    private record ExpectedRow(string AssignId, string CoachId, string ClientId, decimal Hours, decimal BillingRate, decimal CoachRate, decimal Income, decimal Expense, decimal Profit, decimal Pct);
+
+    private List<ExpectedRow> GetRows()
+    {
+        var active = Assignments.Where(a => a.Status == "Active")
+            .Where(a => string.IsNullOrEmpty(clientFilter) || a.ClientId == clientFilter);
+
+        return active.Select(a =>
+        {
+            var hours = a.AllocatedHours ?? 0;
+            var billingRate = BillingRateFor(a);
+            var coachRate = RateFor(a);
+            var income = hours * billingRate;
+            var expense = hours * coachRate;
+            var profit = income - expense;
+            var pct = income > 0 ? profit / income * 100 : 0;
+            return new ExpectedRow(a.AssignId, a.CoachId, a.ClientId, hours, billingRate, coachRate, income, expense, profit, pct);
+        }).OrderByDescending(r => r.Profit).ToList();
+    }
+}
+
+<MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+    צפי רווחיות מבוסס על השעות המוקצות בשיבוצים הפעילים, תעריף המאמן ותעריף החיוב ללקוח לפי החוזה המשויך.
+</MudAlert>
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudSelect T="string" @bind-Value="clientFilter" Label="לקוח" Variant="Variant.Outlined" Clearable="true" Dense="true">
+            @foreach (var cl in Clients) { <MudSelectItem Value="@cl.ClientId">@cl.ClientName</MudSelectItem> }
+        </MudSelect>
+    </MudItem>
+</MudGrid>
+
+@{ var rows = GetRows(); }
+@if (!rows.Any())
+{
+    <MudAlert Severity="Severity.Info">אין שיבוצים פעילים להצגה</MudAlert>
+}
+else
+{
+    <MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="direction: rtl;">
+        <thead><tr><th>לקוח</th><th>מאמן</th><th>שעות מוקצות</th><th>תעריף חיוב (₪)</th><th>עלות מאמן (₪)</th><th>צפי הכנסה (₪)</th><th>צפי עלות (₪)</th><th>צפי רווח (₪)</th><th>% רווח</th></tr></thead>
+        <tbody>
+            @foreach (var r in rows)
+            {
+                <tr>
+                    <td>@ClientName(r.ClientId)</td>
+                    <td>@CoachName(r.CoachId)</td>
+                    <td>@r.Hours.ToString("0.#")</td>
+                    <td>@r.BillingRate.ToString("N0")</td>
+                    <td>@r.CoachRate.ToString("N0")</td>
+                    <td>₪@r.Income.ToString("N0")</td>
+                    <td>₪@r.Expense.ToString("N0")</td>
+                    <td style="color: @(r.Profit >= 0 ? "green" : "red")">₪@r.Profit.ToString("N0")</td>
+                    <td><MudChip T="string" Size="Size.Small" Color="@(r.Pct >= 30 ? Color.Success : r.Pct >= 15 ? Color.Warning : Color.Error)">@r.Pct.ToString("0")%</MudChip></td>
+                </tr>
+            }
+            <tr style="font-weight: bold; background-color: var(--mud-palette-background-gray);">
+                <td>סה"כ</td><td></td>
+                <td>@rows.Sum(r => r.Hours).ToString("0.#")</td><td></td><td></td>
+                <td>₪@rows.Sum(r => r.Income).ToString("N0")</td>
+                <td>₪@rows.Sum(r => r.Expense).ToString("N0")</td>
+                <td>₪@rows.Sum(r => r.Profit).ToString("N0")</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+}

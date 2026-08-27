@@ -32,6 +32,7 @@
 }
 
 <MudTabs @bind-ActivePanelIndex="activeTab" Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4"
+         AlwaysShowScrollButtons="true" ScrollIcon="@Icons.Material.Filled.ChevronRight" SliderColor="Color.Primary"
          Disabled="loading">
     <MudTabPanel Text="תשלום חודשי" Icon="@Icons.Material.Filled.Payments">
         <ReportMonthlyPayment Coaches="coaches" Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" AllContracts="allContracts" />
@@ -41,6 +42,9 @@
     </MudTabPanel>
     <MudTabPanel Text="רווחיות" Icon="@Icons.Material.Filled.TrendingUp">
         <ReportProfitability Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" AllContracts="allContracts" />
+    </MudTabPanel>
+    <MudTabPanel Text="רווחיות צפויה" Icon="@Icons.Material.Filled.Insights">
+        <ReportExpectedProfitability Coaches="coaches" Clients="clients" Assignments="assignments" AllRates="allRates" AllContracts="allContracts" />
     </MudTabPanel>
     <MudTabPanel Text="ניצול שעות" Icon="@Icons.Material.Filled.PieChart">
         <ReportHoursUtilization Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
