@@ -1,10 +1,12 @@
 @page "/admin/documents"
+@page "/admin/documents/{CoachIdParam}"
 @inject IDataService Data
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject Supabase.Client SupabaseClient
 @inject IJSRuntime JS
 @inject NotificationService NotificationSvc
+@inject BrevoEmailService EmailService
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">ניהול מסמכים ואישורים</MudText>
 
@@ -33,13 +35,9 @@
     {
         <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
     }
-    else if (!documents.Any())
-    {
-        <MudAlert Severity="Severity.Info">אין מסמכים למאמן זה</MudAlert>
-    }
     else
     {
-        <MudTable Items="documents" Hover="true" Elevation="2" Dense="true" OnRowClick="OnRowClicked" T="CoachDocument" RowStyle="cursor:pointer;">
+        <MudTable Items="displayDocs" Hover="true" Elevation="2" Dense="true" OnRowClick="OnRowClicked" T="CoachDocument" RowStyle="cursor:pointer;">
             <HeaderContent>
                 <MudTh>סוג מסמך</MudTh>
                 <MudTh>סטטוס</MudTh>
@@ -53,7 +51,11 @@
                     <MudChip T="string" Size="Size.Small" Color="@GetDocStatusColor(context.Status)">@GetDocStatusText(context.Status)</MudChip>
                 </MudTd>
                 <MudTd DataLabel="תפוגה">
-                    @if (context.ExpirationDate.HasValue)
+                    @if (IsMissing(context))
+                    {
+                        <MudText>—</MudText>
+                    }
+                    else if (context.ExpirationDate.HasValue)
                     {
                         <MudText Color="@(context.ExpirationDate < DateTime.Today ? Color.Error : Color.Default)">
                             @context.ExpirationDate.Value.ToString("dd/MM/yyyy")
@@ -64,23 +66,31 @@
                         <MudText>ללא תפוגה</MudText>
                     }
                 </MudTd>
-                <MudTd DataLabel="נוצר">@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
+                <MudTd DataLabel="נוצר">@(IsMissing(context) ? "—" : context.CreatedAt.ToString("dd/MM/yyyy"))</MudTd>
                 <MudTd DataLabel="פעולות">
-                    @if (context.Status == "Pending_Review")
+                    @if (IsMissing(context))
                     {
-                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => ApproveDoc(context))" OnClickStopPropagation>אשר</MudButton>
-                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => RejectDoc(context))" OnClickStopPropagation>דחה</MudButton>
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.NotificationsActive"
+                                   OnClick="@(() => SendDocumentReminder(context))" OnClickStopPropagation>שלח תזכורת</MudButton>
                     }
-                    @if (HasValidPath(context.FileUrl))
+                    else
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" OnClick="@(() => OpenDocInNewTab(context))" OnClickStopPropagation />
+                        @if (context.Status == "Pending_Review")
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => ApproveDoc(context))" OnClickStopPropagation>אשר</MudButton>
+                            <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => RejectDoc(context))" OnClickStopPropagation>דחה</MudButton>
+                        }
+                        @if (HasValidPath(context.FileUrl))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" OnClick="@(() => OpenDocInNewTab(context))" OnClickStopPropagation />
+                        }
+                        <MudIconButton Icon="@Icons.Material.Filled.EditCalendar" Size="Size.Small" Color="Color.Primary" OnClick="@(() => OpenEditExpiration(context))" OnClickStopPropagation />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDoc(context))" OnClickStopPropagation />
                     }
-                    <MudIconButton Icon="@Icons.Material.Filled.EditCalendar" Size="Size.Small" Color="Color.Primary" OnClick="@(() => OpenEditExpiration(context))" OnClickStopPropagation />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDoc(context))" OnClickStopPropagation />
                 </MudTd>
             </RowTemplate>
             <ChildRowContent>
-                @if (context.DocId == expandedDocId)
+                @if (!IsMissing(context) && context.DocId == expandedDocId)
                 {
                     <MudTr>
                         <td colspan="5">
@@ -208,12 +218,40 @@
 </MudDialog>
 
 @code {
+    [Parameter] public string? CoachIdParam { get; set; }
+
     private List<Coach> coaches = new();
     private List<CoachDocument> documents = new();
+    private List<AppUser> users = new();
     private string selectedCoachId = "";
     private string? expandedDocId;
     private bool loading;
     private Dictionary<string, string> signedUrls = new();
+
+    // All possible document types (placeholders always shown)
+    private static readonly string[] AllDocTypes =
+    [
+        "National_ID_Card", "Police_Clearance", "Certification",
+        "Tax_Withholding", "Bank_Confirmation", "Recommendations"
+    ];
+
+    // Merged list: real documents + placeholders for missing types
+    private List<CoachDocument> displayDocs
+    {
+        get
+        {
+            var result = new List<CoachDocument>(documents);
+            var existingTypes = documents.Select(d => d.DocType).ToHashSet();
+            foreach (var type in AllDocTypes)
+            {
+                if (!existingTypes.Contains(type))
+                    result.Add(new CoachDocument { DocId = $"__missing__{type}", CoachId = selectedCoachId, DocType = type, Status = "Missing" });
+            }
+            return result;
+        }
+    }
+
+    private static bool IsMissing(CoachDocument doc) => doc.Status == "Missing";
 
     // Upload dialog
     private bool uploadDialogVisible;
@@ -224,7 +262,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try { coaches = await Data.GetCoachesAsync(); } catch { }
+        try
+        {
+            coaches = await Data.GetCoachesAsync();
+            users = await Data.GetUsersAsync();
+        }
+        catch { }
+
+        if (!string.IsNullOrEmpty(CoachIdParam) && coaches.Any(c => c.CoachId == CoachIdParam))
+        {
+            await LoadDocs(CoachIdParam);
+        }
     }
 
     private async Task LoadDocs(string coachId)
@@ -239,7 +287,7 @@
 
     private async void OnRowClicked(TableRowClickEventArgs<CoachDocument> args)
     {
-        if (args.Item is null) return;
+        if (args.Item is null || IsMissing(args.Item)) return;
         if (expandedDocId == args.Item.DocId)
         {
             expandedDocId = null;
@@ -403,6 +451,33 @@
         _ => t
     };
 
-    private Color GetDocStatusColor(string s) => s switch { "Pending_Review" => Color.Warning, "Approved" => Color.Success, _ => Color.Error };
-    private string GetDocStatusText(string s) => s switch { "Pending_Review" => "ממתין", "Approved" => "אושר", "Rejected" => "נדחה", _ => s };
+    private Color GetDocStatusColor(string s) => s switch { "Pending_Review" => Color.Warning, "Approved" => Color.Success, "Missing" => Color.Default, _ => Color.Error };
+    private string GetDocStatusText(string s) => s switch { "Pending_Review" => "ממתין", "Approved" => "אושר", "Rejected" => "נדחה", "Missing" => "לא קיים", _ => s };
+
+    private async Task SendDocumentReminder(CoachDocument doc)
+    {
+        var coach = coaches.FirstOrDefault(c => c.CoachId == doc.CoachId);
+        if (coach == null)
+        {
+            Snackbar.Add("נתוני מאמן חסרים", Severity.Error);
+            return;
+        }
+
+        var email = users.FirstOrDefault(u => u.UserId == doc.CoachId)?.Email;
+        if (string.IsNullOrEmpty(email))
+        {
+            Snackbar.Add("לא נמצאה כתובת מייל למאמן — לא נשלחה תזכורת", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            await EmailService.SendDocumentReminderEmailAsync(email, coach.FirstName, GetDocTypeText(doc.DocType));
+            Snackbar.Add($"תזכורת להעלאת \"{GetDocTypeText(doc.DocType)}\" נשלחה ל-{coach.FirstName} {coach.LastName}", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאה בשליחת תזכורת: {ex.Message}", Severity.Error);
+        }
+    }
 }

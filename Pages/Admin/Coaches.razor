@@ -7,6 +7,7 @@
 @inject ILocalityService LocalityService
 @inject AppState AppState
 @inject BrevoEmailService EmailService
+@inject NavigationManager Navigation
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h5" Style="font-weight: bold;">ניהול מאמנים</MudText>
@@ -47,6 +48,9 @@
         </MudTd>
         <MudTd DataLabel="פעולות">
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditCoach(context))" />
+            <MudTooltip Text="מסמכים">
+                <MudIconButton Icon="@Icons.Material.Filled.FolderShared" Size="Size.Small" Color="Color.Info" OnClick="@(() => GoToDocuments(context))" />
+            </MudTooltip>
             <MudTooltip Text="איפוס סיסמה">
                 <MudIconButton Icon="@Icons.Material.Filled.LockReset" Size="Size.Small" Color="Color.Warning" OnClick="@(() => ResetPassword(context))" />
             </MudTooltip>
@@ -298,6 +302,8 @@
     {
         expandedCoachId = expandedCoachId == args.Item.CoachId ? null : args.Item.CoachId;
     }
+
+    private void GoToDocuments(Coach coach) => Navigation.NavigateTo($"admin/documents/{coach.CoachId}");
 
     private Dictionary<string, List<int>> ParseSchedule(string? json)
     {

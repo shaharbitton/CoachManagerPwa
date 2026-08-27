@@ -57,6 +57,26 @@ public class BrevoEmailService
             throw new Exception(body);
     }
 
+    public async Task SendDocumentReminderEmailAsync(string toEmail, string coachFirstName, string documentName, string? accessToken = null)
+    {
+        var url = $"{_functionsBaseUrl}/send-document-reminder";
+        var payload = JsonSerializer.Serialize(new { toEmail, coachFirstName, documentName });
+
+        var token = accessToken ?? _supabaseClient.Auth.CurrentSession?.AccessToken;
+        if (string.IsNullOrEmpty(token))
+            throw new Exception("No active session — cannot call Edge Function");
+
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Headers.Add("Authorization", $"Bearer {token}");
+        request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
+
+        var response = await _http.SendAsync(request);
+        var body = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+            throw new Exception(body);
+    }
+
     public async Task ResetPasswordAsync(string userId, string toEmail, string coachFirstName, string? accessToken = null)
     {
         var url = $"{_functionsBaseUrl}/reset-coach-password";

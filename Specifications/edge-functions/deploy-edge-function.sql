@@ -55,6 +55,7 @@ WHERE name IN ('BREVO_API_KEY', 'BREVO_FROM_EMAIL', 'BREVO_FROM_NAME');
 -- 3d. פריסת הפונקציות:
 --     supabase functions deploy send-welcome-email --no-verify-jwt
 --     supabase functions deploy send-contract-notification --no-verify-jwt
+--     supabase functions deploy send-document-reminder --no-verify-jwt
 --     supabase functions deploy reset-coach-password --no-verify-jwt
 --
 -- ============================================================
@@ -69,3 +70,8 @@ WHERE name IN ('BREVO_API_KEY', 'BREVO_FROM_EMAIL', 'BREVO_FROM_NAME');
 --   -H 'Authorization: Bearer sb_publishable_TTHrQfMHDtcJfKWNu9SG-w_eaSeIiyR' \
 --   -H 'Content-Type: application/json' \
 --   -d '{"toEmail": "test@example.com", "coachFirstName": "בדיקה", "isReminder": false}'
+--
+-- curl -X POST 'https://spyalzbjcfdrkbyqkopa.supabase.co/functions/v1/send-document-reminder' \
+--   -H 'Authorization: Bearer sb_publishable_TTHrQfMHDtcJfKWNu9SG-w_eaSeIiyR' \
+--   -H 'Content-Type: application/json' \
+--   -d '{"toEmail": "test@example.com", "coachFirstName": "בדיקה", "documentName": "אישור משטרה"}'
