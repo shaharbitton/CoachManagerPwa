@@ -1,3 +1,4 @@
+@inject IJSRuntime JS
 @code {
     [Parameter] public List<Coach> Coaches { get; set; } = new();
     [Parameter] public List<ClientOrg> Clients { get; set; } = new();
@@ -26,7 +27,60 @@
             ?? AllRates.Where(r => r.CoachId == a.CoachId && r.AssignId == null).OrderByDescending(r => r.EffectiveFrom).FirstOrDefault();
         return rate?.HourlyRate ?? 0;
     }
+
+    // Total reported hours for an assignment within the selected month/year
+    private decimal MonthHoursForAssignment(string assignId) =>
+        TimeEntries.Where(e => Approved.Contains(e.Status) && e.AssignId == assignId
+            && e.WorkDate.Month == month && e.WorkDate.Year == year)
+            .Sum(e => e.HoursReported);
+
+    // True when the assignment has an allocated-hours cap and the month's hours exceed it
+    private bool IsOverAllocation(Assignment a) =>
+        a.AllocatedHours is > 0 && MonthHoursForAssignment(a.AssignId) > a.AllocatedHours;
+
+    private async Task ExportExcel()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("מאמן,תאריך,לקוח,התקשרות,שעות,תעריף,סה\"כ,חריגת שעות");
+        foreach (var coach in (string.IsNullOrEmpty(coachFilter) ? Coaches : Coaches.Where(c => c.CoachId == coachFilter)))
+        {
+            var coachAssigns = Assignments.Where(a => a.CoachId == coach.CoachId).ToList();
+            var entries = TimeEntries
+                .Where(e => Approved.Contains(e.Status) && e.WorkDate.Month == month && e.WorkDate.Year == year)
+                .Where(e => coachAssigns.Any(a => a.AssignId == e.AssignId))
+                .OrderBy(e => e.WorkDate).ToList();
+            if (entries.Count == 0) continue;
+
+            foreach (var entry in entries)
+            {
+                var assign = coachAssigns.First(a => a.AssignId == entry.AssignId);
+                var rate = RateFor(assign);
+                var contract = !string.IsNullOrEmpty(assign.ContractId) ? AllContracts.FirstOrDefault(c => c.ContractId == assign.ContractId) : null;
+                var over = IsOverAllocation(assign) ? "כן" : "";
+                sb.AppendLine($"{Csv($"{coach.FirstName} {coach.LastName}")},{entry.WorkDate:dd/MM/yyyy},{Csv(ClientName(assign.ClientId))},{Csv(contract?.EngagementName ?? "כללי")},{entry.HoursReported:0.#},{rate:0},{entry.HoursReported * rate:0},{over}");
+            }
+        }
+        await DownloadCsv(sb.ToString(), $"תשלום-חודשי-{Months[month]}-{year}.csv");
+    }
+
+    private async Task DownloadCsv(string content, string fileName)
+    {
+        var bom = "\uFEFF"; // UTF-8 BOM so Excel renders Hebrew correctly
+        await JS.InvokeVoidAsync("downloadFile", fileName, bom + content, "text/csv;charset=utf-8");
+    }
+
+    private static string Csv(string? value)
+    {
+        value ??= "";
+        return value.Contains(',') || value.Contains('"') ? $"\"{value.Replace("\"", "\"\"")}\"" : value;
+    }
 }
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">תשלום חודשי למאמנים</MudText>
+    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Success"
+               StartIcon="@Icons.Material.Filled.FileDownload" OnClick="ExportExcel">ייצוא לאקסל</MudButton>
+</MudStack>
 
 <MudGrid Class="mb-4">
     <MudItem xs="12" sm="4">
@@ -56,8 +110,15 @@
 
     var totalHours = entries.Sum(e => e.HoursReported);
     var totalPay = entries.Sum(e => e.HoursReported * RateFor(coachAssigns.First(a => a.AssignId == e.AssignId)));
+    var hasOverage = coachAssigns.Any(IsOverAllocation);
 
-    <MudText Typo="Typo.h6" Class="mt-4 mb-2">@coach.FirstName @coach.LastName</MudText>
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-4 mb-2">
+        <MudText Typo="Typo.h6">@coach.FirstName @coach.LastName</MudText>
+        @if (hasOverage)
+        {
+            <MudChip T="string" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Warning">חריגת שעות</MudChip>
+        }
+    </MudStack>
     <MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="direction: rtl;">
         <thead><tr><th>תאריך</th><th>לקוח</th><th>התקשרות</th><th>שעות</th><th>תעריף (₪)</th><th>סה"כ (₪)</th></tr></thead>
         <tbody>
@@ -66,7 +127,8 @@
                 var assign = coachAssigns.First(a => a.AssignId == entry.AssignId);
                 var rate = RateFor(assign);
                 var contract = !string.IsNullOrEmpty(assign.ContractId) ? AllContracts.FirstOrDefault(c => c.ContractId == assign.ContractId) : null;
-                <tr>
+                var over = IsOverAllocation(assign);
+                <tr style="@(over ? "background-color: var(--mud-palette-error-hover);" : "")">
                     <td>@entry.WorkDate.ToString("dd/MM")</td>
                     <td>@ClientName(assign.ClientId)</td>
                     <td>@(contract?.EngagementName ?? "כללי")</td>
@@ -77,6 +139,13 @@
             }
         </tbody>
     </MudSimpleTable>
+    @foreach (var assign in coachAssigns.Where(IsOverAllocation))
+    {
+        var contract = !string.IsNullOrEmpty(assign.ContractId) ? AllContracts.FirstOrDefault(c => c.ContractId == assign.ContractId) : null;
+        <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">
+            חריגת שעות בהתקשרות "@(contract?.EngagementName ?? "כללי")" (@ClientName(assign.ClientId)): דווחו @MonthHoursForAssignment(assign.AssignId).ToString("0.#") שעות מתוך @assign.AllocatedHours?.ToString("0.#") מוקצות.
+        </MudAlert>
+    }
     <MudStack Row="true" Spacing="4" Class="mt-2 mb-4">
         <MudChip T="string" Color="Color.Info">סה"כ שעות: @totalHours.ToString("0.#")</MudChip>
         <MudChip T="string" Color="Color.Success">סה"כ לתשלום: ₪@totalPay.ToString("N0")</MudChip>

@@ -1,3 +1,4 @@
+@inject IJSRuntime JS
 @code {
     [Parameter] public List<Coach> Coaches { get; set; } = new();
     [Parameter] public List<ClientOrg> Clients { get; set; } = new();
@@ -6,10 +7,62 @@
     [Parameter] public List<ClientContract> AllContracts { get; set; } = new();
 
     private string? clientFilter; private int month = DateTime.Now.Month; private int year = DateTime.Now.Year;
+    private string period = "month"; // "month" or "year"
     private static readonly string[] Months = ["", "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
     private static readonly string[] Approved = ["Admin_Approved", "Billed_Paid"];
     private string CoachName(string id) => Coaches.FirstOrDefault(c => c.CoachId == id) is { } c ? $"{c.FirstName} {c.LastName}" : "—";
+
+    private bool InPeriod(TimeEntry e) =>
+        e.WorkDate.Year == year && (period == "year" || e.WorkDate.Month == month);
+
+    private decimal BillingRate(Assignment assign)
+    {
+        var contract = !string.IsNullOrEmpty(assign.ContractId) ? AllContracts.FirstOrDefault(c => c.ContractId == assign.ContractId) : null;
+        return contract?.BillingRatePerHour ?? 0;
+    }
+
+    private async Task ExportExcel()
+    {
+        if (string.IsNullOrEmpty(clientFilter)) return;
+        var clientName = Clients.FirstOrDefault(c => c.ClientId == clientFilter)?.ClientName ?? "";
+        var ca = Assignments.Where(a => a.ClientId == clientFilter).ToList();
+        var entries = TimeEntries.Where(e => Approved.Contains(e.Status) && InPeriod(e) && ca.Any(a => a.AssignId == e.AssignId)).OrderBy(e => e.WorkDate).ToList();
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("תאריך,מאמן,שעות,תעריף,סה\"כ");
+        decimal total = 0;
+        foreach (var entry in entries)
+        {
+            var assign = ca.First(a => a.AssignId == entry.AssignId);
+            var rate = BillingRate(assign);
+            var lineTotal = entry.HoursReported * rate;
+            total += lineTotal;
+            sb.AppendLine($"{entry.WorkDate:dd/MM/yyyy},{Csv(CoachName(assign.CoachId))},{entry.HoursReported:0.#},{rate:0},{lineTotal:0}");
+        }
+        sb.AppendLine($"סה\"כ,,,,{total:0}");
+
+        var label = period == "year" ? year.ToString() : $"{Months[month]}-{year}";
+        var bom = "\uFEFF";
+        await JS.InvokeVoidAsync("downloadFile", $"חיוב-לקוח-{clientName}-{label}.csv", bom + sb.ToString(), "text/csv;charset=utf-8");
+    }
+
+    private static string Csv(string? value)
+    {
+        value ??= "";
+        return value.Contains(',') || value.Contains('"') ? $"\"{value.Replace("\"", "\"\"")}\"" : value;
+    }
 }
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">חיוב לקוח</MudText>
+    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Success" Disabled="@string.IsNullOrEmpty(clientFilter)"
+               StartIcon="@Icons.Material.Filled.FileDownload" OnClick="ExportExcel">ייצוא לאקסל</MudButton>
+</MudStack>
+
+<MudChipSet T="string" @bind-SelectedValue="period" SelectionMode="SelectionMode.SingleSelection" CheckMark="true" Variant="Variant.Outlined" Class="mb-3">
+    <MudChip Value="@("month")" Color="Color.Primary" Default="true">חודשי</MudChip>
+    <MudChip Value="@("year")" Color="Color.Primary">שנתי</MudChip>
+</MudChipSet>
 
 <MudGrid Class="mb-4">
     <MudItem xs="12" sm="4">
@@ -17,11 +70,14 @@
             @foreach (var cl in Clients) { <MudSelectItem Value="@cl.ClientId">@cl.ClientName</MudSelectItem> }
         </MudSelect>
     </MudItem>
-    <MudItem xs="6" sm="3">
-        <MudSelect T="int" @bind-Value="month" Label="חודש" Variant="Variant.Outlined" Dense="true">
-            @for (int m = 1; m <= 12; m++) { var mm = m; <MudSelectItem Value="mm">@Months[mm]</MudSelectItem> }
-        </MudSelect>
-    </MudItem>
+    @if (period == "month")
+    {
+        <MudItem xs="6" sm="3">
+            <MudSelect T="int" @bind-Value="month" Label="חודש" Variant="Variant.Outlined" Dense="true">
+                @for (int m = 1; m <= 12; m++) { var mm = m; <MudSelectItem Value="mm">@Months[mm]</MudSelectItem> }
+            </MudSelect>
+        </MudItem>
+    }
     <MudItem xs="6" sm="3">
         <MudNumericField T="int" @bind-Value="year" Label="שנה" Variant="Variant.Outlined" Min="2020" Max="2030" />
     </MudItem>
@@ -35,22 +91,22 @@ else
 {
     var clientName = Clients.FirstOrDefault(c => c.ClientId == clientFilter)?.ClientName ?? "";
     var ca = Assignments.Where(a => a.ClientId == clientFilter).ToList();
-    var entries = TimeEntries.Where(e => Approved.Contains(e.Status) && e.WorkDate.Month == month && e.WorkDate.Year == year && ca.Any(a => a.AssignId == e.AssignId)).OrderBy(e => e.WorkDate).ToList();
+    var entries = TimeEntries.Where(e => Approved.Contains(e.Status) && InPeriod(e) && ca.Any(a => a.AssignId == e.AssignId)).OrderBy(e => e.WorkDate).ToList();
     decimal total = 0;
+    var periodLabel = period == "year" ? year.ToString() : $"{Months[month]} {year}";
 
-    <MudText Typo="Typo.h6" Class="mb-2">@clientName — @Months[month] @year</MudText>
+    <MudText Typo="Typo.h6" Class="mb-2">@clientName — @periodLabel</MudText>
     <MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="direction: rtl;">
         <thead><tr><th>תאריך</th><th>מאמן</th><th>שעות</th><th>תעריף (₪)</th><th>סה"כ (₪)</th></tr></thead>
         <tbody>
             @foreach (var entry in entries)
             {
                 var assign = ca.First(a => a.AssignId == entry.AssignId);
-                var contract = !string.IsNullOrEmpty(assign.ContractId) ? AllContracts.FirstOrDefault(c => c.ContractId == assign.ContractId) : null;
-                var billingRate = contract?.BillingRatePerHour ?? 0;
+                var billingRate = BillingRate(assign);
                 var lineTotal = entry.HoursReported * billingRate;
                 total += lineTotal;
                 <tr>
-                    <td>@entry.WorkDate.ToString("dd/MM")</td>
+                    <td>@entry.WorkDate.ToString(period == "year" ? "dd/MM/yy" : "dd/MM")</td>
                     <td>@CoachName(assign.CoachId)</td>
                     <td>@entry.HoursReported.ToString("0.#")</td>
                     <td>@billingRate.ToString("N0")</td>

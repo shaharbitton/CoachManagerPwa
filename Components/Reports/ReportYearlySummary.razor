@@ -1,3 +1,4 @@
+@inject IJSRuntime JS
 @code {
     [Parameter] public List<Coach> Coaches { get; set; } = new();
     [Parameter] public List<Assignment> Assignments { get; set; } = new();
@@ -16,7 +17,37 @@
             ?? AllRates.Where(r => r.CoachId == a.CoachId && r.AssignId == null).OrderByDescending(r => r.EffectiveFrom).FirstOrDefault();
         return rate?.HourlyRate ?? 0;
     }
+
+    private async Task ExportExcel()
+    {
+        if (string.IsNullOrEmpty(coachFilter)) return;
+        var coach = Coaches.FirstOrDefault(c => c.CoachId == coachFilter);
+        var coachAssigns = Assignments.Where(a => a.CoachId == coachFilter).ToList();
+        var yearEntries = TimeEntries.Where(e => Approved.Contains(e.Status) && e.WorkDate.Year == year && coachAssigns.Any(a => a.AssignId == e.AssignId)).ToList();
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("חודש,שעות,סה\"כ ברוטו");
+        decimal yearTotal = 0, yearHours = 0;
+        for (int m = 1; m <= 12; m++)
+        {
+            var monthEntries = yearEntries.Where(e => e.WorkDate.Month == m).ToList();
+            var hours = monthEntries.Sum(e => e.HoursReported);
+            var pay = monthEntries.Sum(e => e.HoursReported * RateFor(coachAssigns.First(a => a.AssignId == e.AssignId)));
+            yearTotal += pay; yearHours += hours;
+            sb.AppendLine($"{Months[m]},{hours:0.#},{pay:0}");
+        }
+        sb.AppendLine($"סה\"כ שנתי,{yearHours:0.#},{yearTotal:0}");
+
+        var bom = "\uFEFF";
+        await JS.InvokeVoidAsync("downloadFile", $"סיכום-שנתי-{coach?.FirstName}-{coach?.LastName}-{year}.csv", bom + sb.ToString(), "text/csv;charset=utf-8");
+    }
 }
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">סיכום שנתי</MudText>
+    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Success" Disabled="@string.IsNullOrEmpty(coachFilter)"
+               StartIcon="@Icons.Material.Filled.FileDownload" OnClick="ExportExcel">ייצוא לאקסל</MudButton>
+</MudStack>
 
 <MudGrid Class="mb-4">
     <MudItem xs="12" sm="4">

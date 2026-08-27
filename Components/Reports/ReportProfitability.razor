@@ -37,7 +37,33 @@
             return new ProfitRow(cid, hours, income, expense, profit, pct);
         }).Where(r => r.Hours > 0).OrderByDescending(r => r.Profit).ToList();
     }
+
+    // Profit for a given month/year (respects the client filter), across all clients or the selected one
+    private decimal ProfitForMonth(int m, int y)
+    {
+        var monthEntries = TimeEntries.Where(e => Approved.Contains(e.Status) && e.WorkDate.Month == m && e.WorkDate.Year == y).ToList();
+        var clientIds = string.IsNullOrEmpty(clientFilter) ? Clients.Select(c => c.ClientId).ToList() : new List<string> { clientFilter };
+        decimal profit = 0;
+        foreach (var cid in clientIds)
+        {
+            var ca = Assignments.Where(a => a.ClientId == cid).ToList();
+            var entries = monthEntries.Where(e => ca.Any(a => a.AssignId == e.AssignId)).ToList();
+            var income = entries.Sum(e => { var a = ca.First(a => a.AssignId == e.AssignId); var ct = !string.IsNullOrEmpty(a.ContractId) ? AllContracts.FirstOrDefault(c => c.ContractId == a.ContractId) : null; return e.HoursReported * (ct?.BillingRatePerHour ?? 0); });
+            var expense = entries.Sum(e => { var a = ca.First(a => a.AssignId == e.AssignId); return e.HoursReported * RateFor(a); });
+            profit += income - expense;
+        }
+        return profit;
+    }
+
+    private decimal ProfitForYear(int y) => Enumerable.Range(1, 12).Sum(m => ProfitForMonth(m, y));
+
+    // Distinct years that have any approved time entries (for the year-comparison chart)
+    private List<int> AvailableYears() =>
+        TimeEntries.Where(e => Approved.Contains(e.Status)).Select(e => e.WorkDate.Year).Distinct().OrderBy(y => y).ToList();
+
+    private readonly ChartOptions _chartOptions = new();
 }
+
 
 <MudGrid Class="mb-4">
     <MudItem xs="6" sm="3">
@@ -78,3 +104,40 @@
         }
     </tbody>
 </MudSimpleTable>
+
+@{
+    var monthlyProfit = Enumerable.Range(1, 12).Select(m => (double)ProfitForMonth(m, year)).ToArray();
+    var monthLabels = Months.Skip(1).ToArray();
+    var monthlySeries = new List<ChartSeries<double>> { new() { Name = $"רווח {year}", Data = monthlyProfit } };
+
+    var years = AvailableYears();
+    var yearlyProfit = years.Select(y => (double)ProfitForYear(y)).ToArray();
+    var yearLabels = years.Select(y => y.ToString()).ToArray();
+    var yearlySeries = new List<ChartSeries<double>> { new() { Name = "רווח שנתי", Data = yearlyProfit } };
+}
+
+<MudDivider Class="my-6" />
+
+<MudText Typo="Typo.h6" Class="mb-2">רווח חודשי לשנת @year @(string.IsNullOrEmpty(clientFilter) ? "" : $"— {ClientName(clientFilter)}")</MudText>
+@if (monthlyProfit.Any(v => v != 0))
+{
+    <MudChart T="double" ChartType="ChartType.Bar" ChartSeries="monthlySeries" ChartLabels="monthLabels"
+              ChartOptions="_chartOptions" Width="100%" Height="320px" />
+}
+else
+{
+    <MudAlert Severity="Severity.Info" Dense="true">אין נתוני רווח להצגה בשנה זו</MudAlert>
+}
+
+<MudDivider Class="my-6" />
+
+<MudText Typo="Typo.h6" Class="mb-2">השוואת רווחיות בין השנים</MudText>
+@if (years.Count > 0 && yearlyProfit.Any(v => v != 0))
+{
+    <MudChart T="double" ChartType="ChartType.Bar" ChartSeries="yearlySeries" ChartLabels="yearLabels"
+              ChartOptions="_chartOptions" Width="100%" Height="320px" />
+}
+else
+{
+    <MudAlert Severity="Severity.Info" Dense="true">אין מספיק נתונים להשוואה בין שנים</MudAlert>
+}
