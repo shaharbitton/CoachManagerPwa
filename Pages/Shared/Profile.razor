@@ -7,88 +7,101 @@
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">הפרופיל שלי</MudText>
 
-<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
-    <MudTabPanel Text="פרטים אישיים" Icon="@Icons.Material.Filled.Person">
-        <MudCard Elevation="0">
-            <MudCardContent>
-                <MudGrid>
-                    <MudItem xs="6">
-                        <MudTextField @bind-Value="coach.FirstName" Label="שם פרטי" Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="6">
-                        <MudTextField @bind-Value="coach.LastName" Label="שם משפחה" Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudTextField @bind-Value="coach.Phone" Label="טלפון" Variant="Variant.Outlined" InputType="InputType.Telephone" />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudTextField @bind-Value="coach.Address" Label="כתובת" Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudTextField Value="@coach.NationalId" Label="תעודת זהות" Variant="Variant.Outlined" ReadOnly="true" />
-                    </MudItem>
-                    <MudItem xs="6">
-                        <MudTextField @bind-Value="coach.Occupation" Label="מקצוע" Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="6">
-                        <MudSelect T="string" @bind-Value="coach.TaxStatus" Label="מעמד מיסויי" Variant="Variant.Outlined">
-                            <MudSelectItem Value="@("Employee")">שכיר</MudSelectItem>
-                            <MudSelectItem Value="@("Exempt_Dealer")">עוסק פטור</MudSelectItem>
-                            <MudSelectItem Value="@("Licensed_Dealer")">עוסק מורשה</MudSelectItem>
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.subtitle2" Class="mb-1">אזור זמינות (נפות)</MudText>
-                        <MudSelect T="string" Label="בחר נפות" Variant="Variant.Outlined" MultiSelection="true"
-                                   @bind-SelectedValues="selectedAreas" MultiSelectionTextFunc="@(vals => string.Join(", ", vals))">
-                            @foreach (var sd in subDistricts)
-                            {
-                                <MudSelectItem Value="@sd">@sd</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudDivider Class="my-2" />
-                        <MudText Typo="Typo.subtitle2" Class="mb-2" Style="font-weight: bold;">ימים ושעות מועדפים</MudText>
-                        @foreach (var day in DayNames)
-                        {
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2" Spacing="2">
-                                <MudCheckBox T="bool" Value="@IsDaySelected(day.Key)" ValueChanged="@((bool v) => ToggleDay(day.Key, v))"
-                                             Label="@day.Value" Style="min-width: 90px;" Dense="true" />
-                                @if (IsDaySelected(day.Key))
-                                {
-                                    <MudStack Spacing="1">
-                                        <MudStack Row="true" Spacing="1" Style="flex-wrap: wrap; direction: ltr;">
-                                            @foreach (var hour in GetVisibleHours(day.Key))
-                                            {
-                                                var h = hour;
-                                                var selected = IsHourSelected(day.Key, h);
-                                                <MudChip T="string" Size="Size.Small"
-                                                         Color="@(selected ? Color.Primary : Color.Default)"
-                                                         Variant="@(selected ? Variant.Filled : Variant.Outlined)"
-                                                         OnClick="@(() => ToggleHour(day.Key, h))"
-                                                         Style="min-width: 52px; cursor: pointer; direction: ltr;">
-                                                    @($"{h:00}:00")
-                                                </MudChip>
-                                            }
-                                        </MudStack>
-                                        <MudLink OnClick="@(() => ToggleExpandDay(day.Key))" Underline="Underline.Always" Typo="Typo.caption" Style="cursor: pointer;">
-                                            @(IsExpanded(day.Key) ? "הצג פחות" : "הצג את כל השעות")
-                                        </MudLink>
-                                    </MudStack>
-                                }
-                            </MudStack>
-                        }
-                    </MudItem>
-                </MudGrid>
-            </MudCardContent>
-            <MudCardActions>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveProfile">שמור שינויים</MudButton>
-            </MudCardActions>
-        </MudCard>
-    </MudTabPanel>
+<MudSelect T="int" Value="activeTab" ValueChanged="@(v => activeTab = v)" Label="בחר מקטע" Variant="Variant.Outlined" Class="mb-4">
+    <MudSelectItem Value="0">
+        <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="me-2" /> פרטים אישיים
+    </MudSelectItem>
+    <MudSelectItem Value="1">
+        <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Small" Class="me-2" /> פרטי בנק
+    </MudSelectItem>
+    <MudSelectItem Value="2">
+        <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Class="me-2" /> מסמכים
+    </MudSelectItem>
+</MudSelect>
 
-    <MudTabPanel Text="פרטי בנק" Icon="@Icons.Material.Filled.AccountBalance">
+@if (activeTab == 0)
+{
+    <MudCard Elevation="2" Class="pa-4">
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="coach.FirstName" Label="שם פרטי" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="coach.LastName" Label="שם משפחה" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="coach.Phone" Label="טלפון" Variant="Variant.Outlined" InputType="InputType.Telephone" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="coach.Address" Label="כתובת" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField Value="@coach.NationalId" Label="תעודת זהות" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="coach.Occupation" Label="מקצוע" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudSelect T="string" @bind-Value="coach.TaxStatus" Label="מעמד מיסויי" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("Employee")">שכיר</MudSelectItem>
+                        <MudSelectItem Value="@("Exempt_Dealer")">עוסק פטור</MudSelectItem>
+                        <MudSelectItem Value="@("Licensed_Dealer")">עוסק מורשה</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Class="mb-1">אזור זמינות (נפות)</MudText>
+                    <MudSelect T="string" Label="בחר נפות" Variant="Variant.Outlined" MultiSelection="true"
+                               @bind-SelectedValues="selectedAreas" MultiSelectionTextFunc="@(vals => string.Join(", ", vals))">
+                        @foreach (var sd in subDistricts)
+                        {
+                            <MudSelectItem Value="@sd">@sd</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudDivider Class="my-2" />
+                    <MudText Typo="Typo.subtitle2" Class="mb-2" Style="font-weight: bold;">ימים ושעות מועדפים</MudText>
+                    @foreach (var day in DayNames)
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2" Spacing="2">
+                            <MudCheckBox T="bool" Value="@IsDaySelected(day.Key)" ValueChanged="@((bool v) => ToggleDay(day.Key, v))"
+                                         Label="@day.Value" Style="min-width: 90px;" Dense="true" />
+                            @if (IsDaySelected(day.Key))
+                            {
+                                <MudStack Spacing="1">
+                                    <MudStack Row="true" Spacing="1" Style="flex-wrap: wrap; direction: ltr;">
+                                        @foreach (var hour in GetVisibleHours(day.Key))
+                                        {
+                                            var h = hour;
+                                            var selected = IsHourSelected(day.Key, h);
+                                            <MudChip T="string" Size="Size.Small"
+                                                     Color="@(selected ? Color.Primary : Color.Default)"
+                                                     Variant="@(selected ? Variant.Filled : Variant.Outlined)"
+                                                     OnClick="@(() => ToggleHour(day.Key, h))"
+                                                     Style="min-width: 52px; cursor: pointer; direction: ltr;">
+                                                @($"{h:00}:00")
+                                            </MudChip>
+                                        }
+                                    </MudStack>
+                                    <MudLink OnClick="@(() => ToggleExpandDay(day.Key))" Underline="Underline.Always" Typo="Typo.caption" Style="cursor: pointer;">
+                                        @(IsExpanded(day.Key) ? "הצג פחות" : "הצג את כל השעות")
+                                    </MudLink>
+                                </MudStack>
+                            }
+                        </MudStack>
+                    }
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveProfile">שמור שינויים</MudButton>
+        </MudCardActions>
+    </MudCard>
+}
+else if (activeTab == 1)
+{
+    <MudCard Elevation="2" Class="pa-4">
         <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">פרטי הבנק שלך מאובטחים ונגישים רק לך ולהנהלת החשבונות</MudAlert>
         <MudGrid>
             <MudItem xs="6">
@@ -105,9 +118,11 @@
             </MudItem>
         </MudGrid>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-3" OnClick="SaveBank">עדכן פרטי בנק</MudButton>
-    </MudTabPanel>
-
-    <MudTabPanel Text="מסמכים" Icon="@Icons.Material.Filled.Folder">
+    </MudCard>
+}
+else if (activeTab == 2)
+{
+    <MudCard Elevation="2" Class="pa-4">
         <MudText Typo="Typo.subtitle2" Class="mb-3">העלאת מסמכי חובה</MudText>
         <MudList T="string" Dense="true">
             <MudListItem Icon="@Icons.Material.Filled.Badge">תעודת זהות</MudListItem>
@@ -135,8 +150,8 @@
                 </RowTemplate>
             </MudTable>
         }
-    </MudTabPanel>
-</MudTabs>
+    </MudCard>
+}
 
 <!-- Upload Dialog -->
 <MudDialog @bind-Visible="uploadDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true }">
@@ -175,6 +190,7 @@
 @using System.Text.Json
 
 @code {
+    private int activeTab;
     private Coach coach = new();
     private CoachBankDetails bankDetails = new();
     private List<CoachDocument> myDocuments = new();
