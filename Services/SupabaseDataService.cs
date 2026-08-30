@@ -550,4 +550,53 @@ public class SupabaseDataService : IDataService
         var response = await _client.From<CoachAssignmentContract>().Update(contract);
         return response.Models.First();
     }
+
+    // ===== Document Type Configuration =====
+
+    public async Task<List<DocumentTypeConfig>> GetDocumentTypeConfigsAsync()
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<DocumentTypeConfig>().Get();
+        return response.Models;
+    }
+
+    public async Task<DocumentTypeConfig> CreateDocumentTypeConfigAsync(DocumentTypeConfig config)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<DocumentTypeConfig>().Insert(config);
+        return response.Models.First();
+    }
+
+    public async Task<DocumentTypeConfig> UpdateDocumentTypeConfigAsync(DocumentTypeConfig config)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<DocumentTypeConfig>().Update(config);
+        return response.Models.First();
+    }
+
+    public async Task DeleteDocumentTypeConfigAsync(string configId)
+    {
+        await EnsureInitializedAsync();
+        await _client.From<DocumentTypeConfig>()
+            .Where(c => c.ConfigId == configId)
+            .Delete();
+    }
+
+    // ===== Notification Acknowledgements =====
+
+    public async Task<List<NotificationAck>> GetNotificationAcksByCoachAsync(string coachId)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<NotificationAck>()
+            .Where(a => a.CoachId == coachId)
+            .Get();
+        return response.Models;
+    }
+
+    public async Task<NotificationAck> CreateNotificationAckAsync(NotificationAck ack)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<NotificationAck>().Insert(ack);
+        return response.Models.First();
+    }
 }

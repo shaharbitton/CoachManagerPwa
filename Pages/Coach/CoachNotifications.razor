@@ -1,7 +1,6 @@
 @page "/coach/notifications"
-@inject IDataService Data
-@inject AppState AppState
 @inject NotificationService NotificationSvc
+@inject NavigationManager Nav
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">
     <MudIcon Icon="@Icons.Material.Filled.Notifications" Class="me-2" />
@@ -12,175 +11,124 @@
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
+else if (!items.Any())
+{
+    <MudCard Elevation="2" Class="pa-6 rounded-lg">
+        <MudStack AlignItems="AlignItems.Center" Spacing="3">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="font-size: 4rem;" Color="Color.Success" />
+            <MudText Typo="Typo.h6">אין התראות</MudText>
+            <MudText Color="Color.Default">הכל תקין!</MudText>
+        </MudStack>
+    </MudCard>
+}
 else
 {
-    @if (!expiringDocs.Any() && !rejectedDocs.Any() && !nearLimitAssignments.Any() && !pendingContracts.Any())
+    @if (items.Any(i => i.RequiresAction))
     {
-        <MudCard Elevation="2" Class="pa-6 rounded-lg">
-            <MudStack AlignItems="AlignItems.Center" Spacing="3">
-                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="font-size: 4rem;" Color="Color.Success" />
-                <MudText Typo="Typo.h6">אין התראות</MudText>
-                <MudText Color="Color.Default">הכל תקין!</MudText>
-            </MudStack>
-        </MudCard>
+        <MudAlert Severity="Severity.Warning" Class="mb-4">
+            יש התראות הדורשות טיפול. מומלץ לטפל בהן תחילה.
+        </MudAlert>
     }
-    else
-    {
-        @if (rejectedDocs.Any())
-        {
-            <MudCard Elevation="2" Class="pa-4 rounded-lg mb-4">
-                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
-                    <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" />
-                    <MudText Typo="Typo.h6" Class="ms-2">מסמכים שנדחו (@rejectedDocs.Count)</MudText>
-                </MudStack>
-                <MudList T="CoachDocument" Dense="true">
-                    @foreach (var doc in rejectedDocs)
-                    {
-                        <MudListItem Icon="@Icons.Material.Filled.Description">
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText>@GetDocTypeText(doc.DocType) — יש להעלות מחדש</MudText>
-                                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Href="coach/documents">טפל</MudButton>
-                            </MudStack>
-                        </MudListItem>
-                    }
-                </MudList>
-            </MudCard>
-        }
 
-        @if (expiringDocs.Any())
+    <MudStack Spacing="3">
+        @foreach (var item in items)
         {
-            <MudCard Elevation="2" Class="pa-4 rounded-lg mb-4">
-                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
-                    <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" />
-                    <MudText Typo="Typo.h6" Class="ms-2">מסמכים שעומדים לפוג (@expiringDocs.Count)</MudText>
+            <MudCard Elevation="2" Class="pa-4 rounded-lg">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@GetIcon(item.Icon)" Color="@GetColor(item.Color)" Size="Size.Large" />
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: bold;">@item.Title</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Default">@item.Message</MudText>
+                        </MudStack>
+                    </MudStack>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        @if (!string.IsNullOrEmpty(item.ActionHref))
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="@GetColor(item.Color)"
+                                       OnClick="@(() => HandleAction(item))">
+                                @(item.ActionText ?? "טפל")
+                            </MudButton>
+                        }
+                        @if (!item.RequiresAction)
+                        {
+                            <MudTooltip Text="סמן כנקרא">
+                                <MudIconButton Icon="@Icons.Material.Filled.DoneAll" Size="Size.Small" Color="Color.Default"
+                                               OnClick="@(() => Acknowledge(item))" />
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudTooltip Text="דורש טיפול — לא ניתן לסמן כנקרא">
+                                <MudIcon Icon="@Icons.Material.Filled.PriorityHigh" Color="Color.Error" Size="Size.Small" />
+                            </MudTooltip>
+                        }
+                    </MudStack>
                 </MudStack>
-                <MudList T="CoachDocument" Dense="true">
-                    @foreach (var doc in expiringDocs)
-                    {
-                        var days = (doc.ExpirationDate!.Value - DateTime.Today).Days;
-                        <MudListItem Icon="@Icons.Material.Filled.Schedule">
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText>@GetDocTypeText(doc.DocType)</MudText>
-                                <MudChip T="string" Size="Size.Small" Color="@(days <= 0 ? Color.Error : days <= 7 ? Color.Warning : Color.Info)">
-                                    @(days <= 0 ? "פג תוקף!" : $"{days} ימים")
-                                </MudChip>
-                            </MudStack>
-                        </MudListItem>
-                    }
-                </MudList>
             </MudCard>
         }
-
-        @if (nearLimitAssignments.Any())
-        {
-            <MudCard Elevation="2" Class="pa-4 rounded-lg mb-4">
-                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
-                    <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Color="Color.Warning" />
-                    <MudText Typo="Typo.h6" Class="ms-2">שיבוצים קרובים למגבלת שעות (@nearLimitAssignments.Count)</MudText>
-                </MudStack>
-                <MudList T="AssignmentAlert" Dense="true">
-                    @foreach (var a in nearLimitAssignments)
-                    {
-                        <MudListItem Icon="@Icons.Material.Filled.Timer">
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText>@a.ClientName</MudText>
-                                <MudChip T="string" Size="Size.Small" Color="@(a.Percentage >= 100 ? Color.Error : Color.Warning)">
-                                    @a.Percentage.ToString("0")%
-                                </MudChip>
-                            </MudStack>
-                        </MudListItem>
-                    }
-                </MudList>
-            </MudCard>
-        }
-
-        @if (pendingContracts.Any())
-        {
-            <MudCard Elevation="2" Class="pa-4 rounded-lg mb-4">
-                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
-                    <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Primary" />
-                    <MudText Typo="Typo.h6" Class="ms-2">חוזים ממתינים לחתימה (@pendingContracts.Count)</MudText>
-                </MudStack>
-                <MudList T="CoachAssignmentContract" Dense="true">
-                    @foreach (var c in pendingContracts)
-                    {
-                        <MudListItem Icon="@Icons.Material.Filled.Draw">
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText>חוזה מ-@c.CreatedAt.ToString("dd/MM/yyyy")</MudText>
-                                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Href="@($"coach/sign-contract/{c.Id}")">חתום</MudButton>
-                            </MudStack>
-                        </MudListItem>
-                    }
-                </MudList>
-            </MudCard>
-        }
-    }
+    </MudStack>
 }
 
 @code {
     private bool loading = true;
-    private List<CoachDocument> expiringDocs = new();
-    private List<CoachDocument> rejectedDocs = new();
-    private List<AssignmentAlert> nearLimitAssignments = new();
-    private List<CoachAssignmentContract> pendingContracts = new();
+    private List<CoachNotificationItem> items = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        loading = true;
         try
         {
-            var coachId = AppState.CurrentUserId;
-
-            var docs = await Data.GetDocumentsByCoachAsync(coachId);
-            rejectedDocs = docs.Where(d => d.Status == "Rejected").ToList();
-            expiringDocs = docs.Where(d => d.Status == "Approved" && d.ExpirationDate.HasValue && d.ExpirationDate.Value <= DateTime.Today.AddDays(30)).ToList();
-
-            var assignments = await Data.GetAssignmentsAsync();
-            var myAssignments = assignments.Where(a => a.CoachId == coachId && a.Status == "Active" && a.AllocatedHours.HasValue && a.AllocatedHours > 0).ToList();
-
-            if (myAssignments.Any())
-            {
-                var timeEntries = await Data.GetTimeEntriesAsync();
-                var clients = await Data.GetClientsAsync();
-
-                foreach (var a in myAssignments)
-                {
-                    var used = timeEntries.Where(e => e.AssignId == a.AssignId).Sum(e => e.HoursReported);
-                    var pct = (double)(used / a.AllocatedHours!.Value * 100);
-                    if (pct >= 75)
-                    {
-                        nearLimitAssignments.Add(new AssignmentAlert
-                        {
-                            ClientName = clients.FirstOrDefault(c => c.ClientId == a.ClientId)?.ClientName ?? "לקוח",
-                            Percentage = pct
-                        });
-                    }
-                }
-            }
-
+            items = await NotificationSvc.GetCoachNotificationsAsync();
             await NotificationSvc.RefreshNotificationCountAsync();
-
-            // Load pending contracts
-            var coachContracts = await Data.GetContractsByCoachAsync(coachId);
-            pendingContracts = coachContracts.Where(c => c.Status == "Pending").ToList();
         }
         catch { }
         finally { loading = false; }
     }
 
-    private static string GetDocTypeText(string t) => t switch
+    private async Task Acknowledge(CoachNotificationItem item)
     {
-        "National_ID_Card" => "תעודת זהות",
-        "Police_Clearance" => "אישור משטרה",
-        "Certification" => "תעודת הסמכה",
-        "Tax_Withholding" => "ניכוי מס במקור",
-        "Bank_Confirmation" => "אישור ניהול חשבון",
-        "Contract" => "חוזה",
-        _ => t
+        await NotificationSvc.AcknowledgeAsync(item.Key);
+        items.Remove(item);
+        StateHasChanged();
+    }
+
+    private async Task HandleAction(CoachNotificationItem item)
+    {
+        // For one-time notifications, following the action also acknowledges it
+        // so it won't reappear after the coach handles it (e.g. re-uploads a rejected document).
+        if (!item.RequiresAction)
+        {
+            await NotificationSvc.AcknowledgeAsync(item.Key);
+        }
+        if (!string.IsNullOrEmpty(item.ActionHref))
+        {
+            Nav.NavigateTo(item.ActionHref);
+        }
+    }
+
+    private static Color GetColor(string color) => color switch
+    {
+        "Error" => Color.Error,
+        "Warning" => Color.Warning,
+        "Success" => Color.Success,
+        "Primary" => Color.Primary,
+        _ => Color.Info
     };
 
-    private class AssignmentAlert
+    private static string GetIcon(string icon) => icon switch
     {
-        public string ClientName { get; set; } = "";
-        public double Percentage { get; set; }
-    }
+        "Draw" => Icons.Material.Filled.Draw,
+        "Cancel" => Icons.Material.Filled.Cancel,
+        "EventBusy" => Icons.Material.Filled.EventBusy,
+        "UploadFile" => Icons.Material.Filled.UploadFile,
+        "Schedule" => Icons.Material.Filled.Schedule,
+        "HourglassBottom" => Icons.Material.Filled.HourglassBottom,
+        _ => Icons.Material.Filled.Notifications
+    };
 }
