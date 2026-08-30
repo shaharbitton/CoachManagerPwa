@@ -126,12 +126,10 @@ else
         @if (AppState.IsCoach)
         {
             <MudPaper Elevation="8" Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1100; background-color: white;" Class="py-1 d-flex justify-space-around border-t">
-                <MudButton Href="coach/assignments" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Dashboard" Color="Color.Primary">שיבוצים</MudButton>
+                <MudButton Href="coach/dashboard" Match="NavLinkMatch.All" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Home" Color="Color.Primary">בית</MudButton>
+                <MudButton Href="coach/assignments" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.AssignmentInd" Color="Color.Default">שיבוצים</MudButton>
                 <MudButton Href="coach/calendar" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Default">לו"ז</MudButton>
-                <MudButton Href="coach/time-entry" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Timer" Color="Color.Default">דיווח שעות</MudButton>
                 <MudButton Href="coach/groups" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Groups" Color="Color.Default">קבוצות</MudButton>
-                <MudButton Href="coach/documents" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.Folder" Color="Color.Default">מסמכים</MudButton>
-                <MudButton Href="coach/hub" Match="NavLinkMatch.Prefix" Orientation="Orientation.Vertical" Icon="@Icons.Material.Filled.School" Color="Color.Default">מאגר ידע</MudButton>
             </MudPaper>
         }
     </MudLayout>
@@ -219,7 +217,7 @@ else
                             await FeatureService.LoadAsync(session.User.Id);
 
                             // Navigate to the appropriate page after session restore
-                            var targetPage = AppState.IsAdmin ? "admin/dashboard" : "coach/assignments";
+                            var targetPage = AppState.IsAdmin ? "admin/dashboard" : "coach/dashboard";
                             Nav.NavigateTo(targetPage);
                         }
                     }
@@ -353,7 +351,7 @@ else
     private void SwitchRole()
     {
         AppState.SetRole(AppState.IsAdmin ? "Coach" : "Admin");
-        Nav.NavigateTo(AppState.IsAdmin ? "admin/dashboard" : "coach/assignments");
+        Nav.NavigateTo(AppState.IsAdmin ? "admin/dashboard" : "coach/dashboard");
     }
 
     private async Task Logout()

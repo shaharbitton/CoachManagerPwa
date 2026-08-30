@@ -31,38 +31,63 @@
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
 
-<MudTabs @bind-ActivePanelIndex="activeTab" Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4"
-         AlwaysShowScrollButtons="true" ScrollIcon="@Icons.Material.Filled.ChevronRight" SliderColor="Color.Primary"
-         Disabled="loading">
-    <MudTabPanel Text="תשלום חודשי" Icon="@Icons.Material.Filled.Payments">
-        <ReportMonthlyPayment Coaches="coaches" Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" AllContracts="allContracts" />
-    </MudTabPanel>
-    <MudTabPanel Text="סיכום שנתי" Icon="@Icons.Material.Filled.CalendarMonth">
-        <ReportYearlySummary Coaches="coaches" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" />
-    </MudTabPanel>
-    <MudTabPanel Text="רווחיות" Icon="@Icons.Material.Filled.TrendingUp">
-        <ReportProfitability Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" AllContracts="allContracts" />
-    </MudTabPanel>
-    <MudTabPanel Text="רווחיות צפויה" Icon="@Icons.Material.Filled.Insights">
-        <ReportExpectedProfitability Coaches="coaches" Clients="clients" Assignments="assignments" AllRates="allRates" AllContracts="allContracts" />
-    </MudTabPanel>
-    <MudTabPanel Text="ניצול שעות" Icon="@Icons.Material.Filled.PieChart">
-        <ReportHoursUtilization Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
-    </MudTabPanel>
-    <MudTabPanel Text="פעילות מאמנים" Icon="@Icons.Material.Filled.People">
-        <ReportCoachActivity Coaches="coaches" Assignments="assignments" TimeEntries="timeEntries" />
-    </MudTabPanel>
-    <MudTabPanel Text="חיוב ללקוח" Icon="@Icons.Material.Filled.Receipt">
-        <ReportClientBilling Coaches="coaches" Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
-    </MudTabPanel>
-    <MudTabPanel Text="השוואה תקופתית" Icon="@Icons.Material.Filled.CompareArrows">
-        <ReportPeriodComparison Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
-    </MudTabPanel>
-</MudTabs>
+<MudPaper Elevation="2" Class="pa-4 mb-4 rounded">
+    <MudSelect T="int" @bind-Value="activeTab" Label="בחר דוח" Variant="Variant.Outlined" Dense="true" Disabled="loading">
+        @for (int i = 0; i < ReportTitles.Length; i++)
+        {
+            var idx = i;
+            <MudSelectItem T="int" Value="idx">
+                <MudIcon Icon="@ReportIcons[idx]" Size="Size.Small" Class="me-2" />@ReportTitles[idx]
+            </MudSelectItem>
+        }
+    </MudSelect>
+</MudPaper>
+
+<MudPaper Elevation="2" Class="pa-4 rounded">
+    @switch (activeTab)
+    {
+        case 0:
+            <ReportMonthlyPayment Coaches="coaches" Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" AllContracts="allContracts" />
+            break;
+        case 1:
+            <ReportYearlySummary Coaches="coaches" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" />
+            break;
+        case 2:
+            <ReportProfitability Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllRates="allRates" AllContracts="allContracts" />
+            break;
+        case 3:
+            <ReportExpectedProfitability Coaches="coaches" Clients="clients" Assignments="assignments" AllRates="allRates" AllContracts="allContracts" />
+            break;
+        case 4:
+            <ReportHoursUtilization Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
+            break;
+        case 5:
+            <ReportCoachActivity Coaches="coaches" Assignments="assignments" TimeEntries="timeEntries" />
+            break;
+        case 6:
+            <ReportClientBilling Coaches="coaches" Clients="clients" Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
+            break;
+        case 7:
+            <ReportPeriodComparison Assignments="assignments" TimeEntries="timeEntries" AllContracts="allContracts" />
+            break;
+    }
+</MudPaper>
 
 @code {
     private bool loading = true;
     private int activeTab;
+
+    private static readonly string[] ReportTitles =
+    [
+        "תשלום חודשי", "סיכום שנתי", "רווחיות", "רווחיות צפויה",
+        "ניצול שעות", "פעילות מאמנים", "חיוב ללקוח", "השוואה תקופתית"
+    ];
+
+    private static readonly string[] ReportIcons =
+    [
+        Icons.Material.Filled.Payments, Icons.Material.Filled.CalendarMonth, Icons.Material.Filled.TrendingUp, Icons.Material.Filled.Insights,
+        Icons.Material.Filled.PieChart, Icons.Material.Filled.People, Icons.Material.Filled.Receipt, Icons.Material.Filled.CompareArrows
+    ];
     private DateTime? lastLoaded;
     private List<Coach> coaches = new();
     private List<ClientOrg> clients = new();

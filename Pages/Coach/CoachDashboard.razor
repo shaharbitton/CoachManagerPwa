@@ -1,0 +1,76 @@
+@page "/coach/dashboard"
+@inject AppState AppState
+@inject NavigationManager Nav
+@inject NotificationService NotificationSvc
+
+<MudStack AlignItems="AlignItems.Center" Class="mb-4">
+    <MudAvatar Color="Color.Primary" Style="width: 64px; height: 64px;">
+        <MudIcon Icon="@Icons.Material.Filled.SportsHandball" Style="font-size: 2rem;" />
+    </MudAvatar>
+    <MudText Typo="Typo.h5" Style="font-weight: bold;">שלום @AppState.CurrentUserName</MudText>
+    <MudText Typo="Typo.subtitle2" Color="Color.Default">מה תרצה לעשות היום?</MudText>
+</MudStack>
+
+@if (AppState.NotificationCount > 0)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4 rounded-lg" Icon="@Icons.Material.Filled.NotificationsActive"
+              Style="cursor: pointer;" @onclick="@(() => Nav.NavigateTo("coach/notifications"))">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Style="width: 100%;">
+            <MudText>
+                יש לך <strong>@AppState.NotificationCount</strong> התראות הממתינות לטיפול — מומלץ לטפל בהן תחילה
+            </MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" Size="Size.Small"
+                       EndIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => Nav.NavigateTo("coach/notifications"))">
+                עבור להתראות
+            </MudButton>
+        </MudStack>
+    </MudAlert>
+}
+
+<MudGrid>
+    @foreach (var item in Shortcuts)
+    {
+        <MudItem xs="6" sm="4">
+            <MudCard Elevation="2" Class="rounded-lg" Style="cursor: pointer; height: 100%;" @onclick="@(() => Nav.NavigateTo(item.Href))">
+                <MudCardContent Class="d-flex flex-column align-center justify-center pa-4" Style="min-height: 120px;">
+                    @if (item.Href == "coach/notifications" && AppState.NotificationCount > 0)
+                    {
+                        <MudBadge Content="@AppState.NotificationCount" Color="Color.Error" Overlap="true" Class="mb-2">
+                            <MudIcon Icon="@item.Icon" Color="@item.Color" Style="font-size: 2.5rem;" />
+                        </MudBadge>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@item.Icon" Color="@item.Color" Style="font-size: 2.5rem;" Class="mb-2" />
+                    }
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="font-weight: bold;">@item.Title</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Default">@item.Subtitle</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await NotificationSvc.RefreshNotificationCountAsync();
+            StateHasChanged();
+        }
+        catch { }
+    }
+
+    private record Shortcut(string Title, string Subtitle, string Icon, Color Color, string Href);
+
+    private static readonly Shortcut[] Shortcuts =
+    [
+        new("שיבוצים", "השיבוצים הפעילים שלי ודיווח שעות", Icons.Material.Filled.AssignmentInd, Color.Primary, "coach/assignments"),
+        new("לו\"ז שבועי", "מערכת השעות השבועית שלי", Icons.Material.Filled.CalendarMonth, Color.Info, "coach/calendar"),
+        new("קבוצות", "הקבוצות והחניכים שלי", Icons.Material.Filled.Groups, Color.Success, "coach/groups"),
+        new("מסמכים", "העלאת וצפייה במסמכים ואישורים", Icons.Material.Filled.Folder, Color.Warning, "coach/documents"),
+        new("מאגר ידע", "חומרי הדרכה ולמידה", Icons.Material.Filled.School, Color.Secondary, "coach/hub"),
+        new("התראות", "עדכונים ופעולות הדורשות טיפול", Icons.Material.Filled.Notifications, Color.Error, "coach/notifications"),
+    ];
+}
