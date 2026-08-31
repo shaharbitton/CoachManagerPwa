@@ -5,6 +5,7 @@
 @inject AppState AppState
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">דיווח שעות והחתמה</MudText>
 
@@ -52,11 +53,15 @@
         }
     </MudPaper>
 
-    <MudStack Row="true" Spacing="2">
+    <MudStack Spacing="2">
         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large"
-                   OnClick="SubmitEntry" Disabled="submitting">
+                   OnClick="@(() => SubmitEntry(false))" Disabled="submitting">
             @if (submitting) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Class="me-2" /> }
             שלח דיווח והחתם
+        </MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Warning" FullWidth="true"
+                   StartIcon="@Icons.Material.Filled.EditNote" OnClick="@(() => SubmitEntry(true))" Disabled="submitting">
+            שמור ללא חתימה (ממתין לחתימה)
         </MudButton>
     </MudStack>
 
@@ -176,7 +181,7 @@
         }
     }
 
-    private async Task SubmitEntry()
+    private async Task SubmitEntry(bool skipSignature)
     {
         if (string.IsNullOrEmpty(newEntry.AssignId))
         {
@@ -184,7 +189,7 @@
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(newEntry.SignerName))
+        if (!skipSignature && string.IsNullOrWhiteSpace(newEntry.SignerName))
         {
             Snackbar.Add("יש להזין שם החותם", Severity.Warning);
             return;
@@ -203,13 +208,16 @@
             }
         }
 
-        // Check signature is not empty
-        var isEmpty = await JS.InvokeAsync<bool>("signaturePad.isEmpty");
-        if (isEmpty)
+        if (!skipSignature)
         {
-            signatureError = true;
-            Snackbar.Add("יש להחתים את נציג הלקוח על המסך", Severity.Warning);
-            return;
+            // Check signature is not empty
+            var isEmpty = await JS.InvokeAsync<bool>("signaturePad.isEmpty");
+            if (isEmpty)
+            {
+                signatureError = true;
+                Snackbar.Add("יש להחתים את נציג הלקוח על המסך", Severity.Warning);
+                return;
+            }
         }
         signatureError = false;
 
@@ -218,40 +226,48 @@
         {
             if (workDate.HasValue) newEntry.WorkDate = DateTime.SpecifyKind(workDate.Value.Date, DateTimeKind.Utc);
 
-            // Get signature as PNG bytes and upload to Supabase Storage
-            var signatureBytes = await JS.InvokeAsync<byte[]>("signaturePad.toBytes");
-            if (signatureBytes != null && signatureBytes.Length > 0)
+            if (!skipSignature)
             {
-                var fileName = $"signatures/{AppState.CurrentUserId}/{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.png";
-                // Upload via Supabase Storage (using the injected client)
-                try
+                // Get signature as PNG bytes and upload to Supabase Storage
+                var signatureBytes = await JS.InvokeAsync<byte[]>("signaturePad.toBytes");
+                if (signatureBytes != null && signatureBytes.Length > 0)
                 {
-                    var supabaseClient = ((SupabaseDataService)Data).GetClient();
-                    await supabaseClient.Storage.From("signatures").Upload(signatureBytes, fileName, new Supabase.Storage.FileOptions
+                    var fileName = $"signatures/{AppState.CurrentUserId}/{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.png";
+                    // Upload via Supabase Storage (using the injected client)
+                    try
                     {
-                        ContentType = "image/png"
-                    });
-                    var publicUrl = supabaseClient.Storage.From("signatures").GetPublicUrl(fileName);
-                    newEntry.SignatureUrl = publicUrl;
-                }
-                catch (Exception storageEx)
-                {
-                    // Fallback: save as data URL if storage fails
-                    var dataUrl = await JS.InvokeAsync<string>("signaturePad.toDataUrl");
-                    newEntry.SignatureUrl = dataUrl;
-                    Snackbar.Add($"חתימה נשמרה מקומית (Storage: {storageEx.Message})", Severity.Info);
+                        var supabaseClient = ((SupabaseDataService)Data).GetClient();
+                        await supabaseClient.Storage.From("signatures").Upload(signatureBytes, fileName, new Supabase.Storage.FileOptions
+                        {
+                            ContentType = "image/png"
+                        });
+                        var publicUrl = supabaseClient.Storage.From("signatures").GetPublicUrl(fileName);
+                        newEntry.SignatureUrl = publicUrl;
+                    }
+                    catch (Exception storageEx)
+                    {
+                        // Fallback: save as data URL if storage fails
+                        var dataUrl = await JS.InvokeAsync<string>("signaturePad.toDataUrl");
+                        newEntry.SignatureUrl = dataUrl;
+                        Snackbar.Add($"חתימה נשמרה מקומית (Storage: {storageEx.Message})", Severity.Info);
+                    }
                 }
             }
 
             var hasSig = !string.IsNullOrWhiteSpace(newEntry.SignatureUrl) && newEntry.SignatureUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase);
             newEntry.Status = hasSig ? "Client_Approved" : "Pending_Signature";
 
+            // signature_url is NOT NULL in the DB — store empty string when there is no signature.
+            newEntry.SignatureUrl ??= string.Empty;
+
             await Data.CreateTimeEntryAsync(newEntry);
             recentEntries.Insert(0, newEntry);
-            Snackbar.Add("דיווח נשלח בהצלחה עם חתימה!", Severity.Success);
+            Snackbar.Add(hasSig ? "דיווח נשלח בהצלחה עם חתימה!" : "דיווח נשמר וממתין לחתימה", Severity.Success);
             newEntry = new TE();
             workDate = DateTime.Today;
             signatureInitialized = false; // re-init canvas on next render
+
+            Nav.NavigateTo("coach/dashboard");
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
         finally { submitting = false; }

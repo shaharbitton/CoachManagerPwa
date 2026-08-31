@@ -70,6 +70,11 @@
             {
                 <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Approve(context))" OnClickStopPropagation>אשר לתשלום</MudButton>
             }
+            @if (context.Status == "Pending_Signature")
+            {
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.PriceCheck"
+                           OnClick="@(() => Approve(context))" OnClickStopPropagation>אשר לתשלום (ללא חתימה)</MudButton>
+            }
             @if (context.Status == "Admin_Approved")
             {
                 <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => MarkPaid(context))" OnClickStopPropagation>סמן כשולם</MudButton>
