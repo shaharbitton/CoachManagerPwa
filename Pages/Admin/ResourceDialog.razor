@@ -52,7 +52,8 @@
             var fileBytes = ms.ToArray();
 
             var ext = Path.GetExtension(file.Name);
-            var fileName = $"resources/{Resource.SkillCategory ?? "general"}/{DateTime.UtcNow:yyyyMMdd_HHmmss}_{file.Name}";
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+            var fileName = $"resources/{Resource.SkillCategory ?? "general"}/{timestamp}_{Guid.NewGuid():N}{ext}";
 
             await SupabaseClient.Storage.From("resources").Upload(fileBytes, fileName, new Supabase.Storage.FileOptions
             {

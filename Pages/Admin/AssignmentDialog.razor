@@ -7,12 +7,8 @@
     <DialogContent>
         <MudGrid>
             <MudItem xs="12">
-                <MudSelect T="string" Value="Assignment.CoachId" ValueChanged="OnCoachChanged" Label="מאמן" Variant="Variant.Outlined" Required="true">
-                    @foreach (var c in Coaches)
-                    {
-                        <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
-                    }
-                </MudSelect>
+                <MudAutocomplete T="Coach" @bind-Value="selectedCoach" Label="מאמן" Variant="Variant.Outlined" Required="true"
+                                 ToStringFunc="CoachToString" SearchFunc="SearchCoaches" CoerceText="true" />
             </MudItem>
             @if (recommendedCoaches.Any())
             {
@@ -23,13 +19,10 @@
                     </MudAlert>
                 </MudItem>
             }
+ 
             <MudItem xs="12">
-                <MudSelect T="string" Value="Assignment.ClientId" ValueChanged="OnClientChanged" Label="לקוח / מוסד" Variant="Variant.Outlined" Required="true">
-                    @foreach (var c in Clients)
-                    {
-                        <MudSelectItem Value="@c.ClientId">@c.ClientName</MudSelectItem>
-                    }
-                </MudSelect>
+                <MudAutocomplete T="ClientOrg" @bind-Value="selectedClient" Label="לקוח / מוסד" Variant="Variant.Outlined" Required="true"
+                                 ToStringFunc="ClientToString" SearchFunc="SearchClients" CoerceText="true" />
             </MudItem>
             <MudItem xs="12">
                 <MudSelect T="string" Value="Assignment.ContractId" ValueChanged="OnContractChanged" Label="חוזה לקוח" Variant="Variant.Outlined" Required="true">
@@ -247,6 +240,59 @@
             recommendedCoaches = LocalityService.GetRecommendedCoaches(client.City, Coaches);
         }
     }
+
+    // Autocomplete helpers for coach/client selection
+    private Coach? _selectedCoachForDialog;
+    private Coach? selectedCoach
+    {
+        get => _selectedCoachForDialog ?? Coaches.FirstOrDefault(c => c.CoachId == Assignment.CoachId);
+        set
+        {
+            _selectedCoachForDialog = value;
+            var id = _selectedCoachForDialog?.CoachId;
+            if (Assignment.CoachId != id)
+            {
+                // trigger existing change handler
+                _ = OnCoachChanged(id ?? string.Empty);
+            }
+        }
+    }
+
+    private ClientOrg? _selectedClientForDialog;
+    private ClientOrg? selectedClient
+    {
+        get => _selectedClientForDialog ?? Clients.FirstOrDefault(c => c.ClientId == Assignment.ClientId);
+        set
+        {
+            _selectedClientForDialog = value;
+            var id = _selectedClientForDialog?.ClientId;
+            if (Assignment.ClientId != id)
+            {
+                _ = OnClientChanged(id ?? string.Empty);
+            }
+        }
+    }
+
+    private Task<IEnumerable<Coach>> SearchCoaches(string value, System.Threading.CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return Task.FromResult(Coaches.AsEnumerable());
+        var q = value.Trim();
+        var result = Coaches.Where(c => (c.FirstName + " " + c.LastName).StartsWith(q, StringComparison.OrdinalIgnoreCase)
+                                       || c.FirstName.StartsWith(q, StringComparison.OrdinalIgnoreCase)
+                                       || c.LastName.StartsWith(q, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(result.AsEnumerable());
+    }
+
+    private Task<IEnumerable<ClientOrg>> SearchClients(string value, System.Threading.CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return Task.FromResult(Clients.AsEnumerable());
+        var q = value.Trim();
+        var result = Clients.Where(c => c.ClientName.StartsWith(q, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(result.AsEnumerable());
+    }
+
+    private string CoachToString(Coach? c) => c is null ? string.Empty : c.FirstName + " " + c.LastName;
+    private string ClientToString(ClientOrg? c) => c is null ? string.Empty : c.ClientName;
 
     private void OnContractChanged(string? contractId)
     {

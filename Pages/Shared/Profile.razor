@@ -320,7 +320,8 @@ else if (activeTab == 2)
             var fileBytes = ms.ToArray();
 
             var ext = Path.GetExtension(selectedFile.Name);
-            var fileName = $"{AppState.CurrentUserId}/{newDocType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}{ext}";
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+            var fileName = $"{AppState.CurrentUserId}/doc_{newDocType}_{timestamp}{ext}";
 
             await SupabaseClient.Storage.From("documents").Upload(fileBytes, fileName, new Supabase.Storage.FileOptions
             {

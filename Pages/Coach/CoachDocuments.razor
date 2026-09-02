@@ -312,7 +312,8 @@ else
             var fileBytes = ms.ToArray();
 
             var ext = Path.GetExtension(selectedFile.Name);
-            var fileName = $"{AppState.CurrentUserId}/{newDoc.DocType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}{ext}";
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+            var fileName = $"{AppState.CurrentUserId}/doc_{newDoc.DocType}_{timestamp}{ext}";
 
             await SupabaseClient.Storage.From("documents").Upload(fileBytes, fileName, new Supabase.Storage.FileOptions
             {

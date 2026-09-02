@@ -12,15 +12,11 @@
 
 <MudGrid Class="mb-4">
     <MudItem xs="12" sm="6">
-        <MudSelect T="string" Value="selectedCoachId" ValueChanged="LoadDocs" Label="בחר מאמן" Variant="Variant.Outlined" Clearable="true">
-            @foreach (var c in coaches)
-            {
-                <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
-            }
-        </MudSelect>
+        <MudAutocomplete T="Coach" @bind-Value="selectedCoach" Label="בחר מאמן" Variant="Variant.Outlined" Clearable="true" Dense="true"
+                         ToStringFunc="CoachToString" SearchFunc="SearchCoaches" CoerceText="true" />
     </MudItem>
     <MudItem xs="12" sm="6" Class="d-flex align-end">
-        @if (!string.IsNullOrEmpty(selectedCoachId))
+        @if (selectedCoach != null)
         {
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Upload" OnClick="OpenUploadDialog">
                 העלאת מסמך חדש
@@ -29,7 +25,7 @@
     </MudItem>
 </MudGrid>
 
-@if (!string.IsNullOrEmpty(selectedCoachId))
+@if (selectedCoach != null)
 {
     @if (loading)
     {
@@ -223,7 +219,16 @@
     private List<Coach> coaches = new();
     private List<CoachDocument> documents = new();
     private List<AppUser> users = new();
-    private string selectedCoachId = "";
+    private Coach? _selectedCoach;
+    private Coach? selectedCoach
+    {
+        get => _selectedCoach;
+        set
+        {
+            _selectedCoach = value;
+            LoadDocs(value?.CoachId ?? "");
+        }
+    }
     private string? expandedDocId;
     private bool loading;
     private Dictionary<string, string> signedUrls = new();
@@ -245,7 +250,7 @@
             foreach (var type in AllDocTypes)
             {
                 if (!existingTypes.Contains(type))
-                    result.Add(new CoachDocument { DocId = $"__missing__{type}", CoachId = selectedCoachId, DocType = type, Status = "Missing" });
+                    result.Add(new CoachDocument { DocId = $"__missing__{type}", CoachId = selectedCoach?.CoachId ?? "", DocType = type, Status = "Missing" });
             }
             return result;
         }
@@ -271,19 +276,31 @@
 
         if (!string.IsNullOrEmpty(CoachIdParam) && coaches.Any(c => c.CoachId == CoachIdParam))
         {
-            await LoadDocs(CoachIdParam);
+            selectedCoach = coaches.First(c => c.CoachId == CoachIdParam);
         }
     }
 
     private async Task LoadDocs(string coachId)
     {
-        selectedCoachId = coachId;
         expandedDocId = null;
         if (string.IsNullOrEmpty(coachId)) { documents.Clear(); return; }
         loading = true;
         try { documents = await Data.GetDocumentsByCoachAsync(coachId); } catch { }
         finally { loading = false; }
     }
+
+    private Task<IEnumerable<Coach>> SearchCoaches(string value, System.Threading.CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(coaches.AsEnumerable());
+        var q = value.Trim();
+        var result = coaches.Where(c => (c.FirstName + " " + c.LastName).StartsWith(q, StringComparison.OrdinalIgnoreCase)
+                                       || c.FirstName.StartsWith(q, StringComparison.OrdinalIgnoreCase)
+                                       || c.LastName.StartsWith(q, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(result.AsEnumerable());
+    }
+
+    private string CoachToString(Coach? c) => c is null ? string.Empty : c.FirstName + " " + c.LastName;
 
     private async void OnRowClicked(TableRowClickEventArgs<CoachDocument> args)
     {
@@ -327,7 +344,7 @@
 
     private void OpenUploadDialog()
     {
-        newDoc = new CoachDocument { CoachId = selectedCoachId };
+        newDoc = new CoachDocument { CoachId = selectedCoach?.CoachId ?? "" };
         expirationDate = null;
         selectedFile = null;
         uploading = false;
@@ -352,8 +369,10 @@
             var fileBytes = ms.ToArray();
 
             // Upload to Supabase Storage
+            // Use ASCII-safe filename: coach_id/doc_type_timestamp.ext
             var ext = Path.GetExtension(selectedFile.Name);
-            var fileName = $"{selectedCoachId}/{newDoc.DocType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}{ext}";
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+            var fileName = $"{selectedCoach?.CoachId}/doc_{newDoc.DocType}_{timestamp}{ext}";
 
             await SupabaseClient.Storage.From("documents").Upload(fileBytes, fileName, new Supabase.Storage.FileOptions
             {

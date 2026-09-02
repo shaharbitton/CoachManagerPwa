@@ -29,20 +29,12 @@
 
 <MudGrid Class="mb-4">
     <MudItem xs="12" sm="4">
-        <MudSelect T="string" @bind-Value="coachFilter" Label="מאמן" Variant="Variant.Outlined" Clearable="true" Dense="true">
-            @foreach (var c in coaches)
-            {
-                <MudSelectItem Value="@c.CoachId">@c.FirstName @c.LastName</MudSelectItem>
-            }
-        </MudSelect>
+        <MudAutocomplete T="Coach" @bind-Value="selectedCoach" Label="מאמן" Variant="Variant.Outlined" Clearable="true" Dense="true"
+                         ToStringFunc="CoachToString" SearchFunc="SearchCoaches" CoerceText="true" />
     </MudItem>
     <MudItem xs="12" sm="4">
-        <MudSelect T="string" @bind-Value="clientFilter" Label="לקוח" Variant="Variant.Outlined" Clearable="true" Dense="true">
-            @foreach (var cl in clients)
-            {
-                <MudSelectItem Value="@cl.ClientId">@cl.ClientName</MudSelectItem>
-            }
-        </MudSelect>
+        <MudAutocomplete T="ClientOrg" @bind-Value="selectedClient" Label="לקוח" Variant="Variant.Outlined" Clearable="true" Dense="true"
+                         ToStringFunc="ClientToString" SearchFunc="SearchClients" CoerceText="true" />
     </MudItem>
 </MudGrid>
 
@@ -130,6 +122,26 @@
     private List<Assignment> assignments = new();
     private List<Coach> coaches = new();
     private List<ClientOrg> clients = new();
+    private Coach? _selectedCoach;
+    private Coach? selectedCoach
+    {
+        get => _selectedCoach;
+        set
+        {
+            _selectedCoach = value;
+            coachFilter = _selectedCoach?.CoachId;
+        }
+    }
+    private ClientOrg? _selectedClient;
+    private ClientOrg? selectedClient
+    {
+        get => _selectedClient;
+        set
+        {
+            _selectedClient = value;
+            clientFilter = _selectedClient?.ClientId;
+        }
+    }
     private List<TimeEntry> timeEntries = new();
     private List<CoachRate> allRates = new();
     private List<ClientContract> allContracts = new();
@@ -200,11 +212,40 @@
                 .GroupBy(u => u.UserId)
                 .ToDictionary(g => g.Key, g => g.First().Email);
 
+            // Restore autocomplete selection if filters were preset
+            if (!string.IsNullOrEmpty(coachFilter))
+                selectedCoach = coaches.FirstOrDefault(c => c.CoachId == coachFilter);
+            if (!string.IsNullOrEmpty(clientFilter))
+                selectedClient = clients.FirstOrDefault(c => c.ClientId == clientFilter);
+
             lastLoaded = DateTime.Now;
         }
         catch { }
         finally { loading = false; }
     }
+
+    private Task<IEnumerable<Coach>> SearchCoaches(string value, System.Threading.CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(coaches.AsEnumerable());
+        var q = value.Trim();
+        var result = coaches.Where(c => (c.FirstName + " " + c.LastName).StartsWith(q, StringComparison.OrdinalIgnoreCase)
+                                       || c.FirstName.StartsWith(q, StringComparison.OrdinalIgnoreCase)
+                                       || c.LastName.StartsWith(q, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(result.AsEnumerable());
+    }
+
+    private Task<IEnumerable<ClientOrg>> SearchClients(string value, System.Threading.CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(clients.AsEnumerable());
+        var q = value.Trim();
+        var result = clients.Where(c => c.ClientName.StartsWith(q, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(result.AsEnumerable());
+    }
+
+    private string CoachToString(Coach? c) => c is null ? string.Empty : c.FirstName + " " + c.LastName;
+    private string ClientToString(ClientOrg? c) => c is null ? string.Empty : c.ClientName;
 
     private string GetEngagementName(Assignment a)
     {

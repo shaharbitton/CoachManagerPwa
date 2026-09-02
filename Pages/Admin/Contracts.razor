@@ -7,14 +7,10 @@
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">חוזי התקשרות עם לקוחות</MudText>
 <MudAlert Severity="Severity.Info" Dense="true" Class="mb-4">מידע זה חסום לחלוטין לצפיית מאמנים - נגיש למנהלים בלבד</MudAlert>
 
-<MudSelect T="string" Value="selectedClientId" ValueChanged="LoadContracts" Label="בחר לקוח" Variant="Variant.Outlined" Class="mb-4">
-    @foreach (var c in clients)
-    {
-        <MudSelectItem Value="@c.ClientId">@c.ClientName</MudSelectItem>
-    }
-</MudSelect>
+<MudAutocomplete T="ClientOrg" @bind-Value="selectedClient" Label="בחר לקוח" Variant="Variant.Outlined" Clearable="true" Dense="true"
+                 ToStringFunc="ClientToString" SearchFunc="SearchClients" CoerceText="true" Class="mb-4" />
 
-@if (!string.IsNullOrEmpty(selectedClientId))
+@if (selectedClient != null)
 {
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
         <MudText Typo="Typo.h6">הסכמים פעילים</MudText>
@@ -74,7 +70,16 @@
 @code {
     private List<ClientOrg> clients = new();
     private List<ClientContract> contracts = new();
-    private string selectedClientId = "";
+    private ClientOrg? _selectedClient;
+    private ClientOrg? selectedClient
+    {
+        get => _selectedClient;
+        set
+        {
+            _selectedClient = value;
+            LoadContracts(value?.ClientId ?? "");
+        }
+    }
     private string? expandedContractId;
 
     private static readonly string[] DayOrder = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -96,14 +101,24 @@
 
     private async Task LoadContracts(string clientId)
     {
-        selectedClientId = clientId;
-        if (string.IsNullOrEmpty(clientId)) return;
+        if (string.IsNullOrEmpty(clientId)) { contracts.Clear(); return; }
         try { contracts = await Data.GetContractsByClientAsync(clientId); } catch { }
     }
 
+    private Task<IEnumerable<ClientOrg>> SearchClients(string value, System.Threading.CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(clients.AsEnumerable());
+        var q = value.Trim();
+        var result = clients.Where(c => c.ClientName.StartsWith(q, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(result.AsEnumerable());
+    }
+
+    private string ClientToString(ClientOrg? c) => c is null ? string.Empty : c.ClientName;
+
     private async Task AddContract()
     {
-        var contract = new ClientContract { ClientId = selectedClientId };
+        var contract = new ClientContract { ClientId = selectedClient?.ClientId ?? "" };
         var parameters = new DialogParameters<ContractDialog> { { x => x.Contract, contract }, { x => x.IsNew, true } };
         var dialog = await Dialog.ShowAsync<ContractDialog>("הוספת הסכם", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
         var result = await dialog.Result;
@@ -112,7 +127,7 @@
             try
             {
                 await Data.CreateContractAsync(newContract);
-                contracts = await Data.GetContractsByClientAsync(selectedClientId);
+                contracts = await Data.GetContractsByClientAsync(selectedClient?.ClientId ?? "");
                 Snackbar.Add("הסכם נוסף", Severity.Success);
             }
             catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
@@ -129,7 +144,7 @@
             try
             {
                 await Data.UpdateContractAsync(updated);
-                contracts = await Data.GetContractsByClientAsync(selectedClientId);
+                contracts = await Data.GetContractsByClientAsync(selectedClient?.ClientId ?? "");
                 Snackbar.Add("הסכם עודכן", Severity.Success);
             }
             catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
@@ -141,7 +156,7 @@
         try
         {
             await Data.DeleteContractAsync(contract.ContractId);
-            contracts = await Data.GetContractsByClientAsync(selectedClientId);
+            contracts = await Data.GetContractsByClientAsync(selectedClient?.ClientId ?? "");
             Snackbar.Add("הסכם נמחק", Severity.Success);
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
