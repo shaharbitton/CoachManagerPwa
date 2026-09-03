@@ -7,7 +7,7 @@
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">חוזי התקשרות עם לקוחות</MudText>
 <MudAlert Severity="Severity.Info" Dense="true" Class="mb-4">מידע זה חסום לחלוטין לצפיית מאמנים - נגיש למנהלים בלבד</MudAlert>
 
-<MudAutocomplete T="ClientOrg" @bind-Value="selectedClient" Label="בחר לקוח" Variant="Variant.Outlined" Clearable="true" Dense="true"
+<MudAutocomplete T="ClientOrg" Value="selectedClient" ValueChanged="OnClientSelectedChanged" Label="בחר לקוח" Variant="Variant.Outlined" Clearable="true" Dense="true"
                  ToStringFunc="ClientToString" SearchFunc="SearchClients" CoerceText="true" Class="mb-4" />
 
 @if (selectedClient != null)
@@ -17,7 +17,7 @@
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="AddContract">הוסף הסכם</MudButton>
     </MudStack>
 
-    <MudTable Items="contracts" Hover="true" Elevation="2" Dense="true" T="ClientContract" OnRowClick="OnRowClicked">
+    <MudTable Items="contracts ?? new List<ClientContract>()" Hover="true" Elevation="2" Dense="true" T="ClientContract" OnRowClick="OnRowClicked" Loading="loadingContracts">
         <HeaderContent>
             <MudTh>שם התקשרות</MudTh>
             <MudTh>תעריף חיוב (₪/שעה)</MudTh>
@@ -70,17 +70,9 @@
 @code {
     private List<ClientOrg> clients = new();
     private List<ClientContract> contracts = new();
-    private ClientOrg? _selectedClient;
-    private ClientOrg? selectedClient
-    {
-        get => _selectedClient;
-        set
-        {
-            _selectedClient = value;
-            LoadContracts(value?.ClientId ?? "");
-        }
-    }
+    private ClientOrg? selectedClient;
     private string? expandedContractId;
+    private bool loadingContracts;
 
     private static readonly string[] DayOrder = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     private static readonly Dictionary<string, string> DayNames = new()
@@ -99,10 +91,37 @@
         try { clients = await Data.GetClientsAsync(); } catch { }
     }
 
+    private async Task OnClientSelectedChanged(ClientOrg? client)
+    {
+        selectedClient = client;
+        await LoadContracts(client?.ClientId ?? "");
+    }
+
     private async Task LoadContracts(string clientId)
     {
-        if (string.IsNullOrEmpty(clientId)) { contracts.Clear(); return; }
-        try { contracts = await Data.GetContractsByClientAsync(clientId); } catch { }
+        expandedContractId = null;
+        if (string.IsNullOrEmpty(clientId))
+        {
+            contracts = new();
+            return;
+        }
+
+        loadingContracts = true;
+        try
+        {
+            contracts = await Data.GetContractsByClientAsync(clientId) ?? new List<ClientContract>();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            contracts = new();
+            Snackbar.Add($"שגיאה בטעינת חוזים: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loadingContracts = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private Task<IEnumerable<ClientOrg>> SearchClients(string value, System.Threading.CancellationToken cancellationToken)
@@ -127,7 +146,7 @@
             try
             {
                 await Data.CreateContractAsync(newContract);
-                contracts = await Data.GetContractsByClientAsync(selectedClient?.ClientId ?? "");
+                contracts = await Data.GetContractsByClientAsync(selectedClient?.ClientId ?? "") ?? new List<ClientContract>();
                 Snackbar.Add("הסכם נוסף", Severity.Success);
             }
             catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
@@ -144,7 +163,7 @@
             try
             {
                 await Data.UpdateContractAsync(updated);
-                contracts = await Data.GetContractsByClientAsync(selectedClient?.ClientId ?? "");
+                contracts = await Data.GetContractsByClientAsync(selectedClient?.ClientId ?? "") ?? new List<ClientContract>();
                 Snackbar.Add("הסכם עודכן", Severity.Success);
             }
             catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
@@ -156,7 +175,7 @@
         try
         {
             await Data.DeleteContractAsync(contract.ContractId);
-            contracts = await Data.GetContractsByClientAsync(selectedClient?.ClientId ?? "");
+            contracts = await Data.GetContractsByClientAsync(selectedClient?.ClientId ?? "") ?? new List<ClientContract>();
             Snackbar.Add("הסכם נמחק", Severity.Success);
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
