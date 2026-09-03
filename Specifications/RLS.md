@@ -292,3 +292,15 @@ CREATE POLICY "Allow authenticated read from resources"
 ON storage.objects FOR SELECT
 TO authenticated
 USING (bucket_id = 'resources');
+
+-- ==========================================
+-- 9. Time Entry Immutability Policy (v3.1+)
+-- ==========================================
+-- See: migrations/006_immutable_billed_paid_time_entries.sql
+-- 
+-- Billed_Paid records are immutable:
+-- - Coaches cannot UPDATE/DELETE Billed_Paid entries
+-- - Admins also restricted at RLS level (with service-layer validation as fallback)
+-- - Backend service layer provides user-friendly error messages
+-- - Future: Add audit_role that CAN modify if corrections needed
+USING (bucket_id = 'resources');

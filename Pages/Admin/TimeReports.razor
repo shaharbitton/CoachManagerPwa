@@ -27,7 +27,8 @@
     <MudChip Value="@("Pending_Signature")" Color="Color.Warning">ממתין לחתימה</MudChip>
     <MudChip Value="@("Client_Approved")" Color="Color.Info">נחתם ע"י לקוח</MudChip>
     <MudChip Value="@("Admin_Approved")" Color="Color.Success">מאושר לתשלום</MudChip>
-    <MudChip Value="@("Billed_Paid")" Color="Color.Default">שולם</MudChip>
+    <MudChip Value="@("Rejected")" Color="Color.Error">דחוי</MudChip>
+    <MudChip Value="@("Billed_Paid")" Color="Color.Default" Icon="@Icons.Material.Filled.Lock">שולם — סופיי</MudChip>
 </MudChipSet>
 
 <MudTable Items="FilteredEntries" Hover="true" Elevation="2" Dense="true" Loading="loading" OnRowClick="OnRowClicked" T="TimeEntry" RowStyle="cursor:pointer;">
@@ -48,7 +49,20 @@
         <MudTd DataLabel="תאריך ביצוע">@context.WorkDate.ToString("dd/MM/yyyy")</MudTd>
         <MudTd DataLabel="תאריך הזנה">@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
         <MudTd DataLabel="שעות">@context.HoursReported</MudTd>
-        <MudTd DataLabel="סטטוס"><MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@GetStatusText(context.Status)</MudChip></MudTd>
+        <MudTd DataLabel="סטטוס">
+            @if (context.Status == "Billed_Paid")
+            {
+                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)" Icon="@Icons.Material.Filled.Lock">
+                    @GetStatusText(context.Status)
+                </MudChip>
+            }
+            else
+            {
+                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                    @GetStatusText(context.Status)
+                </MudChip>
+            }
+        </MudTd>
         <MudTd DataLabel="חתימה">
             <MudIcon Icon="@(HasValidSignature(context) ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
                      Color="@(HasValidSignature(context) ? Color.Success : Color.Error)" Size="Size.Small" />
@@ -76,6 +90,12 @@
             @if (context.Status == "Rejected")
             {
                 <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info" OnClick="@(() => Reopen(context))" OnClickStopPropagation>פתח מחדש</MudButton>
+            }
+            @if (context.Status == "Billed_Paid")
+            {
+                <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Lock" Color="Color.Default">
+                    ☑ סופיי — לא ניתן לעדכן
+                </MudChip>
             }
         </MudTd>
     </RowTemplate>

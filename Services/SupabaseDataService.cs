@@ -365,6 +365,23 @@ public class SupabaseDataService : IDataService
     public async Task<TimeEntry> UpdateTimeEntryAsync(TimeEntry entry)
     {
         await EnsureInitializedAsync();
+
+        // Prevent modification of finalized (Billed_Paid) entries
+        if (entry.Status == "Billed_Paid")
+        {
+            throw new ImmutableTimeEntryException(entry.EntryId, "modify");
+        }
+
+        // Also check if the existing entry is already Billed_Paid
+        var existing = await _client.From<TimeEntry>()
+            .Where(t => t.EntryId == entry.EntryId)
+            .Get();
+
+        if (existing.Models.FirstOrDefault()?.Status == "Billed_Paid")
+        {
+            throw new ImmutableTimeEntryException(entry.EntryId, "modify");
+        }
+
         var response = await _client.From<TimeEntry>().Update(entry);
         return response.Models.First();
     }
@@ -372,6 +389,18 @@ public class SupabaseDataService : IDataService
     public async Task DeleteTimeEntryAsync(string entryId)
     {
         await EnsureInitializedAsync();
+
+        // Prevent deletion of finalized (Billed_Paid) entries
+        var existing = await _client.From<TimeEntry>()
+            .Where(t => t.EntryId == entryId)
+            .Get();
+
+        var entry = existing.Models.FirstOrDefault();
+        if (entry?.Status == "Billed_Paid")
+        {
+            throw new ImmutableTimeEntryException(entryId, "delete");
+        }
+
         await _client.From<TimeEntry>()
             .Where(t => t.EntryId == entryId)
             .Delete();
