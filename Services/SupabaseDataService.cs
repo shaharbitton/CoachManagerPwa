@@ -551,6 +551,14 @@ public class SupabaseDataService : IDataService
         return response.Models.First();
     }
 
+    public async Task DeleteCoachContractAsync(string contractId)
+    {
+        await EnsureInitializedAsync();
+        await _client.From<CoachAssignmentContract>()
+            .Where(c => c.Id == contractId)
+            .Delete();
+    }
+
     // ===== Document Type Configuration =====
 
     public async Task<List<DocumentTypeConfig>> GetDocumentTypeConfigsAsync()

@@ -61,15 +61,21 @@
             @if (context.Status == "Client_Approved")
             {
                 <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Approve(context))" OnClickStopPropagation>אשר לתשלום</MudButton>
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => Reject(context))" OnClickStopPropagation>דחייה</MudButton>
             }
             @if (context.Status == "Pending_Signature")
             {
                 <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.PriceCheck"
                            OnClick="@(() => Approve(context))" OnClickStopPropagation>אשר לתשלום (ללא חתימה)</MudButton>
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => Reject(context))" OnClickStopPropagation>דחייה</MudButton>
             }
             @if (context.Status == "Admin_Approved")
             {
                 <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => MarkPaid(context))" OnClickStopPropagation>סמן כשולם</MudButton>
+            }
+            @if (context.Status == "Rejected")
+            {
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info" OnClick="@(() => Reopen(context))" OnClickStopPropagation>פתח מחדש</MudButton>
             }
         </MudTd>
     </RowTemplate>
@@ -290,6 +296,28 @@
         catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
 
+    private async Task Reject(TimeEntry entry)
+    {
+        entry.Status = "Rejected";
+        try
+        {
+            await Data.UpdateTimeEntryAsync(entry);
+            Snackbar.Add("דיווח דחוי בהצלחה", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task Reopen(TimeEntry entry)
+    {
+        entry.Status = "Pending_Signature";
+        try
+        {
+            await Data.UpdateTimeEntryAsync(entry);
+            Snackbar.Add("דיווח פתוח מחדש לתיקון", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
+    }
+
     private static bool HasValidSignature(TimeEntry entry) =>
         !string.IsNullOrWhiteSpace(entry.SignatureUrl)
         && entry.SignatureUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase);
@@ -300,6 +328,7 @@
         "Client_Approved" => Color.Info,
         "Admin_Approved" => Color.Success,
         "Billed_Paid" => Color.Default,
+        "Rejected" => Color.Error,
         _ => Color.Default
     };
 
@@ -309,6 +338,7 @@
         "Client_Approved" => "נחתם",
         "Admin_Approved" => "מאושר",
         "Billed_Paid" => "שולם",
+        "Rejected" => "דחוי",
         _ => s
     };
 }

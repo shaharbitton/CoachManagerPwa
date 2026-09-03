@@ -420,15 +420,32 @@
     {
         var linkedEntries = timeEntries.Where(e => e.AssignId == assignment.AssignId).ToList();
         var linkedRates = allRates.Where(r => r.AssignId == assignment.AssignId).ToList();
+        var linkedContracts = await Data.GetContractsByAssignmentAsync(assignment.AssignId);
+
+        // Check if any contracts are signed
+        var signedContracts = linkedContracts.Where(c => c.Status == "Signed").ToList();
+        if (signedContracts.Any())
+        {
+            var msg = "לא ניתן למחוק שיבוץ שיש לו חוזה חתום.\n\n";
+            msg += $"יש {signedContracts.Count} חוזה/חוזים חתומים:";
+            foreach (var contract in signedContracts)
+            {
+                msg += $"\n• חוזה מ-{contract.CreatedAt:dd/MM/yyyy}";
+            }
+            Snackbar.Add(msg, Severity.Error);
+            return;
+        }
 
         var lines = new List<string>();
-        if (linkedEntries.Any() || linkedRates.Any())
+        if (linkedEntries.Any() || linkedRates.Any() || linkedContracts.Any())
         {
             lines.Add("מחיקת שיבוץ זה תשפיע על:");
             if (linkedEntries.Any())
                 lines.Add($"• {linkedEntries.Count} דיווחי שעות");
             if (linkedRates.Any())
                 lines.Add($"• {linkedRates.Count} תעריפים מקושרים");
+            if (linkedContracts.Any())
+                lines.Add($"• {linkedContracts.Count} חוזים לא חתומים");
             lines.Add("");
             lines.Add("כל הרשומות המקושרות יימחקו. להמשיך?");
         }
@@ -456,6 +473,10 @@
             // Delete linked rates
             foreach (var rate in linkedRates)
                 await Data.DeleteRateAsync(rate.RateId);
+
+            // Delete linked unsigned contracts
+            foreach (var contract in linkedContracts.Where(c => c.Status != "Signed"))
+                await Data.DeleteCoachContractAsync(contract.Id);
 
             await Data.DeleteAssignmentAsync(assignment.AssignId);
 
@@ -528,6 +549,10 @@
                 {
                     var pending = coachContracts.First(x => x.AssignId == assignment.AssignId && x.Status == "Pending");
                     await JS.InvokeVoidAsync("contractPdf.preview", pending.HtmlContent);
+                }
+                else if (action == "regenerate")
+                {
+                    await RegenerateContractAsync(assignment);
                 }
             }
             return;
@@ -619,6 +644,74 @@
         catch (Exception ex)
         {
             Snackbar.Add($"שגיאה בשליחת מייל: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task RegenerateContractAsync(Assignment assignment)
+    {
+        var oldContract = coachContracts.FirstOrDefault(x => x.AssignId == assignment.AssignId && x.Status == "Pending");
+        if (oldContract == null)
+        {
+            Snackbar.Add("לא נמצא חוזה ממתין לחתימה", Severity.Error);
+            return;
+        }
+
+        var coach = coaches.FirstOrDefault(c => c.CoachId == assignment.CoachId);
+        var client = clients.FirstOrDefault(c => c.ClientId == assignment.ClientId);
+        if (coach == null || client == null)
+        {
+            Snackbar.Add("נתוני מאמן/לקוח חסרים", Severity.Error);
+            return;
+        }
+
+        var clientContract = !string.IsNullOrEmpty(assignment.ContractId)
+            ? allContracts.FirstOrDefault(c => c.ContractId == assignment.ContractId)
+            : null;
+
+        // Get coach rate
+        decimal rate = 0;
+        if (!string.IsNullOrEmpty(assignment.CoachRateId))
+        {
+            var r = allRates.FirstOrDefault(x => x.RateId == assignment.CoachRateId);
+            if (r != null) rate = r.HourlyRate;
+        }
+        else
+        {
+            var r = allRates.Where(x => x.CoachId == assignment.CoachId && x.AssignId == assignment.AssignId)
+                .OrderByDescending(x => x.EffectiveFrom).FirstOrDefault()
+                ?? allRates.Where(x => x.CoachId == assignment.CoachId && x.AssignId == null)
+                .OrderByDescending(x => x.EffectiveFrom).FirstOrDefault();
+            if (r != null) rate = r.HourlyRate;
+        }
+
+        try
+        {
+            // Generate new contract with updated data
+            var html = await ContractGenerator.GenerateHtmlAsync(assignment, coach, client, clientContract, rate);
+
+            // Delete the old contract
+            await Data.DeleteCoachContractAsync(oldContract.Id);
+            coachContracts.Remove(oldContract);
+
+            // Create a new contract with updated content
+            var newContract = new CoachAssignmentContract
+            {
+                AssignId = assignment.AssignId,
+                CoachId = assignment.CoachId,
+                ClientId = assignment.ClientId,
+                CoachRate = rate,
+                AllocatedHours = assignment.AllocatedHours,
+                HtmlContent = html,
+                Status = "Pending"
+            };
+
+            var createdContract = await Data.CreateCoachContractAsync(newContract);
+            coachContracts.Add(createdContract);
+            Snackbar.Add($"חוזה של {coach.FirstName} {coach.LastName} נוצר מחדש בהצלחה", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאה בעדכון החוזה: {ex.Message}", Severity.Error);
         }
     }
 }

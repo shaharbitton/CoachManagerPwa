@@ -32,7 +32,7 @@ assignment_status_enum
 Active, Completed, Cancelled
 סטטוס פעילות של שיבוץ מאמן לפרויקט מול מוסד.
 time_entry_status_enum
-Pending_Signature, Client_Approved, Admin_Approved, Billed_Paid
+Pending_Signature, Client_Approved, Admin_Approved, Billed_Paid, Rejected
 מחזור החיים של דיווח שעות: מחתימה בשטח, דרך אישור הנהלה ועד חיוב ושכר.
 
 -- Enable UUID Extension
@@ -44,7 +44,7 @@ CREATE TYPE doc_type_enum AS ENUM ('National_ID_Card', 'Police_Clearance', 'Cert
 CREATE TYPE doc_status_enum AS ENUM ('Pending_Review', 'Approved', 'Rejected');
 CREATE TYPE client_type_enum AS ENUM ('School', 'Community_Center', 'NGO', 'Private_Client');
 CREATE TYPE assignment_status_enum AS ENUM ('Active', 'Completed', 'Cancelled');
-CREATE TYPE time_entry_status_enum AS ENUM ('Pending_Signature', 'Client_Approved', 'Admin_Approved', 'Billed_Paid');
+CREATE TYPE time_entry_status_enum AS ENUM ('Pending_Signature', 'Client_Approved', 'Admin_Approved', 'Billed_Paid', 'Rejected');
 
 
 
