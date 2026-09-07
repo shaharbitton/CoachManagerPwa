@@ -47,7 +47,8 @@ jobs:
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages deploy ./publish/wwwroot \
-            --project-name=coachmanagerpwa
+            --project-name=coachmanagerpwa \
+            --branch=master
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
