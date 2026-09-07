@@ -1,4 +1,14 @@
-navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });
+// Service worker offline support disabled: it conflicted with Cloudflare Pages'
+// redirect handling on navigation requests. Actively unregister any previously
+// installed service worker so existing visitors don't keep hitting the old bug.
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (const registration of registrations) {
+            registration.unregister();
+        }
+    });
+    caches?.keys().then(keys => keys.forEach(key => caches.delete(key)));
+}
 
 // ===== Signature Pad (Canvas) =====
 window.signaturePad = {
