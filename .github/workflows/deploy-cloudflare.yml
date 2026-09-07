@@ -56,4 +56,4 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "✅ Deployment to Cloudflare Pages completed!"
-          echo "🔗 Your app is live at: https://coachmanagerpwa.pages.dev"
+          echo "🔗 Your app is live at: https://arcanisrael.pages.dev"
