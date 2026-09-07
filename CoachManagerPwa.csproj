@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include=".github\workflows\deploy-cloudflare.yml" />
     <None Include=".github\workflows\deploy-ghpages.yml" />
   </ItemGroup>
 
