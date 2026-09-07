@@ -51,5 +51,12 @@ async function onFetch(event) {
         cachedResponse = await cache.match(request);
     }
 
-    return cachedResponse || fetch(event.request);
+    // Navigation requests have redirect mode "manual", which throws if the
+    // network response ends up being a redirect (e.g. Cloudflare https/trailing-slash
+    // redirects). Rebuild the request with redirect: 'follow' to avoid that.
+    const networkRequest = event.request.mode === 'navigate'
+        ? new Request(event.request.url, { headers: event.request.headers, method: event.request.method, redirect: 'follow' })
+        : event.request;
+
+    return cachedResponse || fetch(networkRequest);
 }
