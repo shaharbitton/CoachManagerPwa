@@ -636,4 +636,64 @@ public class SupabaseDataService : IDataService
         var response = await _client.From<NotificationAck>().Insert(ack);
         return response.Models.First();
     }
+
+    // ===== Coach Evaluations (Secret HR) =====
+
+    public async Task<List<CoachEvaluation>> GetEvaluationsByCoachAsync(string coachId)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachEvaluation>()
+            .Where(e => e.CoachId == coachId)
+            .Order("eval_date", Postgrest.Constants.Ordering.Descending)
+            .Get();
+        return response.Models;
+    }
+
+    public async Task<CoachEvaluation> CreateEvaluationAsync(CoachEvaluation evaluation)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachEvaluation>().Insert(evaluation);
+        return response.Models.First();
+    }
+
+    public async Task<CoachEvaluation> UpdateEvaluationAsync(CoachEvaluation evaluation)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachEvaluation>().Update(evaluation);
+        return response.Models.First();
+    }
+
+    public async Task DeleteEvaluationAsync(string evalId)
+    {
+        await EnsureInitializedAsync();
+        await _client.From<CoachEvaluation>()
+            .Where(e => e.EvalId == evalId)
+            .Delete();
+    }
+
+    // ===== Coach Attributes (tags) =====
+
+    public async Task<List<CoachAttribute>> GetAttributesByCoachAsync(string coachId)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachAttribute>()
+            .Where(a => a.CoachId == coachId)
+            .Get();
+        return response.Models;
+    }
+
+    public async Task<CoachAttribute> CreateAttributeAsync(CoachAttribute attribute)
+    {
+        await EnsureInitializedAsync();
+        var response = await _client.From<CoachAttribute>().Insert(attribute);
+        return response.Models.First();
+    }
+
+    public async Task DeleteAttributeAsync(string attributeId)
+    {
+        await EnsureInitializedAsync();
+        await _client.From<CoachAttribute>()
+            .Where(a => a.AttributeId == attributeId)
+            .Delete();
+    }
 }

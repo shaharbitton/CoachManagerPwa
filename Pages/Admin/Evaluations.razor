@@ -1,6 +1,7 @@
 @page "/admin/evaluations"
 @inject IDataService Data
 @inject ISnackbar Snackbar
+@inject AppState AppState
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">הערכות מאמנים - תיק סודי</MudText>
 <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-4">מידע HR סודי - אינו נגיש למאמנים</MudAlert>
@@ -18,19 +19,82 @@
     @if (activeTab == 0)
     {
         <MudText Typo="Typo.subtitle1" Class="mb-2">יומן הערכות</MudText>
-        <MudText Color="Color.Default">טעינת הערכות מהשרת...</MudText>
-        <!-- evaluations list will load from API -->
+
+        <MudPaper Class="pa-4 mb-4" Elevation="1">
+            <MudGrid>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudDatePicker Label="תאריך הערכה" @bind-Date="newEvalDate" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudNumericField T="int?" @bind-Value="newEval.Score" Label="ציון (1-10)" Variant="Variant.Outlined" Min="1" Max="10" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string?" @bind-Value="newEval.Strengths" Label="חוזקות" Variant="Variant.Outlined" Lines="2" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string?" @bind-Value="newEval.Weaknesses" Label="חולשות" Variant="Variant.Outlined" Lines="2" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string?" @bind-Value="newEval.Notes" Label="הערות" Variant="Variant.Outlined" Lines="2" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddEvaluation">הוסף הערכה</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        @if (loadingEvaluations)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+        }
+        else if (!evaluations.Any())
+        {
+            <MudText Color="Color.Default">אין הערכות רשומות למאמן זה</MudText>
+        }
+        else
+        {
+            <MudTable Items="evaluations" Hover="true" Elevation="2" Dense="true" T="CoachEvaluation">
+                <HeaderContent>
+                    <MudTh>תאריך</MudTh>
+                    <MudTh>ציון</MudTh>
+                    <MudTh>חוזקות</MudTh>
+                    <MudTh>חולשות</MudTh>
+                    <MudTh>הערות</MudTh>
+                    <MudTh>פעולות</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="תאריך">@context.EvalDate.ToString("dd/MM/yyyy")</MudTd>
+                    <MudTd DataLabel="ציון">@(context.Score?.ToString() ?? "—")</MudTd>
+                    <MudTd DataLabel="חוזקות">@context.Strengths</MudTd>
+                    <MudTd DataLabel="חולשות">@context.Weaknesses</MudTd>
+                    <MudTd DataLabel="הערות">@context.Notes</MudTd>
+                    <MudTd DataLabel="פעולות">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteEvaluation(context))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
     }
     else if (activeTab == 1)
     {
         <MudText Typo="Typo.subtitle1" Class="mb-2">מיומנויות רכות ותגיות אופי</MudText>
-        <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1">
-            <MudChip T="string" Color="Color.Primary" Size="Size.Medium">בעל משמעת חזקה</MudChip>
-            <MudChip T="string" Color="Color.Info" Size="Size.Medium">מצוין לחינוך מיוחד</MudChip>
-            <MudChip T="string" Color="Color.Warning" Size="Size.Medium">אסרטיבי</MudChip>
-        </MudStack>
-        <MudTextField T="string" Placeholder="הוסף תגית חדשה..." Variant="Variant.Outlined" Class="mt-3"
-                      Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Add" />
+
+        @if (loadingAttributes)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+        }
+        else
+        {
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1">
+                @foreach (var attr in attributes)
+                {
+                    <MudChip T="string" Color="Color.Primary" Size="Size.Medium" OnClose="@(() => DeleteAttribute(attr))">@attr.TagName</MudChip>
+                }
+            </MudStack>
+        }
+        <MudTextField T="string" @bind-Value="newTagName" Placeholder="הוסף תגית חדשה..." Variant="Variant.Outlined" Class="mt-3"
+                      Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Add" OnAdornmentClick="AddAttribute"
+                      OnKeyDown="OnTagKeyDown" />
     }
 }
 
@@ -38,6 +102,15 @@
     private List<Coach> coaches = new();
     private Coach? selectedCoach;
     private int activeTab = 0;
+
+    private List<CoachEvaluation> evaluations = new();
+    private bool loadingEvaluations;
+    private CoachEvaluation newEval = new();
+    private DateTime? newEvalDate = DateTime.Today;
+
+    private List<CoachAttribute> attributes = new();
+    private bool loadingAttributes;
+    private string newTagName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,6 +121,11 @@
     {
         selectedCoach = coach;
         await InvokeAsync(StateHasChanged);
+        if (selectedCoach != null)
+        {
+            await LoadEvaluations();
+            await LoadAttributes();
+        }
     }
 
     private Task<IEnumerable<Coach>> SearchCoaches(string value, System.Threading.CancellationToken cancellationToken)
@@ -62,4 +140,84 @@
     }
 
     private string CoachToString(Coach? c) => c is null ? string.Empty : c.FirstName + " " + c.LastName;
+
+    private async Task LoadEvaluations()
+    {
+        if (selectedCoach == null) return;
+        loadingEvaluations = true;
+        try { evaluations = await Data.GetEvaluationsByCoachAsync(selectedCoach.CoachId); }
+        catch { Snackbar.Add("שגיאה בטעינת הערכות", Severity.Error); }
+        finally { loadingEvaluations = false; }
+    }
+
+    private async Task AddEvaluation()
+    {
+        if (selectedCoach == null) return;
+        newEval.CoachId = selectedCoach.CoachId;
+        newEval.ReviewerId = AppState.CurrentUserId;
+        newEval.EvalDate = newEvalDate ?? DateTime.Today;
+        try
+        {
+            await Data.CreateEvaluationAsync(newEval);
+            Snackbar.Add("ההערכה נוספה בהצלחה", Severity.Success);
+            newEval = new CoachEvaluation();
+            newEvalDate = DateTime.Today;
+            await LoadEvaluations();
+        }
+        catch { Snackbar.Add("שגיאה בהוספת ההערכה", Severity.Error); }
+    }
+
+    private async Task DeleteEvaluation(CoachEvaluation evaluation)
+    {
+        try
+        {
+            await Data.DeleteEvaluationAsync(evaluation.EvalId);
+            evaluations.Remove(evaluation);
+            Snackbar.Add("ההערכה נמחקה", Severity.Success);
+        }
+        catch { Snackbar.Add("שגיאה במחיקת ההערכה", Severity.Error); }
+    }
+
+    private async Task LoadAttributes()
+    {
+        if (selectedCoach == null) return;
+        loadingAttributes = true;
+        try { attributes = await Data.GetAttributesByCoachAsync(selectedCoach.CoachId); }
+        catch { Snackbar.Add("שגיאה בטעינת התגיות", Severity.Error); }
+        finally { loadingAttributes = false; }
+    }
+
+    private async Task AddAttribute()
+    {
+        if (selectedCoach == null || string.IsNullOrWhiteSpace(newTagName)) return;
+        try
+        {
+            var attribute = new CoachAttribute
+            {
+                CoachId = selectedCoach.CoachId,
+                TagName = newTagName.Trim(),
+                AddedBy = AppState.CurrentUserId
+            };
+            await Data.CreateAttributeAsync(attribute);
+            newTagName = string.Empty;
+            await LoadAttributes();
+        }
+        catch { Snackbar.Add("שגיאה בהוספת התגית", Severity.Error); }
+    }
+
+    private async Task OnTagKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await AddAttribute();
+    }
+
+    private async Task DeleteAttribute(CoachAttribute attribute)
+    {
+        try
+        {
+            await Data.DeleteAttributeAsync(attribute.AttributeId);
+            attributes.Remove(attribute);
+        }
+        catch { Snackbar.Add("שגיאה במחיקת התגית", Severity.Error); }
+    }
 }

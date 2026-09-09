@@ -107,4 +107,15 @@ public interface IDataService
     // Notification Acknowledgements
     Task<List<NotificationAck>> GetNotificationAcksByCoachAsync(string coachId);
     Task<NotificationAck> CreateNotificationAckAsync(NotificationAck ack);
+
+    // Coach Evaluations (Secret HR)
+    Task<List<CoachEvaluation>> GetEvaluationsByCoachAsync(string coachId);
+    Task<CoachEvaluation> CreateEvaluationAsync(CoachEvaluation evaluation);
+    Task<CoachEvaluation> UpdateEvaluationAsync(CoachEvaluation evaluation);
+    Task DeleteEvaluationAsync(string evalId);
+
+    // Coach Attributes (tags)
+    Task<List<CoachAttribute>> GetAttributesByCoachAsync(string coachId);
+    Task<CoachAttribute> CreateAttributeAsync(CoachAttribute attribute);
+    Task DeleteAttributeAsync(string attributeId);
 }
