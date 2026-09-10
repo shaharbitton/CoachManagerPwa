@@ -1,5 +1,7 @@
 @page "/coach/hub"
 @inject IDataService Data
+@inject IDialogService DialogService
+@using CoachManagerPwa.Pages.Shared
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-4">מאגר ידע ומערכי שיעור</MudText>
 
@@ -41,6 +43,7 @@
             <MudCardActions>
                 <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@resource.AttachmentUrl" Target="_blank"
                            StartIcon="@Icons.Material.Filled.Download">הורד מערך</MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Info" StartIcon="@Icons.Material.Filled.Visibility" OnClick="@(() => OpenResource(resource))">תצוגה מקדימה</MudButton>
                 <MudButton Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Favorite">
                     שמור למועדפים
                 </MudButton>
@@ -82,5 +85,11 @@
     protected override async Task OnInitializedAsync()
     {
         try { resources = await Data.GetTrainingResourcesAsync(); } catch { }
+    }
+
+    private async Task OpenResource(TrainingResource resource)
+    {
+        var parameters = new DialogParameters<ResourceViewerDialog> { { x => x.Resource, resource } };
+        await DialogService.ShowAsync<ResourceViewerDialog>(resource.Title, parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true });
     }
 }

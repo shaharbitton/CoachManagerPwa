@@ -35,6 +35,7 @@
     <HeaderContent>
         <MudTh>מאמן</MudTh>
         <MudTh>לקוח</MudTh>
+        <MudTh>שם השיבוץ</MudTh>
         <MudTh>תאריך ביצוע</MudTh>
         <MudTh>תאריך הזנה</MudTh>
         <MudTh>שעות</MudTh>
@@ -46,6 +47,7 @@
     <RowTemplate>
         <MudTd DataLabel="מאמן">@GetCoachName(context)</MudTd>
         <MudTd DataLabel="לקוח">@GetClientName(context)</MudTd>
+        <MudTd DataLabel="שם השיבוץ">@GetAssignmentLabel(context)</MudTd>
         <MudTd DataLabel="תאריך ביצוע">@context.WorkDate.ToString("dd/MM/yyyy")</MudTd>
         <MudTd DataLabel="תאריך הזנה">@context.CreatedAt.ToString("dd/MM/yyyy")</MudTd>
         <MudTd DataLabel="שעות">@context.HoursReported</MudTd>
@@ -103,7 +105,7 @@
         @if (context.EntryId == expandedEntryId)
         {
             <MudTr>
-                <td colspan="9">
+                <td colspan="10">
                     <MudCard Elevation="0" Class="ma-2 pa-3" Style="background: var(--mud-palette-background-gray);">
                         <MudGrid>
                             <MudItem xs="12" sm="6" md="3">
@@ -199,6 +201,7 @@
     private List<Assignment> assignments = new();
     private List<Coach> coaches = new();
     private List<ClientOrg> clients = new();
+    private List<ClientContract> contracts = new();
     private string statusFilter = "all";
     private string? coachFilter;
     private string? clientFilter;
@@ -256,11 +259,13 @@
             var t2 = Data.GetAssignmentsAsync();
             var t3 = Data.GetCoachesAsync();
             var t4 = Data.GetClientsAsync();
-            await Task.WhenAll(t1, t2, t3, t4);
+            var t5 = Data.GetAllContractsAsync();
+            await Task.WhenAll(t1, t2, t3, t4, t5);
             entries = t1.Result;
             assignments = t2.Result;
             coaches = t3.Result;
             clients = t4.Result;
+            contracts = t5.Result;
 
             // Restore selected autocomplete items if filters were preset
             if (!string.IsNullOrEmpty(coachFilter))
@@ -292,6 +297,14 @@
         if (assignment is null) return "—";
         var client = clients.FirstOrDefault(c => c.ClientId == assignment.ClientId);
         return client?.ClientName ?? assignment.ClientId[..8];
+    }
+
+    private string GetAssignmentLabel(TimeEntry entry)
+    {
+        var assignment = assignments.FirstOrDefault(a => a.AssignId == entry.AssignId);
+        if (assignment is null) return "—";
+        var contract = contracts.FirstOrDefault(c => c.ContractId == assignment.ContractId);
+        return contract?.EngagementName ?? "כללי";
     }
 
     private async Task Approve(TimeEntry entry)

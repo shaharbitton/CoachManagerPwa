@@ -1,0 +1,66 @@
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-1">@Resource.Title</MudText>
+        @if (!string.IsNullOrEmpty(Resource.Description))
+        {
+            <MudText Typo="Typo.body2" Class="mb-3" Color="Color.Default">@Resource.Description</MudText>
+        }
+
+        @if (string.IsNullOrEmpty(Resource.AttachmentUrl))
+        {
+            <MudAlert Severity="Severity.Info" Dense="true">אין קובץ מצורף לתוכן זה</MudAlert>
+        }
+        else if (IsImage(Resource.AttachmentUrl))
+        {
+            @if (!mediaLoaded)
+            {
+                <div class="d-flex justify-center align-center" style="height:200px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            <img src="@Resource.AttachmentUrl" @onload="OnMediaLoaded" class="rounded-lg" style="@(mediaLoaded ? "max-width:100%;" : "display:none;")" />
+        }
+        else if (IsPdf(Resource.AttachmentUrl))
+        {
+            @if (!mediaLoaded)
+            {
+                <div class="d-flex justify-center align-center" style="height:200px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            <iframe src="@Resource.AttachmentUrl" @onload="OnMediaLoaded"
+                    style="@("width:100%; height:70vh; border:1px solid #ccc; border-radius:4px;" + (mediaLoaded ? "" : " display:none;"))"></iframe>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" Dense="true">לא ניתן להציג תצוגה מקדימה עבור סוג קובץ זה</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        @if (!string.IsNullOrEmpty(Resource.AttachmentUrl))
+        {
+            <MudButton Href="@Resource.AttachmentUrl" Target="_blank" StartIcon="@Icons.Material.Filled.OpenInNew">פתח בלשונית חדשה</MudButton>
+            <MudButton Href="@Resource.AttachmentUrl" Target="_blank" StartIcon="@Icons.Material.Filled.Download">הורד</MudButton>
+        }
+        <MudButton OnClick="Close">סגור</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public TrainingResource Resource { get; set; } = new();
+
+    private bool mediaLoaded;
+
+    private void OnMediaLoaded() => mediaLoaded = true;
+
+    private static bool IsImage(string? path) =>
+        path is not null && (path.Contains(".png", StringComparison.OrdinalIgnoreCase)
+        || path.Contains(".jpg", StringComparison.OrdinalIgnoreCase)
+        || path.Contains(".jpeg", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsPdf(string? path) =>
+        path is not null && path.Contains(".pdf", StringComparison.OrdinalIgnoreCase);
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+}

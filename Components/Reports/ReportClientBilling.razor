@@ -21,6 +21,12 @@
         return contract?.BillingRatePerHour ?? 0;
     }
 
+    private string AssignmentLabel(Assignment assign)
+    {
+        var contract = !string.IsNullOrEmpty(assign.ContractId) ? AllContracts.FirstOrDefault(c => c.ContractId == assign.ContractId) : null;
+        return contract?.EngagementName ?? "כללי";
+    }
+
     private async Task ExportExcel()
     {
         if (string.IsNullOrEmpty(clientFilter)) return;
@@ -29,7 +35,7 @@
         var entries = TimeEntries.Where(e => Approved.Contains(e.Status) && InPeriod(e) && ca.Any(a => a.AssignId == e.AssignId)).OrderBy(e => e.WorkDate).ToList();
 
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine("תאריך,מאמן,שעות,תעריף,סה\"כ");
+        sb.AppendLine("תאריך,מאמן,שם השיבוץ,שעות,תעריף,סה\"כ");
         decimal total = 0;
         foreach (var entry in entries)
         {
@@ -37,9 +43,9 @@
             var rate = BillingRate(assign);
             var lineTotal = entry.HoursReported * rate;
             total += lineTotal;
-            sb.AppendLine($"{entry.WorkDate:dd/MM/yyyy},{Csv(CoachName(assign.CoachId))},{entry.HoursReported:0.#},{rate:0},{lineTotal:0}");
+            sb.AppendLine($"{entry.WorkDate:dd/MM/yyyy},{Csv(CoachName(assign.CoachId))},{Csv(AssignmentLabel(assign))},{entry.HoursReported:0.#},{rate:0},{lineTotal:0}");
         }
-        sb.AppendLine($"סה\"כ,,,,{total:0}");
+        sb.AppendLine($"סה\"כ,,,,,{total:0}");
 
         var label = period == "year" ? year.ToString() : $"{Months[month]}-{year}";
         var bom = "\uFEFF";
@@ -97,7 +103,7 @@ else
 
     <MudText Typo="Typo.h6" Class="mb-2">@clientName — @periodLabel</MudText>
     <MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="direction: rtl;">
-        <thead><tr><th>תאריך</th><th>מאמן</th><th>שעות</th><th>תעריף (₪)</th><th>סה"כ (₪)</th></tr></thead>
+        <thead><tr><th>תאריך</th><th>מאמן</th><th>שם השיבוץ</th><th>שעות</th><th>תעריף (₪)</th><th>סה"כ (₪)</th></tr></thead>
         <tbody>
             @foreach (var entry in entries)
             {
@@ -108,6 +114,7 @@ else
                 <tr>
                     <td>@entry.WorkDate.ToString(period == "year" ? "dd/MM/yy" : "dd/MM")</td>
                     <td>@CoachName(assign.CoachId)</td>
+                    <td>@AssignmentLabel(assign)</td>
                     <td>@entry.HoursReported.ToString("0.#")</td>
                     <td>@billingRate.ToString("N0")</td>
                     <td>@lineTotal.ToString("N0")</td>
