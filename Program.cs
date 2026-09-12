@@ -13,6 +13,7 @@ var supabaseUrl = builder.Configuration["supabase:ARCAN_SUPABASE_URL"]
     ?? throw new InvalidOperationException("Missing configuration: supabase:ARCAN_SUPABASE_URL");
 var supabaseAnonKey = builder.Configuration["supabase:ARCAN_SUPABASE_ANON_KEY"]
     ?? throw new InvalidOperationException("Missing configuration: supabase:ARCAN_SUPABASE_ANON_KEY");
+
 builder.Services.AddScoped(sp =>
     new Supabase.Client(supabaseUrl, supabaseAnonKey, new Supabase.SupabaseOptions
     {
