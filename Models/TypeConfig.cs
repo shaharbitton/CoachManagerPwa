@@ -4,17 +4,18 @@ using Postgrest.Models;
 namespace CoachManagerPwa.Models;
 
 /// <summary>
-/// Admin-configurable definition of a document/contract type and whether it is mandatory.
-/// Category: "Document" or "Contract".
+/// Admin-configurable lookup/type definition, keyed by Category.
+/// Category values in use: "Document", "Contract" (mandatory doc/contract types),
+/// "ResourceCategory" (Training Hub resource categories).
 /// </summary>
-[Table("document_type_configs")]
-public class DocumentTypeConfig : BaseModel
+[Table("type_configs")]
+public class TypeConfig : BaseModel
 {
     [PrimaryKey("config_id", true)]
     public string ConfigId { get; set; } = Guid.NewGuid().ToString();
 
     [Column("category")]
-    public string Category { get; set; } = "Document"; // Document / Contract
+    public string Category { get; set; } = "Document"; // Document / Contract / ResourceCategory
 
     [Column("doc_type")]
     public string DocType { get; set; } = string.Empty;

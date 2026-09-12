@@ -596,33 +596,33 @@ public class SupabaseDataService : IDataService
             .Delete();
     }
 
-    // ===== Document Type Configuration =====
+    // ===== Type Configuration (Document / Contract / ResourceCategory lookups) =====
 
-    public async Task<List<DocumentTypeConfig>> GetDocumentTypeConfigsAsync()
+    public async Task<List<TypeConfig>> GetTypeConfigsAsync()
     {
         await EnsureInitializedAsync();
-        var response = await _client.From<DocumentTypeConfig>().Get();
+        var response = await _client.From<TypeConfig>().Get();
         return response.Models;
     }
 
-    public async Task<DocumentTypeConfig> CreateDocumentTypeConfigAsync(DocumentTypeConfig config)
+    public async Task<TypeConfig> CreateTypeConfigAsync(TypeConfig config)
     {
         await EnsureInitializedAsync();
-        var response = await _client.From<DocumentTypeConfig>().Insert(config);
+        var response = await _client.From<TypeConfig>().Insert(config);
         return response.Models.First();
     }
 
-    public async Task<DocumentTypeConfig> UpdateDocumentTypeConfigAsync(DocumentTypeConfig config)
+    public async Task<TypeConfig> UpdateTypeConfigAsync(TypeConfig config)
     {
         await EnsureInitializedAsync();
-        var response = await _client.From<DocumentTypeConfig>().Update(config);
+        var response = await _client.From<TypeConfig>().Update(config);
         return response.Models.First();
     }
 
-    public async Task DeleteDocumentTypeConfigAsync(string configId)
+    public async Task DeleteTypeConfigAsync(string configId)
     {
         await EnsureInitializedAsync();
-        await _client.From<DocumentTypeConfig>()
+        await _client.From<TypeConfig>()
             .Where(c => c.ConfigId == configId)
             .Delete();
     }

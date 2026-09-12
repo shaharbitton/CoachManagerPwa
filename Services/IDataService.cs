@@ -99,11 +99,11 @@ public interface IDataService
     Task<CoachAssignmentContract> UpdateCoachContractAsync(CoachAssignmentContract contract);
     Task DeleteCoachContractAsync(string contractId);
 
-    // Document Type Configuration
-    Task<List<DocumentTypeConfig>> GetDocumentTypeConfigsAsync();
-    Task<DocumentTypeConfig> CreateDocumentTypeConfigAsync(DocumentTypeConfig config);
-    Task<DocumentTypeConfig> UpdateDocumentTypeConfigAsync(DocumentTypeConfig config);
-    Task DeleteDocumentTypeConfigAsync(string configId);
+    // Type Configuration (Document / Contract / ResourceCategory lookups)
+    Task<List<TypeConfig>> GetTypeConfigsAsync();
+    Task<TypeConfig> CreateTypeConfigAsync(TypeConfig config);
+    Task<TypeConfig> UpdateTypeConfigAsync(TypeConfig config);
+    Task DeleteTypeConfigAsync(string configId);
 
     // Notification Acknowledgements
     Task<List<NotificationAck>> GetNotificationAcksByCoachAsync(string coachId);

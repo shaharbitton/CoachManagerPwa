@@ -79,7 +79,7 @@ public class NotificationService
         List<(string Type, string Name, bool Mandatory)> docTypes;
         try
         {
-            var configs = await _data.GetDocumentTypeConfigsAsync();
+            var configs = await _data.GetTypeConfigsAsync();
             var docConfigs = configs.Where(c => c.IsActive && c.Category == "Document").OrderBy(c => c.SortOrder).ToList();
             docTypes = docConfigs.Count > 0
                 ? docConfigs.Select(c => (c.DocType, c.DisplayName, c.IsMandatory)).ToList()

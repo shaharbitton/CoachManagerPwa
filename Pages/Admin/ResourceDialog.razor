@@ -2,7 +2,12 @@
     <DialogContent>
         <MudTextField @bind-Value="Resource.Title" Label="כותרת" Variant="Variant.Outlined" Required="true" />
         <MudTextField @bind-Value="Resource.Description" Label="תיאור והכוונה פדגוגית" Variant="Variant.Outlined" Lines="3" Class="mt-3" />
-        <MudTextField @bind-Value="Resource.SkillCategory" Label="קטגוריה (ספורט, רובוטיקה...)" Variant="Variant.Outlined" Class="mt-3" />
+        <MudSelect T="string" @bind-Value="Resource.SkillCategory" Label="קטגוריה" Variant="Variant.Outlined" Class="mt-3">
+            @foreach (var category in categories)
+            {
+                <MudSelectItem Value="@(category.DocType)">@category.DisplayName</MudSelectItem>
+            }
+        </MudSelect>
         <MudSelect T="string" @bind-Value="Resource.TargetAgeGroup" Label="שכבת גיל" Variant="Variant.Outlined" Class="mt-3">
             <MudSelectItem Value="@("יסודי")">יסודי</MudSelectItem>
             <MudSelectItem Value="@("חטיבה")">חטיבה</MudSelectItem>
@@ -40,9 +45,25 @@
     [Parameter] public TrainingResource Resource { get; set; } = new();
     [Inject] private Supabase.Client SupabaseClient { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private IDataService Data { get; set; } = default!;
 
     private IBrowserFile? selectedFile;
     private bool uploading;
+    private List<TypeConfig> categories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            categories = (await Data.GetTypeConfigsAsync())
+                .Where(c => c.Category == "ResourceCategory" && c.IsActive)
+                .OrderBy(c => c.SortOrder).ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"שגיאה בטעינת קטגוריות: {ex.Message}", Severity.Error);
+        }
+    }
 
     private async Task OnFileSelected(IBrowserFile file)
     {

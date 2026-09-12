@@ -1,4 +1,4 @@
-@page "/admin/document-config"
+@page "/admin/settings"
 @inject IDataService Data
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -20,7 +20,7 @@ else
         </MudButton>
     </MudStack>
 
-    <MudTable Items="configs" Hover="true" Elevation="2" Dense="true" T="DocumentTypeConfig">
+    <MudTable Items="configs" Hover="true" Elevation="2" Dense="true" T="TypeConfig">
         <HeaderContent>
             <MudTh>קטגוריה</MudTh>
             <MudTh>מזהה סוג</MudTh>
@@ -62,6 +62,53 @@ else
     }
 }
 
+<MudDivider Class="my-6" />
+
+<MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">הגדרת קטגוריות (מאגר מידע)</MudText>
+<MudText Typo="Typo.body2" Color="Color.Default" Class="mb-4">
+    קטגוריות אלו מוצגות ברשימה הסגורה בעת הוספת תוכן למאגר המידע.
+</MudText>
+
+@if (loadingCategories)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudStack Row="true" Justify="Justify.FlexEnd" Class="mb-3">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenCategoryDialog(null))">
+            הוסף קטגוריה
+        </MudButton>
+    </MudStack>
+
+    <MudTable Items="categories" Hover="true" Elevation="2" Dense="true" T="TypeConfig">
+        <HeaderContent>
+            <MudTh>מזהה (אנגלית)</MudTh>
+            <MudTh>שם לתצוגה</MudTh>
+            <MudTh>פעיל</MudTh>
+            <MudTh>סדר</MudTh>
+            <MudTh>פעולות</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="מזהה (אנגלית)">@context.DocType</MudTd>
+            <MudTd DataLabel="שם לתצוגה">@context.DisplayName</MudTd>
+            <MudTd DataLabel="פעיל">@(context.IsActive ? "כן" : "לא")</MudTd>
+            <MudTd DataLabel="סדר">@context.SortOrder</MudTd>
+            <MudTd DataLabel="פעולות">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" OnClick="@(() => OpenCategoryDialog(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteCategory(context))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+    @if (!categories.Any())
+    {
+        <MudAlert Severity="Severity.Info" Class="mt-4">
+            לא הוגדרו קטגוריות. הוסף קטגוריה כדי שתופיע ברשימת ההוספה של מאגר המידע.
+        </MudAlert>
+    }
+}
+
 <!-- Edit / Add Dialog -->
 <MudDialog @bind-Visible="dialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true }">
     <TitleContent>
@@ -88,15 +135,41 @@ else
     </DialogActions>
 </MudDialog>
 
+<!-- Category Edit / Add Dialog -->
+<MudDialog @bind-Visible="categoryDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true }">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@(editingCategory.ConfigId == "" ? "הוספת קטגוריה" : "עריכת קטגוריה")</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="editingCategory.DocType" Label="מזהה (באנגלית, ללא רווחים)" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="editingCategory.DisplayName" Label="שם לתצוגה" Variant="Variant.Outlined" Class="mb-3" />
+        <MudSwitch T="bool" @bind-Value="editingCategory.IsActive" Color="Color.Success" Label="פעיל" Class="mb-1" />
+        <MudNumericField T="int" @bind-Value="editingCategory.SortOrder" Label="סדר תצוגה" Variant="Variant.Outlined" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => categoryDialogVisible = false)">ביטול</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveCategory"
+                   Disabled="@(string.IsNullOrWhiteSpace(editingCategory.DocType) || string.IsNullOrWhiteSpace(editingCategory.DisplayName))">
+            שמור
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     private bool loading = true;
-    private List<DocumentTypeConfig> configs = new();
-    private DocumentTypeConfig editing = new() { ConfigId = "" };
+    private List<TypeConfig> configs = new();
+    private TypeConfig editing = new() { ConfigId = "" };
     private bool dialogVisible;
+
+    private bool loadingCategories = true;
+    private List<TypeConfig> categories = new();
+    private TypeConfig editingCategory = new() { ConfigId = "" };
+    private bool categoryDialogVisible;
 
     protected override async Task OnInitializedAsync()
     {
         await Load();
+        await LoadCategories();
     }
 
     private async Task Load()
@@ -104,22 +177,23 @@ else
         loading = true;
         try
         {
-            configs = (await Data.GetDocumentTypeConfigsAsync())
+            configs = (await Data.GetTypeConfigsAsync())
+                .Where(c => c.Category == "Document" || c.Category == "Contract")
                 .OrderBy(c => c.Category).ThenBy(c => c.SortOrder).ToList();
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה בטעינה: {ex.Message}", Severity.Error); }
         finally { loading = false; }
     }
 
-    private void OpenDialog(DocumentTypeConfig? config)
+    private void OpenDialog(TypeConfig? config)
     {
         if (config is null)
         {
-            editing = new DocumentTypeConfig { ConfigId = "", SortOrder = configs.Count };
+            editing = new TypeConfig { ConfigId = "", SortOrder = configs.Count };
         }
         else
         {
-            editing = new DocumentTypeConfig
+            editing = new TypeConfig
             {
                 ConfigId = config.ConfigId,
                 Category = config.Category,
@@ -142,12 +216,12 @@ else
             if (editing.ConfigId == "")
             {
                 editing.ConfigId = Guid.NewGuid().ToString();
-                await Data.CreateDocumentTypeConfigAsync(editing);
+                await Data.CreateTypeConfigAsync(editing);
                 Snackbar.Add("נוסף בהצלחה", Severity.Success);
             }
             else
             {
-                await Data.UpdateDocumentTypeConfigAsync(editing);
+                await Data.UpdateTypeConfigAsync(editing);
                 Snackbar.Add("נשמר בהצלחה", Severity.Success);
             }
             dialogVisible = false;
@@ -156,7 +230,7 @@ else
         catch (Exception ex) { Snackbar.Add($"שגיאה בשמירה: {ex.Message}", Severity.Error); }
     }
 
-    private async Task DeleteConfig(DocumentTypeConfig config)
+    private async Task DeleteConfig(TypeConfig config)
     {
         var parameters = new DialogParameters
         {
@@ -168,9 +242,84 @@ else
 
         try
         {
-            await Data.DeleteDocumentTypeConfigAsync(config.ConfigId);
+            await Data.DeleteTypeConfigAsync(config.ConfigId);
             Snackbar.Add("נמחק בהצלחה", Severity.Success);
             await Load();
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה במחיקה: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task LoadCategories()
+    {
+        loadingCategories = true;
+        try
+        {
+            categories = (await Data.GetTypeConfigsAsync())
+                .Where(c => c.Category == "ResourceCategory")
+                .OrderBy(c => c.SortOrder).ToList();
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה בטעינה: {ex.Message}", Severity.Error); }
+        finally { loadingCategories = false; }
+    }
+
+    private void OpenCategoryDialog(TypeConfig? category)
+    {
+        if (category is null)
+        {
+            editingCategory = new TypeConfig { ConfigId = "", Category = "ResourceCategory", SortOrder = categories.Count };
+        }
+        else
+        {
+            editingCategory = new TypeConfig
+            {
+                ConfigId = category.ConfigId,
+                Category = "ResourceCategory",
+                DocType = category.DocType,
+                DisplayName = category.DisplayName,
+                IsActive = category.IsActive,
+                SortOrder = category.SortOrder,
+                CreatedAt = category.CreatedAt
+            };
+        }
+        categoryDialogVisible = true;
+    }
+
+    private async Task SaveCategory()
+    {
+        try
+        {
+            if (editingCategory.ConfigId == "")
+            {
+                editingCategory.ConfigId = Guid.NewGuid().ToString();
+                await Data.CreateTypeConfigAsync(editingCategory);
+                Snackbar.Add("נוסף בהצלחה", Severity.Success);
+            }
+            else
+            {
+                await Data.UpdateTypeConfigAsync(editingCategory);
+                Snackbar.Add("נשמר בהצלחה", Severity.Success);
+            }
+            categoryDialogVisible = false;
+            await LoadCategories();
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה בשמירה: {ex.Message}", Severity.Error); }
+    }
+
+    private async Task DeleteCategory(TypeConfig category)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Message"] = $"למחוק את '{category.DisplayName}'?"
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDeleteDialog>("מחיקה", parameters);
+        var result = await dialog.Result;
+        if (result is null || result.Canceled) return;
+
+        try
+        {
+            await Data.DeleteTypeConfigAsync(category.ConfigId);
+            Snackbar.Add("נמחק בהצלחה", Severity.Success);
+            await LoadCategories();
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה במחיקה: {ex.Message}", Severity.Error); }
     }
