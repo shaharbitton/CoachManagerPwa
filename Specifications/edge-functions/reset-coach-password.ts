@@ -45,7 +45,7 @@ serve(async (req: Request) => {
 
     // Send notification email via Brevo
     const apiKey = Deno.env.get("BREVO_API_KEY");
-    const fromEmail = Deno.env.get("BREVO_FROM_EMAIL") || "donot_replay_arcan@mop.co.il";
+      const fromEmail = Deno.env.get("BREVO_FROM_EMAIL") || "donot_replay@arcanisrael.co.il";
     const fromName = Deno.env.get("BREVO_FROM_NAME") || "Arcan Israel";
 
     if (apiKey) {

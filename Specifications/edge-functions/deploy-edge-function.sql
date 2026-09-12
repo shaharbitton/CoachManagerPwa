@@ -16,7 +16,7 @@ SELECT vault.create_secret(
 );
 
 SELECT vault.create_secret(
-    'donot_replay@mop.co.il',
+    'donot_replay@arcanisrael.co.il',
     'BREVO_FROM_EMAIL',
     'Sender email address for Brevo'
 );
@@ -49,7 +49,7 @@ WHERE name IN ('BREVO_API_KEY', 'BREVO_FROM_EMAIL', 'BREVO_FROM_NAME');
 --
 -- 3c. הגדרת Secrets ב-Edge Function runtime:
 --     supabase secrets set BREVO_API_KEY="xkeysib-YOUR-BREVO-API-KEY-HERE"
---     supabase secrets set BREVO_FROM_EMAIL="donot_replay_arcan@mop.co.il"
+--     supabase secrets set BREVO_FROM_EMAIL="donot_replay@arcanisrael.co.il"
 --     supabase secrets set BREVO_FROM_NAME="Arcan Israel"
 --
 -- 3d. פריסת הפונקציות:

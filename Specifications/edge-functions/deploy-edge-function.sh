@@ -17,7 +17,7 @@
 echo "🔐 הגדרת Edge Function Secrets..."
 
 supabase secrets set BREVO_API_KEY="xkeysib-YOUR-BREVO-API-KEY-HERE"
-supabase secrets set BREVO_FROM_EMAIL="donot_replay_arcan@mop.co.il"
+supabase secrets set BREVO_FROM_EMAIL="donot_replay@arcanisrael.co.il"
 supabase secrets set BREVO_FROM_NAME="Arcan Israel"
 
 echo "✅ Secrets הוגדרו בהצלחה"
@@ -56,7 +56,7 @@ serve(async (req: Request) => {
     }
 
     const apiKey = Deno.env.get("BREVO_API_KEY");
-    const fromEmail = Deno.env.get("BREVO_FROM_EMAIL") || "donot_replay_arcan@mop.co.il";
+    const fromEmail = Deno.env.get("BREVO_FROM_EMAIL") || "donot_replay@arcanisrael.co.il";
     const fromName = Deno.env.get("BREVO_FROM_NAME") || "Arcan Israel";
 
     if (!apiKey) {
@@ -157,7 +157,7 @@ serve(async (req: Request) => {
     }
 
     const apiKey = Deno.env.get("BREVO_API_KEY");
-    const fromEmail = Deno.env.get("BREVO_FROM_EMAIL") || "donot_replay_arcan@mop.co.il";
+    const fromEmail = Deno.env.get("BREVO_FROM_EMAIL") || "donot_replay@arcanisrael.co.il";
     const fromName = Deno.env.get("BREVO_FROM_NAME") || "Arcan Israel";
 
     if (!apiKey) {
@@ -266,7 +266,7 @@ serve(async (req: Request) => {
     }
 
     const apiKey = Deno.env.get("BREVO_API_KEY");
-    const fromEmail = Deno.env.get("BREVO_FROM_EMAIL") || "donot_replay_arcan@mop.co.il";
+    const fromEmail = Deno.env.get("BREVO_FROM_EMAIL") || "donot_replay@arcanisrael.co.il";
     const fromName = Deno.env.get("BREVO_FROM_NAME") || "Arcan Israel";
 
     if (!apiKey) {
