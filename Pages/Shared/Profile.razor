@@ -51,9 +51,21 @@
                 </MudItem>
                 <MudItem xs="12">
                     <MudText Typo="Typo.subtitle2" Class="mb-1">אזור זמינות (נפות)</MudText>
-                    <MudSelect T="string" Label="בחר נפות" Variant="Variant.Outlined" MultiSelection="true"
+                    <MudAutocomplete T="string" Label="חיפוש יישוב" Variant="Variant.Outlined" Class="mb-2"
+                                     Value="localitySearch" ValueChanged="OnLocalitySelected"
+                                     SearchFunc="@SearchLocalitiesAsync" ResetValueOnEmptyText="true" CoerceText="false"
+                                     Placeholder="הקלד שם יישוב..." />
+                    <MudSelect T="string" Label="סנן לפי מחוז" Variant="Variant.Outlined" Clearable="true" Class="mb-2" Disabled="true"
+                               Value="selectedDistrict" ValueChanged="OnDistrictChanged">
+                        @foreach (var d in districts)
+                        {
+                            <MudSelectItem Value="@d">@d</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudButton Variant="Variant.Text" Size="Size.Small" Class="mb-2" OnClick="ClearAllSubDistricts">נקה את כל הנפות</MudButton>
+                    <MudSelect T="string" Label="בחר נפות" Variant="Variant.Outlined" MultiSelection="true" Disabled="true"
                                @bind-SelectedValues="selectedAreas" MultiSelectionTextFunc="@(vals => string.Join(", ", vals))">
-                        @foreach (var sd in subDistricts)
+                        @foreach (var sd in filteredSubDistricts)
                         {
                             <MudSelectItem Value="@sd">@sd</MudSelectItem>
                         }
@@ -196,6 +208,10 @@ else if (activeTab == 2)
     private List<CoachDocument> myDocuments = new();
     private IReadOnlyCollection<string> selectedAreas = new HashSet<string>();
     private List<string> subDistricts = new();
+    private List<string> districts = new();
+    private List<string> filteredSubDistricts = new();
+    private string? selectedDistrict;
+    private string? localitySearch;
     private Dictionary<string, List<int>> schedule = new();
     private HashSet<string> expandedDays = new();
 
@@ -223,6 +239,8 @@ else if (activeTab == 2)
         {
             await LocalityService.InitializeAsync();
             subDistricts = LocalityService.GetSubDistricts().ToList();
+            districts = LocalityService.GetDistricts().ToList();
+            filteredSubDistricts = subDistricts;
 
             var c = await Data.GetCoachByIdAsync(AppState.CurrentUserId);
             if (c != null)
@@ -252,6 +270,39 @@ else if (activeTab == 2)
     private bool IsExpanded(string day) => expandedDays.Contains(day);
     private IEnumerable<int> GetVisibleHours(string day) =>
         expandedDays.Contains(day) ? Enumerable.Range(0, 24) : Enumerable.Range(8, 9);
+
+    private void OnDistrictChanged(string? district)
+    {
+        selectedDistrict = district;
+        filteredSubDistricts = LocalityService.GetSubDistricts(district).ToList();
+    }
+
+    private void ClearAllSubDistricts()
+    {
+        selectedAreas = new HashSet<string>();
+    }
+
+    private Task<IEnumerable<string>> SearchLocalitiesAsync(string value, CancellationToken token)
+    {
+        return Task.FromResult(LocalityService.SearchLocalities(value));
+    }
+
+    private void OnLocalitySelected(string? localityName)
+    {
+        localitySearch = null;
+        if (string.IsNullOrWhiteSpace(localityName)) return;
+
+        var subDistrict = LocalityService.GetSubDistrictForLocality(localityName);
+        if (string.IsNullOrEmpty(subDistrict)) return;
+
+        var district = LocalityService.GetDistrictForSubDistrict(subDistrict);
+        selectedDistrict = district;
+        filteredSubDistricts = LocalityService.GetSubDistricts(district).ToList();
+
+        var updated = selectedAreas.ToHashSet();
+        updated.Add(subDistrict);
+        selectedAreas = updated;
+    }
 
     private void ToggleExpandDay(string day)
     {
