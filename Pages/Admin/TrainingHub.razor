@@ -41,6 +41,8 @@
                                    StartIcon="@Icons.Material.Filled.Download">הורד</MudButton>
                         <MudButton Variant="Variant.Text" Color="Color.Info" StartIcon="@Icons.Material.Filled.Visibility" OnClick="@(() => OpenResource(resource))">תצוגה מקדימה</MudButton>
                     }
+                    <MudSpacer />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteResource(resource))" />
                 </MudCardActions>
             </MudCard>
         </MudItem>
@@ -88,5 +90,24 @@
             }
             catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
         }
+    }
+
+    private async Task DeleteResource(TrainingResource resource)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Message"] = $"למחוק את '{resource.Title}'?"
+        };
+        var dialog = await Dialog.ShowAsync<ConfirmDeleteDialog>("מחיקה", parameters);
+        var result = await dialog.Result;
+        if (result is null || result.Canceled) return;
+
+        try
+        {
+            await Data.DeleteResourceAsync(resource.ResourceId);
+            resources.Remove(resource);
+            Snackbar.Add("התוכן נמחק", Severity.Info);
+        }
+        catch (Exception ex) { Snackbar.Add($"שגיאה: {ex.Message}", Severity.Error); }
     }
 }

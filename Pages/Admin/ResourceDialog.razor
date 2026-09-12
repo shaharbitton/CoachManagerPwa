@@ -24,10 +24,14 @@
         {
             <MudAlert Severity="Severity.Success" Class="mt-2" Dense="true">קובץ הועלה: @Path.GetFileName(Resource.AttachmentUrl)</MudAlert>
         }
+        else
+        {
+            <MudAlert Severity="Severity.Warning" Class="mt-2" Dense="true">יש להעלות קובץ מצורף לפני השמירה</MudAlert>
+        }
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">ביטול</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="uploading">הוסף</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@(uploading || string.IsNullOrWhiteSpace(Resource.Title) || string.IsNullOrEmpty(Resource.AttachmentUrl))">הוסף</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -71,7 +75,7 @@
 
     private void Submit()
     {
-        if (string.IsNullOrWhiteSpace(Resource.Title)) return;
+        if (string.IsNullOrWhiteSpace(Resource.Title) || string.IsNullOrEmpty(Resource.AttachmentUrl)) return;
         MudDialog.Close(DialogResult.Ok(Resource));
     }
 

@@ -80,6 +80,7 @@
         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
             <MudStack>
                 <MudText Style="font-weight: bold;">@entry.WorkDate.ToString("dd/MM/yyyy")</MudText>
+                <MudText Typo="Typo.caption">@GetEngagementNameForEntry(entry)</MudText>
                 <MudText Typo="Typo.caption">@entry.HoursReported שעות</MudText>
             </MudStack>
             <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(entry.Status)">@GetStatusText(entry.Status)</MudChip>
@@ -143,6 +144,13 @@
         var contract = contracts.FirstOrDefault(c => c.ContractId == a.ContractId);
         var engName = contract?.EngagementName;
         return string.IsNullOrEmpty(engName) ? clientName : $"{engName} — {clientName}";
+    }
+
+    private string GetEngagementNameForEntry(TE entry)
+    {
+        var assignment = assignments.FirstOrDefault(a => a.AssignId == entry.AssignId);
+        if (assignment is null) return string.Empty;
+        return GetAssignmentLabel(assignment);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

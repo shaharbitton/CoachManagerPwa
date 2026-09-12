@@ -70,6 +70,7 @@ public interface IDataService
     Task<List<TrainingResource>> GetTrainingResourcesAsync();
     Task<List<TrainingResource>> GetResourcesByCategoryAsync(string category);
     Task<TrainingResource> CreateResourceAsync(TrainingResource resource);
+    Task DeleteResourceAsync(string resourceId);
 
     // Groups
     Task<List<TrainingGroup>> GetGroupsByCoachAsync(string coachId);

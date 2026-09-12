@@ -431,6 +431,14 @@ public class SupabaseDataService : IDataService
         return response.Models.First();
     }
 
+    public async Task DeleteResourceAsync(string resourceId)
+    {
+        await EnsureInitializedAsync();
+        await _client.From<TrainingResource>()
+            .Where(r => r.ResourceId == resourceId)
+            .Delete();
+    }
+
     // ===== Groups =====
 
     public async Task<List<TrainingGroup>> GetGroupsByCoachAsync(string coachId)
