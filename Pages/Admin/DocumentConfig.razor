@@ -1,7 +1,6 @@
 @page "/admin/settings"
 @inject IDataService Data
 @inject ISnackbar Snackbar
-@inject IDialogService DialogService
 
 <MudText Typo="Typo.h5" Style="font-weight: bold;" Class="mb-2">הגדרות מסמכים וחוזים</MudText>
 <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-4">
@@ -49,7 +48,6 @@ else
             <MudTd DataLabel="סדר">@context.SortOrder</MudTd>
             <MudTd DataLabel="פעולות">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" OnClick="@(() => OpenDialog(context))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteConfig(context))" />
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -96,7 +94,6 @@ else
             <MudTd DataLabel="סדר">@context.SortOrder</MudTd>
             <MudTd DataLabel="פעולות">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" OnClick="@(() => OpenCategoryDialog(context))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteCategory(context))" />
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -230,25 +227,6 @@ else
         catch (Exception ex) { Snackbar.Add($"שגיאה בשמירה: {ex.Message}", Severity.Error); }
     }
 
-    private async Task DeleteConfig(TypeConfig config)
-    {
-        var parameters = new DialogParameters
-        {
-            ["Message"] = $"למחוק את '{config.DisplayName}'?"
-        };
-        var dialog = await DialogService.ShowAsync<ConfirmDeleteDialog>("מחיקה", parameters);
-        var result = await dialog.Result;
-        if (result is null || result.Canceled) return;
-
-        try
-        {
-            await Data.DeleteTypeConfigAsync(config.ConfigId);
-            Snackbar.Add("נמחק בהצלחה", Severity.Success);
-            await Load();
-        }
-        catch (Exception ex) { Snackbar.Add($"שגיאה במחיקה: {ex.Message}", Severity.Error); }
-    }
-
     private async Task LoadCategories()
     {
         loadingCategories = true;
@@ -303,24 +281,5 @@ else
             await LoadCategories();
         }
         catch (Exception ex) { Snackbar.Add($"שגיאה בשמירה: {ex.Message}", Severity.Error); }
-    }
-
-    private async Task DeleteCategory(TypeConfig category)
-    {
-        var parameters = new DialogParameters
-        {
-            ["Message"] = $"למחוק את '{category.DisplayName}'?"
-        };
-        var dialog = await DialogService.ShowAsync<ConfirmDeleteDialog>("מחיקה", parameters);
-        var result = await dialog.Result;
-        if (result is null || result.Canceled) return;
-
-        try
-        {
-            await Data.DeleteTypeConfigAsync(category.ConfigId);
-            Snackbar.Add("נמחק בהצלחה", Severity.Success);
-            await LoadCategories();
-        }
-        catch (Exception ex) { Snackbar.Add($"שגיאה במחיקה: {ex.Message}", Severity.Error); }
     }
 }
