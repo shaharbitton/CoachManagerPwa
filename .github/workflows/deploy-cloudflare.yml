@@ -33,6 +33,17 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Inject Supabase config
+        shell: pwsh
+        run: |
+          $json = Get-Content wwwroot/appsettings.production.json -Raw | ConvertFrom-Json
+          $json.supabase.ARCAN_SUPABASE_URL = $env:SUPABASE_URL
+          $json.supabase.ARCAN_SUPABASE_ANON_KEY = $env:SUPABASE_ANON_KEY
+          $json | ConvertTo-Json -Depth 10 | Set-Content wwwroot/appsettings.production.json
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
       - name: Build and Publish
         run: dotnet publish CoachManagerPwa.csproj -c Release -o ./publish
 
